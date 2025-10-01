@@ -13,10 +13,6 @@ A connected food scale that combines bluetooth weight streaming with AI-based fo
 
 ---
 
-## 📂 Project Structure
-
----
-
 ## 🛠 Hardware
 - **5 kg Load Cell + HX711 amplifier** – measures food weight
 - **ESP32 (WROOM32D / S3)** – microcontroller with bluetooth
