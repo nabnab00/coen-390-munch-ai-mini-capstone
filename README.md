@@ -14,3 +14,24 @@ A connected food scale that combines bluetooth weight streaming with AI-based fo
 ---
 
 ## 📂 Project Structure
+
+---
+
+## 🛠 Hardware
+- **5 kg Load Cell + HX711 amplifier** – measures food weight
+- **ESP32 (WROOM32D / S3)** – microcontroller with bluetooth
+- **housing**
+
+---
+
+## 📱 Software
+- **Firmware**: ESP32 reads HX711 and sends info via bluetooth
+  - `weight_g` (grams, float32)
+  - `tare_cmd` (write to tare)
+  - `cal_factor` (read/write calibration)
+- **Mobile app**:  
+  - Scans and connects via BLE
+  - Displays live weight
+  - Captures food photo → runs AI classifier
+  - Logs macros automatically
+
