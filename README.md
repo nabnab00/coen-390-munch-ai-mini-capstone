@@ -4,7 +4,7 @@ A connected food scale that combines bluetooth weight streaming with AI-based fo
 
 ---
 
-## 🚀 Features
+## Features
 - **Accurate weight measurement** using load cell + HX711 amplifier.
 - **ESP32 microcontroller** with built-in bluetooth for phone connectivity.
 - **Mobile app** receives real-time weight data and links with AI to identify food.
@@ -13,7 +13,7 @@ A connected food scale that combines bluetooth weight streaming with AI-based fo
 
 ---
 
-## 🛠 Hardware
+## Hardware
 - **5 kg Load Cell + HX711 amplifier** – measures food weight
 - **ESP32 (WROOM32D / S3)** – microcontroller with bluetooth
 - **ESP32-S3 with LCD** - microcontroller with LCD screen
@@ -21,7 +21,7 @@ A connected food scale that combines bluetooth weight streaming with AI-based fo
 
 ---
 
-## 📱 Software
+## Software
 - **Firmware**: ESP32 reads HX711 and sends info via bluetooth
   - `weight_g` (grams, float32)
   - `tare_cmd` (write to tare)
