@@ -1,0 +1,10 @@
+<!-- In res/values/attrs.xml -->
+<resources>
+    <declare-styleable name="CircularProgressView">
+        <attr name="cpv_progress" format="integer" />
+        <attr name="cpv_max" format="integer" />
+        <attr name="cpv_progressColor" format="color" />
+        <attr name="cpv_backgroundColor" format="color" />
+        <attr name="cpv_strokeWidth" format="dimension" />
+    </declare-styleable>
+</resources>

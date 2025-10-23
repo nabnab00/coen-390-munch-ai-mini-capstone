@@ -58,7 +58,7 @@
         android:id="@+id/dailycalories"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="204dp"
+        android:layout_marginTop="232dp"
 
         android:fontFamily="@font/inter_semibold"
         android:text="0/2000"
@@ -66,9 +66,25 @@
         android:textSize="37dp"
         android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.832"
+        app:layout_constraintHorizontal_bias="0.843"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.example.munchai.frontend.CircularProgressView
+        android:id="@+id/calorie_progress_ring"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:cpv_backgroundColor="@color/brown_background"
+        app:cpv_max="2000"
+        app:cpv_progress="850"
+        app:cpv_progressColor="@color/brown_primary"
+        app:cpv_strokeWidth="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/logfood_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.21"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_title"
+        app:layout_constraintVertical_bias="0.153" />
 
     <Button
         android:id="@+id/logfood_button"
