@@ -3,6 +3,7 @@ package com.example.munchai.frontend;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.widget.Button;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity
         EdgeToEdge.enable(this);
         setContentView(R.layout.mainpage);
         ImageButton toSetting = findViewById(R.id.to_settings);
+        Button toFoodlog = findViewById(R.id.to_foodlog);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) ->
         {
@@ -33,6 +35,13 @@ public class MainActivity extends AppCompatActivity
         toSetting.setOnClickListener(v ->
         {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+        });
+
+        //to stats page
+        toFoodlog.setOnClickListener(v ->
+        {
+            Intent intent = new Intent(MainActivity.this, FoodLogActivity.class);
             startActivity(intent);
         });
     }
