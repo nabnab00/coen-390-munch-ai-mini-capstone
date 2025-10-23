@@ -1,4 +1,7 @@
 package com.example.munchai.backend;
 
-public class DatabaseHelper {
+public abstract class DatabaseHelper extends Object implements AutoCloseable
+{
+
+
 }
