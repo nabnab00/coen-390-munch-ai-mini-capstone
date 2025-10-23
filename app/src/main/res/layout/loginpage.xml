@@ -14,7 +14,7 @@
         android:id="@+id/login_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="40dp"
         android:fontFamily="@font/rammetto_one"
         android:text="MunchAI Login"
         android:textColor="@color/brown_primary"
@@ -23,15 +23,13 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_margin="60dp"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/login_username"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="12dp"
         android:backgroundTint="@color/brown_primary"
         android:hint="Username"
         android:inputType="textPersonName"
@@ -39,7 +37,6 @@
 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_margin="40dp"
         app:layout_constraintTop_toBottomOf="@id/login_title"
         app:layout_constraintWidth_percent="0.8"
         />
@@ -56,7 +53,6 @@
 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_margin="16dp"
         app:layout_constraintTop_toBottomOf="@id/login_username"
         app:layout_constraintWidth_percent="0.8"
         />
@@ -71,7 +67,6 @@
         app:layout_constraintTop_toBottomOf="@id/login_password"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_margin="24dp"
         app:layout_constraintWidth_percent="0.8"
         />
 
@@ -82,7 +77,7 @@
         android:text="Don’t have an account? Register"
         android:textColor="@color/brown_primary"
         android:textSize="14sp"
-        android:paddingTop="20dp"
+        android:paddingTop="8dp"
 
         app:layout_constraintTop_toBottomOf="@id/login_button"
         app:layout_constraintStart_toStartOf="parent"
