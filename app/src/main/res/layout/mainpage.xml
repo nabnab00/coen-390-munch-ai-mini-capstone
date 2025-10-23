@@ -9,7 +9,7 @@
     tools:context=".frontend.MainActivity">
 
     <ImageButton
-        android:id="@+id/settings_button"
+        android:id="@+id/to_settings"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="?attr/selectableItemBackgroundBorderless"

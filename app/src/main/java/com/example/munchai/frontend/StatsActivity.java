@@ -1,4 +1,8 @@
 package com.example.munchai.frontend;
 
-public class StatsActivity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class StatsActivity extends AppCompatActivity
+{
+
 }
