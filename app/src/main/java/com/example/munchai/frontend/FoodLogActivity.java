@@ -8,6 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.munchai.R;
 
-public class FoodLogActivity
+public class FoodLogActivity extends AppCompatActivity
 {
 }

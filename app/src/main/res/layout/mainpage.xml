@@ -70,7 +70,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.example.munchai.frontend.CircularProgressView
+    <com.example.munchai.frontend.model.CircularProgressView
         android:id="@+id/calorie_progress_ring"
         android:layout_width="150dp"
         android:layout_height="150dp"

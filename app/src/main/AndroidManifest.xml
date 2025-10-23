@@ -25,6 +25,9 @@
         <activity android:name=".frontend.LoginActivity" />
         <activity android:name=".frontend.RegisterActivity" />
         <activity android:name=".frontend.MainActivity" />
+        <activity android:name=".frontend.SettingsActivity" />
+        <activity android:name=".frontend.FoodLogActivity" />
+        <activity android:name=".frontend.StatsActivity" />
 
         <meta-data
             android:name="preloaded_fonts"
