@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- THEME COLORS -->
+    <color name="brown_primary">#795548</color>        <!-- medium brown -->
+    <color name="brown_onPrimary">#FFFFFF</color>      <!-- text on brown -->
+    <color name="brown_secondary">#A1887F</color>      <!-- lighter brown -->
+    <color name="brown_background">#FDD3B4</color>     <!-- light beige -->
+    <color name="brown_onBackground">#212121</color>   <!-- dark text -->
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="chocolate">#453933</color>
+    <color name="cookiedough">#AF8563</color>
 </resources>
