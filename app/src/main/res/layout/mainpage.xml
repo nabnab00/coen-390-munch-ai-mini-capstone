@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -16,6 +17,7 @@
         android:padding="8dp"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_settings"
+        android:contentDescription="@string/settings_button_desc"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.955"
@@ -30,14 +32,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:fontFamily="@font/rammetto_one"
-        android:text="Welcome!"
+        android:text="@string/welcome_text"
         android:textColor="@color/brown_primary"
-        android:textSize="22dp"
+        android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <TextView
         android:id="@+id/login_title"
@@ -45,9 +46,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="136dp"
         android:fontFamily="@font/rammetto_one"
-        android:text="Today's Calories"
+        android:text="@string/todays_calories"
         android:textColor="@color/brown_primary"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.117"
@@ -59,11 +60,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="232dp"
-
         android:fontFamily="@font/inter_semibold"
-        android:text="0/2000"
+        android:text="@string/daily_calorie_text"
         android:textColor="@color/brown_primary"
-        android:textSize="37dp"
+        android:textSize="37sp"
         android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.843"
@@ -79,7 +79,7 @@
         app:cpv_progress="850"
         app:cpv_progressColor="@color/brown_primary"
         app:cpv_strokeWidth="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/logfood_button"
+        app:layout_constraintBottom_toTopOf="@+id/to_foodlog"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.21"
         app:layout_constraintStart_toStartOf="parent"

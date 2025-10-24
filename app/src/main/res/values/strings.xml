@@ -4,5 +4,22 @@
     <string name="app_name">Munch AI</string>
     <string name="start_button">Munch Time</string>
     <string name="logfood_button">LOG MEAL</string>
+    <string name="login_title">MunchAI Login</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="to_register_text">Don’t have an account? Register</string>
 
+<!-- MAIN PAGE -->
+    <string name="welcome_text">Welcome!</string>
+    <string name="todays_calories">Today\'s Calories</string>
+    <string name="daily_calorie_text">0/2000</string>
+    <string name="settings_button_desc">Open settings</string>
+
+<!-- REGISTER PAGE -->
+    <string name="register_title">Create Account</string>
+    <string name="id_hint">ID</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="register_button_text">Register</string>
+    <string name="to_login_text">Already have an account? Login</string>
 </resources>
