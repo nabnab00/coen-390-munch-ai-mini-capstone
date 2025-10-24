@@ -51,6 +51,7 @@ public class SettingsActivity extends AppCompatActivity
     private void loadSettings()
     {
         Cursor cursor = db.getSettings();
+
         if (cursor.moveToFirst())
         {
             switchDarkMode.setChecked(cursor.getInt(cursor.getColumnIndexOrThrow("dark_mode")) == 1);
@@ -59,6 +60,7 @@ public class SettingsActivity extends AppCompatActivity
             editCarbohydrates.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("carb_limit"))));
             editFats.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("fat_limit"))));
         }
+
         cursor.close();
     }
 }
