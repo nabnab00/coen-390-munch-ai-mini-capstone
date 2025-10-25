@@ -1,0 +1,14 @@
+<resources>
+    <string-array name="units_array">
+        <item>g</item>
+        <item>oz</item>
+        <item>ml</item>
+    </string-array>
+
+    <string-array name="meals_array">
+        <item>Breakfast</item>
+        <item>Lunch</item>
+        <item>Dinner</item>
+        <item>Snack</item>
+    </string-array>
+</resources>

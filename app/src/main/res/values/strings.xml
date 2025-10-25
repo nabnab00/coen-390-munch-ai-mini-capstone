@@ -10,6 +10,16 @@
     <string name="login_button">Login</string>
     <string name="register_text">Don’t have an account? Register</string>
 
+    <string name="log_meal">Log Meal</string>
+    <string name="food_log_title">Food Log</string>
+    <string name="food_name">Food name</string>
+    <string name="quantity">Quantity</string>
+    <string name="date_label">Date</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="your_logs_count_0">Your logs: 0</string>
+
+</resources>
 <!-- MAIN PAGE -->
     <string name="main_welcome">Welcome!</string>
     <string name="todays_calories">Today\'s Calories</string>
