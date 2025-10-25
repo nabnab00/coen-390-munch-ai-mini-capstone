@@ -85,7 +85,6 @@
         app:cpv_progressColor="@color/brown_primary"
         app:cpv_strokeWidth="20dp"
         app:layout_constraintBottom_toTopOf="@+id/to_foodlog"
-        app:layout_constraintBottom_toTopOf="@id/to_foodlog"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.21"
         app:layout_constraintStart_toStartOf="parent"
@@ -119,5 +118,4 @@
         android:layout_marginTop="16dp" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
