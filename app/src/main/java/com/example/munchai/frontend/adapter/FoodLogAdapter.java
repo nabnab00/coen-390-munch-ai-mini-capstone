@@ -1,28 +1,22 @@
-package com.example.munchai.frontend;
+package com.example.munchai.frontend.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.munchai.R;
+import com.example.munchai.frontend.model.FoodLogRow;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
-class FoodLogRow
-{
-    public final String name, unit, meal, loggedAtIso;
-    public final double qty;
-    FoodLogRow(String name, String unit, double qty, String meal, String loggedAtIso)
-    {
-        this.name = name; this.unit = unit; this.qty = qty; this.meal = meal; this.loggedAtIso = loggedAtIso;
-    }
-}
 
 public class FoodLogAdapter extends RecyclerView.Adapter<FoodLogAdapter.VH>
 {
