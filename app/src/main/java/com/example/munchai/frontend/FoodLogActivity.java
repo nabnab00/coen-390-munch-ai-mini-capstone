@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.munchai.R;
 import com.example.munchai.backend.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
+
 import java.util.ArrayList;
 import java.util.List;
 
