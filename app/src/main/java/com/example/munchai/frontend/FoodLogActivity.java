@@ -14,22 +14,24 @@ import com.example.munchai.backend.SessionManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodLogActivity extends AppCompatActivity {
-
+public class FoodLogActivity extends AppCompatActivity
+{
     private AppDatabaseHelper db;
     private SessionManager session;
     private FoodLogAdapter adapter;
     private TextView empty;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.foodlogpage);
 
         db = new AppDatabaseHelper(this);
         session = new SessionManager(this);
 
-        if (!session.isLoggedIn()) {
+        if (!session.isLoggedIn())
+        {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -44,22 +46,26 @@ public class FoodLogActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
         loadLogs();
     }
 
-    private void loadLogs() {
+    private void loadLogs()
+    {
         List<FoodLogRow> rows = new ArrayList<>();
         Cursor c = db.getLogsForUser(session.getLoggedInUserId());
-        if (c != null) {
+        if (c != null)
+        {
             int idxName = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_NAME);
             int idxUnit = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_UNIT);
             int idxQty  = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_QTY);
             int idxMeal = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_MEAL);
             int idxAt   = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_AT);
 
-            while (c.moveToNext()) {
+            while (c.moveToNext())
+            {
                 rows.add(new FoodLogRow(
                         c.getString(idxName),
                         c.getString(idxUnit),

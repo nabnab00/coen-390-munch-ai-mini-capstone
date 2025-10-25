@@ -19,7 +19,6 @@
     <string name="cancel">Cancel</string>
     <string name="your_logs_count_0">Your logs: 0</string>
 
-</resources>
 <!-- MAIN PAGE -->
     <string name="main_welcome">Welcome!</string>
     <string name="todays_calories">Today\'s Calories</string>
