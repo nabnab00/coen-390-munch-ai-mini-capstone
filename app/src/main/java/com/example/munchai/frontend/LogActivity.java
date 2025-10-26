@@ -29,8 +29,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class LogActivity extends AppCompatActivity {
-
+public class LogActivity extends AppCompatActivity
+{
     private EditText nameEt, qtyEt;
     private Spinner unitSp, mealSp;
     private TextView dateTv;
