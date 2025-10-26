@@ -3,6 +3,7 @@ package com.example.munchai.frontend;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -11,24 +12,22 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.AppDatabaseHelper;
-import com.example.munchai.backend.SessionManager;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText usernameEt, passwordEt;
-    private AppDatabaseHelper db;
-    private SessionManager session;
+    private EditText emailEt, passwordEt;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loginpage);
 
-        db = new AppDatabaseHelper(this);
-        session = new SessionManager(this);
+        auth = FirebaseAuth.getInstance();
 
-        usernameEt = findViewById(R.id.login_username);
+
+        emailEt = findViewById(R.id.login_username);
         passwordEt = findViewById(R.id.login_password);
         Button loginBtn = findViewById(R.id.login_button);
         TextView toRegister = findViewById(R.id.to_register);
@@ -39,23 +38,40 @@ public class LoginActivity extends AppCompatActivity {
         );
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (auth.getCurrentUser() != null) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        }
+    }
+
+
     private void doLogin() {
-        String u = usernameEt.getText().toString().trim();
-        String p = passwordEt.getText().toString().trim();
-        if (TextUtils.isEmpty(u) || TextUtils.isEmpty(p)) {
-            Toast.makeText(this, "Enter username and password", Toast.LENGTH_SHORT).show();
+        String email = emailEt.getText().toString().trim();
+        String pwd = passwordEt.getText().toString().trim();
+
+        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Enter a valid email", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Integer userId = db.authenticate(u, p);
-        if (userId != null) {
-            new SessionManager(this).setLoggedInUserId(userId);
-            Toast.makeText(this, "Welcome " + u + "!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            finish();
-        } else {
-            Toast.makeText(this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(pwd)) {
+            Toast.makeText(this, "Enter your password", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        auth.signInWithEmailAndPassword(email, pwd).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            } else {
+                Toast.makeText(this,
+                        "Login failed: " + (task.getException() != null ? task.getException().getMessage() : ""),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
 

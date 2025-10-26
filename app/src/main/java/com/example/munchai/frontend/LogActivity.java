@@ -161,7 +161,7 @@ public class LogActivity extends AppCompatActivity {
         String tsIso = selectedDateMidnightIsoUtc();
 
         long id = db.insertLog(
-                session.getLoggedInUserId(), name, unit, qty, meal, tsIso
+                session.getUid(), name, unit, qty, meal, tsIso
         );
 
         if (id > 0) {

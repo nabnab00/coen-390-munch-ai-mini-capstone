@@ -88,7 +88,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // FOOD LOGS
-    public long insertLog(int userId, String name, String unit, double qty, String meal, String isoTimestamp) {
+    public long insertLog(String userId, String name, String unit, double qty, String meal, String isoTimestamp) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COL_LOG_USER_ID, userId);
@@ -100,7 +100,7 @@ public class AppDatabaseHelper extends SQLiteOpenHelper {
         return db.insert(T_LOGS, null, cv);
     }
 
-    public Cursor getLogsForUser(int userId) {
+    public Cursor getLogsForUser(String userId) {
         SQLiteDatabase db = getReadableDatabase();
         return db.query(
                 T_LOGS,
