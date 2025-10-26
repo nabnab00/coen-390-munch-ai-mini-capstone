@@ -9,11 +9,11 @@ import android.database.Cursor;
 import android.widget.Toast;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.DatabaseHelper;
+import com.example.munchai.backend.SettingsDatabaseHelper;
 
 public class SettingsActivity extends AppCompatActivity
 {
-    private DatabaseHelper db;
+    private SettingsDatabaseHelper db;
     private Switch switchDarkMode;
     private EditText editCalories, editProtein, editCarbohydrates, editFats;
     private Button saveSettings;
@@ -24,7 +24,7 @@ public class SettingsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settingspage);
 
-        db = new DatabaseHelper(this);
+        db = new SettingsDatabaseHelper(this);
 
         switchDarkMode = findViewById(R.id.switch_darkmode);
         editCalories = findViewById(R.id.settings_calories);

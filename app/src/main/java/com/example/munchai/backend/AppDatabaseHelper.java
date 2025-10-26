@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-public class AppDatabaseHelper extends SQLiteOpenHelper {
-
+public class AppDatabaseHelper extends SQLiteOpenHelper
+{
     public static final String DB_NAME = "munchai.db";
     public static final int DB_VERSION = 2;
 
