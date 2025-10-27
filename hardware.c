@@ -30,6 +30,9 @@ const int LCD_D6 = 17;
 const int LCD_D7 = 4;    // per your wiring
 hd44780_pinIO lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
+#define TARE_BTN 14
+
+
 // ------- helpers -------
 float readStableGrams() {
   // median-of-7 to kill spikes
@@ -91,6 +94,7 @@ void connectWiFi() {
 // ------- setup/loop -------
 void setup() {
   Serial.begin(115200);
+pinMode(TARE_BTN, INPUT_PULLUP);
 
   // LCD first so you can see messages even before Wi-Fi
   delay(200);
@@ -121,6 +125,18 @@ void setup() {
 
 void loop() {
   server.handleClient();
+
+// Check button press for tare
+if (digitalRead(TARE_BTN) == LOW) {
+  scale.tare(20);
+  ema_valid = false;         // reset filter if you’re using it
+  lcd.setCursor(0, 1);
+  lcd.print("Tared!         ");
+  delay(1000);               // short display hold
+  lcd.setCursor(0, 1);
+  lcd.print("               ");  // clear message
+  while (digitalRead(TARE_BTN) == LOW); // wait for release
+}
 
   // Periodic LCD update
   static unsigned long last = 0;
