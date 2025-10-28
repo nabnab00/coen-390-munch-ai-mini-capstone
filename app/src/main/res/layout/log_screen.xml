@@ -165,4 +165,12 @@
             android:fontFamily="@font/inter_medium" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/to_weight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="weight food"
+        tools:layout_editor_absoluteX="144dp"
+        tools:layout_editor_absoluteY="552dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
