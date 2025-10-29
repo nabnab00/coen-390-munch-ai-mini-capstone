@@ -64,6 +64,7 @@ public class LogActivity extends AppCompatActivity
 
         photoIv = findViewById(R.id.photo_preview);
         retakeBtn = findViewById(R.id.retake_button);
+        Button toWeight = findViewById(R.id.to_weight);
 
         nameEt = findViewById(R.id.input_food_name);
         qtyEt  = findViewById(R.id.input_qty);
@@ -101,6 +102,12 @@ public class LogActivity extends AppCompatActivity
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Log Meal");
         }
+
+        //log meal
+        toWeight.setOnClickListener(v -> {
+            Intent intent = new Intent(LogActivity.this, WeightActivity.class);
+            startActivity(intent);
+        });
 
         startCameraCapture();
     }
