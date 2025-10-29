@@ -8,6 +8,7 @@
     <color name="brown_background">#FDD3B4</color>     <!-- light beige -->
     <color name="brown_onBackground">#212121</color>   <!-- dark text -->
 
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="chocolate">#453933</color>
