@@ -18,15 +18,12 @@ public class SessionManager
     {
         prefs.edit().putInt(KEY_USER_ID, id).apply();
     }
-
     public int getLoggedInUserId() {
         return prefs.getInt(KEY_USER_ID, -1);
     }
-
     public boolean isLoggedIn() {
         return getLoggedInUserId() > 0;
     }
-
     public void logout() {
         prefs.edit().remove(KEY_USER_ID).apply();
     }
