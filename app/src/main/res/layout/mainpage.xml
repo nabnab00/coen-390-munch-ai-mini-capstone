@@ -83,7 +83,7 @@
         />
 
     <!-- Calorie Progress Ring -->
-    <com.example.munchai.frontend.model.CircularProgressView
+    <com.example.munchai.model.CircularProgressView
         android:id="@+id/calorie_progress_ring"
         android:layout_width="150dp"
         android:layout_height="150dp"
