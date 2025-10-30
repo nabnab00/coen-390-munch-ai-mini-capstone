@@ -28,7 +28,7 @@ public class GeminiRequest {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static final String API_KEY = "BuildConfig.GEMINI_API_KEY";
+    private static final String API_KEY = "AIzaSyDw5_eiyWlF3d0es5J7SBv__Pan5T_XUj0";
     private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
@@ -46,13 +46,13 @@ public class GeminiRequest {
         String base64 = encodeToBase64Jpeg(resized, 85);
 
         // Prompt
-        String prompt = "Extract all nutritional values from the provided Nutrition Facts image. " +
-                "Use your best reading of the label; if a value is not explicitly present, return null (do not invent data). " +
-                "Return a single JSON object with exactly these keys and units: " +
-                "Name, Serving size, Calories, Total Fat (%), Saturated Fat (%), Cholesterol (mg), Sodium (mg), " +
-                "Total Carbohydrate (g), Dietary Fiber (g), Sugars (g), Protein (g), " +
-                "Vitamin A (%), Vitamin C (%), Calcium (%), Iron (%). " +
-                "Output only the raw JSON object. No markdown, no extra text.";
+        String prompt = "You are analyzing a meal/food image. Carefully analyse. " +
+                        "Return a JSON object with these lowercase keys: " +
+                        "name, serving_size, calories, total_fat_g, saturated_fat_g, cholesterol_mg, sodium_mg, " +
+                        "total_carbohydrate_g, dietary_fiber_g, sugars_g, protein_g, vitamin_a_percent, " +
+                        "vitamin_c_percent, calcium_percent, iron_percent. " +
+                        "If a value is missing or unreadable, use null. " +
+                        "Do not include any text or markdown, output only the JSON object.";
 
         // Build JSON (no .parent() calls)
         ObjectNode inlineData = MAPPER.createObjectNode();

@@ -25,7 +25,11 @@ public class TestActivity extends AppCompatActivity
             {
                 NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromDrawable(this, R.drawable.pizza);
 
-                runOnUiThread(() -> text.setText("✅ Parsed Nutrition Facts:\n\n" + facts.calories));
+                String summary = (facts != null)
+                        ? facts.nutritionValuesToString()
+                        : "❌ No data parsed.";
+                runOnUiThread(() -> text.setText("✅ Parsed Nutrition Facts:\n\n" + summary));
+
             }
             catch (Exception e)
             {

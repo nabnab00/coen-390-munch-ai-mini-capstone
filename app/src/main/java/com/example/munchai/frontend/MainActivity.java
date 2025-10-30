@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity
         ImageButton toSetting = findViewById(R.id.to_settings);
         Button toFoodlog = findViewById(R.id.to_foodlog);
         Button toHistory = findViewById(R.id.to_history);
+        Button toTest = findViewById(R.id.to_test);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         //API test
-        toSetting.setOnClickListener(v ->
+        toTest.setOnClickListener(v ->
         {
             Intent intent = new Intent(MainActivity.this, TestActivity.class);
             startActivity(intent);
