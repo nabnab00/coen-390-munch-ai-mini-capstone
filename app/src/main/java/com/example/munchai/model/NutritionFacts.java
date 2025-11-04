@@ -2,7 +2,8 @@ package com.example.munchai.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class NutritionFacts {
+public class NutritionFacts
+{
     @JsonProperty("name") public String name;
     @JsonProperty("serving_size") public String servingSize;
     @JsonProperty("calories") public Double calories;
