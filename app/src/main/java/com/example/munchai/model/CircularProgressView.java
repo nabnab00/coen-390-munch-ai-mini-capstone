@@ -1,4 +1,4 @@
-package com.example.munchai.frontend.model;
+package com.example.munchai.model;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -13,34 +13,36 @@ import androidx.annotation.Nullable;
 
 import com.example.munchai.R;
 
-public class CircularProgressView extends View {
-
-    private Paint backgroundPaint;
-    private Paint progressPaint;
+public class CircularProgressView extends View
+{
+    private Paint backgroundPaint, progressPaint;
     private RectF rectF;
-
     private float strokeWidth = 40f;
     private int progress = 0;
     private int max = 100;
     private int progressColor = Color.RED;
     private int backgroundColor = Color.GRAY;
 
-    public CircularProgressView(Context context) {
+    public CircularProgressView(Context context)
+    {
         super(context);
         init(context, null);
     }
 
-    public CircularProgressView(Context context, @Nullable AttributeSet attrs) {
+    public CircularProgressView(Context context, @Nullable AttributeSet attrs)
+    {
         super(context, attrs);
         init(context, attrs);
     }
 
-    public CircularProgressView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public CircularProgressView(Context context, @Nullable AttributeSet attrs, int defStyleAttr)
+    {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
-    private void init(Context context, @Nullable AttributeSet attrs) {
+    private void init(Context context, @Nullable AttributeSet attrs)
+    {
         rectF = new RectF();
 
         if (attrs != null) {
@@ -49,13 +51,17 @@ public class CircularProgressView extends View {
                     R.styleable.CircularProgressView,
                     0, 0
             );
-            try {
+
+            try
+            {
                 strokeWidth    = ta.getDimension(R.styleable.CircularProgressView_cpv_strokeWidth, 40f);
                 progress       = ta.getInt(R.styleable.CircularProgressView_cpv_progress, 0);
                 max            = ta.getInt(R.styleable.CircularProgressView_cpv_max, 100);
                 progressColor  = ta.getColor(R.styleable.CircularProgressView_cpv_progressColor, Color.RED);
                 backgroundColor= ta.getColor(R.styleable.CircularProgressView_cpv_backgroundColor, Color.GRAY);
-            } finally {
+            }
+            finally
+            {
                 ta.recycle();
             }
         }
@@ -75,7 +81,8 @@ public class CircularProgressView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(Canvas canvas)
+    {
         super.onDraw(canvas);
 
         float half = strokeWidth / 2f;
@@ -94,23 +101,27 @@ public class CircularProgressView extends View {
         canvas.drawArc(rectF, -90f, sweepAngle, false, progressPaint);
     }
 
-    public void setProgress(int progress) {
+    public void setProgress(int progress)
+    {
         this.progress = progress;
         invalidate();
     }
 
-    public void setMax(int max) {
+    public void setMax(int max)
+    {
         this.max = max;
         invalidate();
     }
 
-    public void setProgressColor(int color) {
+    public void setProgressColor(int color)
+    {
         this.progressColor = color;
         if (progressPaint != null) progressPaint.setColor(color);
         invalidate();
     }
 
-    public void setRingBackgroundColor(int color) {
+    public void setRingBackgroundColor(int color)
+    {
         this.backgroundColor = color;
         if (backgroundPaint != null) backgroundPaint.setColor(color);
         invalidate();

@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout
+
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#C19E7A"
+
     tools:context=".frontend.MainActivity">
 
     <!-- Settings Button -->
@@ -25,7 +29,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.043"
-        app:tint="@color/brown_primary" />
+        app:tint="@color/brown_primary"
+        />
 
     <!-- Main Title -->
     <TextView
@@ -40,7 +45,8 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <!-- Today's Calories -->
     <TextView
@@ -56,7 +62,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.117"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <!-- Daily Calories -->
     <TextView
@@ -72,10 +79,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.843"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <!-- Calorie Progress Ring -->
-    <com.example.munchai.frontend.model.CircularProgressView
+    <com.example.munchai.model.CircularProgressView
         android:id="@+id/calorie_progress_ring"
         android:layout_width="150dp"
         android:layout_height="150dp"
@@ -84,12 +92,13 @@
         app:cpv_progress="0"
         app:cpv_progressColor="@color/brown_primary"
         app:cpv_strokeWidth="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/to_foodlog"
+        app:layout_constraintBottom_toTopOf="@id/to_foodlog"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.21"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_title"
-        app:layout_constraintVertical_bias="0.153" />
+        app:layout_constraintVertical_bias="0.153"
+        />
 
     <!-- Log Food Button -->
     <Button
@@ -103,7 +112,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.629" />
+        app:layout_constraintVertical_bias="0.629"
+        />
 
     <Button
         android:id="@+id/to_history"
@@ -115,7 +125,21 @@
         app:layout_constraintTop_toBottomOf="@id/to_foodlog"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        />
+
+    <Button
+        android:id="@+id/to_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View Gemini testing"
+        android:textColor="@color/brown_background"
+        android:fontFamily="@font/inter_medium"
+        app:layout_constraintTop_toBottomOf="@id/to_history"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

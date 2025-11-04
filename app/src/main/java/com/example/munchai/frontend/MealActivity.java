@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.DatePickerDialog;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -29,8 +30,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class LogActivity extends AppCompatActivity {
-
+public class MealActivity extends AppCompatActivity
+{
     private EditText nameEt, qtyEt;
     private Spinner unitSp, mealSp;
     private TextView dateTv;
@@ -63,6 +64,7 @@ public class LogActivity extends AppCompatActivity {
 
         photoIv = findViewById(R.id.photo_preview);
         retakeBtn = findViewById(R.id.retake_button);
+        Button toWeight = findViewById(R.id.to_weight);
 
         nameEt = findViewById(R.id.input_food_name);
         qtyEt  = findViewById(R.id.input_qty);
@@ -88,6 +90,8 @@ public class LogActivity extends AppCompatActivity {
         selDay = now.get(Calendar.DAY_OF_MONTH);
         dateTv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", selDay, selMonth + 1, selYear));
 
+        dateTv.setOnClickListener(v -> showDatePicker());
+
         Button saveBtn = findViewById(R.id.save_button);
         Button cancelBtn = findViewById(R.id.cancel_button);
         saveBtn.setOnClickListener(v -> saveLog());
@@ -99,7 +103,32 @@ public class LogActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Log Meal");
         }
 
+        //log meal
+        toWeight.setOnClickListener(v -> {
+            Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
+            startActivity(intent);
+        });
+
         startCameraCapture();
+    }
+
+    private void showDatePicker() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(selYear, selMonth, selDay);
+
+        DatePickerDialog dlg = new DatePickerDialog(
+                this,
+                (view, y, m, d) -> {
+                    selYear = y;
+                    selMonth = m;
+                    selDay = d;
+                    dateTv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", d, m + 1, y));
+                },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+        );
+        dlg.show();
     }
 
     private void enableForm(boolean enabled) {
@@ -166,10 +195,7 @@ public class LogActivity extends AppCompatActivity {
 
         if (id > 0) {
             Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-
-            // TODO (next step): save photo path/uri to DB if you add a column for it.
-            // We currently just capture for UI flow. The image file remains in cache.
-            Intent intent = new Intent(LogActivity.this, MainActivity.class);
+            Intent intent = new Intent(MealActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();

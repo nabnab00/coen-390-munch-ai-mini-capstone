@@ -5,32 +5,38 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.munchai.R;
 import com.example.munchai.backend.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
+import com.example.munchai.frontend.adapter.FoodLogAdapter;
+import com.example.munchai.model.FoodLogRow;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FoodLogActivity extends AppCompatActivity {
-
+public class LogHistoryActivity extends AppCompatActivity
+{
     private AppDatabaseHelper db;
     private SessionManager session;
     private FoodLogAdapter adapter;
     private TextView empty;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.foodlogpage);
 
         db = new AppDatabaseHelper(this);
         session = new SessionManager(this);
 
-        if (!session.isLoggedIn()) {
+        if (!session.isLoggedIn())
+        {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -60,7 +66,8 @@ public class FoodLogActivity extends AppCompatActivity {
             int idxMeal = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_MEAL);
             int idxAt   = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_AT);
 
-            while (c.moveToNext()) {
+            while (c.moveToNext())
+            {
                 rows.add(new FoodLogRow(
                         c.getString(idxName),
                         c.getString(idxUnit),

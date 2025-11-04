@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-public class DatabaseHelper extends SQLiteOpenHelper
+public class SettingsDatabaseHelper extends SQLiteOpenHelper
 {
     private static final String DATABASE_NAME = "settings.db";
     private static final int DATABASE_VERSION = 1;
@@ -19,7 +19,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
     private static final String COLUMN_CARBS = "carb_limit";
     private static final String COLUMN_FAT = "fat_limit";
 
-    public DatabaseHelper(Context context)
+    public SettingsDatabaseHelper(Context context)
     {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
