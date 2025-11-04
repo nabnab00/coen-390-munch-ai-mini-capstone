@@ -43,4 +43,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1") // harmless for Java projects
 }

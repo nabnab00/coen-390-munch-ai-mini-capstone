@@ -27,7 +27,8 @@ public class AppDatabaseHelper extends SQLiteOpenHelper
     public static final String COL_LOG_MEAL = "meal";
     public static final String COL_LOG_AT = "logged_at";
 
-    public AppDatabaseHelper(Context context) {
+    public AppDatabaseHelper(Context context)
+    {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
