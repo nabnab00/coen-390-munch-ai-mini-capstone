@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class LogActivity extends AppCompatActivity
+public class MealActivity extends AppCompatActivity
 {
     private EditText nameEt, qtyEt;
     private Spinner unitSp, mealSp;
@@ -105,7 +105,7 @@ public class LogActivity extends AppCompatActivity
 
         //log meal
         toWeight.setOnClickListener(v -> {
-            Intent intent = new Intent(LogActivity.this, WeightActivity.class);
+            Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
             startActivity(intent);
         });
 
@@ -195,7 +195,7 @@ public class LogActivity extends AppCompatActivity
 
         if (id > 0) {
             Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(LogActivity.this, MainActivity.class);
+            Intent intent = new Intent(MealActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
