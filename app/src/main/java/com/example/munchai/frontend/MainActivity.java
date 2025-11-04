@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity
         //log meal
         toFoodlog.setOnClickListener(v ->
         {
-            Intent intent = new Intent(MainActivity.this, LogHistoryActivity.class);
+            Intent intent = new Intent(MainActivity.this, LogActivity.class);
             startActivity(intent);
         });
 

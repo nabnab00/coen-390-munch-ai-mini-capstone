@@ -33,7 +33,7 @@
         <activity android:name=".frontend.MainActivity" />
         <activity android:name=".frontend.SettingsActivity" />
         <activity android:name=".frontend.FoodLogActivity" />
-        <activity android:name=".frontend.LogHistoryActivity" />
+        <activity android:name=".frontend.LogActivity" />
         <activity android:name=".frontend.StatsActivity" />
         <activity android:name=".frontend.WeightActivity"/>
         <activity android:name=".frontend.TestActivity" />
