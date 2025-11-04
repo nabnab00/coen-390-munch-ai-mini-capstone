@@ -40,13 +40,13 @@ public class MainActivity extends AppCompatActivity {
 
         //log meal
         toFoodlog.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, MealActivity.class);
+            Intent intent = new Intent(MainActivity.this, LogActivity.class);
             startActivity(intent);
         });
 
         //food logs
         toHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LogHistoryActivity.class);
+            Intent intent = new Intent(MainActivity.this, FoodLogActivity.class);
             startActivity(intent);
         });
     }

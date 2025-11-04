@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/brown_background"
-    tools:context=".frontend.MealActivity">
+    tools:context=".frontend.LogActivity">
 
     <ImageView
         android:id="@+id/photo_preview"

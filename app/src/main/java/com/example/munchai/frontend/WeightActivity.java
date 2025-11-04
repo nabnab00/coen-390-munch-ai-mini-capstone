@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.example.munchai.R;
 
-public class WeightScaleActivity extends AppCompatActivity {
+public class WeightActivity extends AppCompatActivity {
 
     EditText ipInput;
     Button saveBtn, refreshBtn, tareBtn;

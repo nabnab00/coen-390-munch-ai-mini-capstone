@@ -19,7 +19,7 @@ import com.example.munchai.frontend.model.FoodLogRow;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogHistoryActivity extends AppCompatActivity
+public class FoodLogActivity extends AppCompatActivity
 {
     private AppDatabaseHelper db;
     private SessionManager session;
