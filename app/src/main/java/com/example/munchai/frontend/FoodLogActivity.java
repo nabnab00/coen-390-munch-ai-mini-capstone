@@ -52,7 +52,7 @@ public class FoodLogActivity extends AppCompatActivity {
 
     private void loadLogs() {
         List<FoodLogRow> rows = new ArrayList<>();
-        Cursor c = db.getLogsForUser(session.getUid());
+        Cursor c = db.getAllLogs();
         if (c != null) {
             int idxName = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_NAME);
             int idxUnit = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_UNIT);
