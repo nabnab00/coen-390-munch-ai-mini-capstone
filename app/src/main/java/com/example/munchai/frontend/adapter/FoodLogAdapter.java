@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.munchai.R;
-import com.example.munchai.model.FoodLogRow;
+import com.example.munchai.frontend.model.FoodLogRow;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

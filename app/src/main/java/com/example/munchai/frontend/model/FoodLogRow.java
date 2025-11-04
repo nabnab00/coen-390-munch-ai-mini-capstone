@@ -1,4 +1,4 @@
-package com.example.munchai.model;
+package com.example.munchai.frontend.model;
 
 public class FoodLogRow
 {

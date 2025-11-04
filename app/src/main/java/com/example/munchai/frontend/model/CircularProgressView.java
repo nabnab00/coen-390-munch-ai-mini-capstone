@@ -1,4 +1,4 @@
-package com.example.munchai.model;
+package com.example.munchai.frontend.model;
 
 import android.content.Context;
 import android.content.res.TypedArray;

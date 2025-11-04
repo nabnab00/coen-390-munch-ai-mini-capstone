@@ -14,7 +14,7 @@ import com.example.munchai.R;
 import com.example.munchai.backend.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
 import com.example.munchai.frontend.adapter.FoodLogAdapter;
-import com.example.munchai.model.FoodLogRow;
+import com.example.munchai.frontend.model.FoodLogRow;
 
 import java.util.ArrayList;
 import java.util.List;
