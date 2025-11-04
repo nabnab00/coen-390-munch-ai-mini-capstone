@@ -37,6 +37,7 @@ public class GeminiRequest {
             .build();
 
     public static NutritionFacts fetchNutritionFactsFromDrawable(Context ctx, @DrawableRes int drawableId) throws IOException {
+
         // Load & downscale image
         Bitmap bmp = BitmapFactory.decodeResource(ctx.getResources(), drawableId);
         if (bmp == null) throw new IOException("Failed to decode resource " + drawableId);
@@ -54,7 +55,7 @@ public class GeminiRequest {
                         "If a value is missing or unreadable, use null. " +
                         "Do not include any text or markdown, output only the JSON object.";
 
-        // Build JSON (no .parent() calls)
+        // Build JSON
         ObjectNode inlineData = MAPPER.createObjectNode();
         inlineData.put("mime_type", "image/jpeg");
         inlineData.put("data", base64);
@@ -116,7 +117,8 @@ public class GeminiRequest {
         }
     }
 
-    private static Bitmap downscale(Bitmap src, int maxDim) {
+    private static Bitmap downscale(Bitmap src, int maxDim)
+    {
         int w = src.getWidth(), h = src.getHeight();
         int max = Math.max(w, h);
         if (max <= maxDim) return src;

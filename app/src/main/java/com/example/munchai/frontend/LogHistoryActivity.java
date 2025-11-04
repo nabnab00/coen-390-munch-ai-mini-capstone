@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class LogActivity extends AppCompatActivity
+public class LogHistoryActivity extends AppCompatActivity
 {
     private EditText nameEt, qtyEt;
     private Spinner unitSp, mealSp;
@@ -102,7 +102,7 @@ public class LogActivity extends AppCompatActivity
 
         //log meal
         toWeight.setOnClickListener(v -> {
-            Intent intent = new Intent(LogActivity.this, WeightActivity.class);
+            Intent intent = new Intent(LogHistoryActivity.this, WeightActivity.class);
             startActivity(intent);
         });
 
@@ -176,7 +176,7 @@ public class LogActivity extends AppCompatActivity
 
             // TODO (next step): save photo path/uri to DB if you add a column for it.
             // We currently just capture for UI flow. The image file remains in cache.
-            Intent intent = new Intent(LogActivity.this, MainActivity.class);
+            Intent intent = new Intent(LogHistoryActivity.this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
