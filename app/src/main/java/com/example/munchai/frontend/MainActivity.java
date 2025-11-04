@@ -13,10 +13,12 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.mainpage);
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         ImageButton toSetting = findViewById(R.id.to_settings);
         Button toFoodlog = findViewById(R.id.to_foodlog);
         Button toHistory = findViewById(R.id.to_history);
+        Button toTest = findViewById(R.id.to_test);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -33,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //settings
-        toSetting.setOnClickListener(v -> {
+        toSetting.setOnClickListener(v ->
+        {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
@@ -47,6 +51,13 @@ public class MainActivity extends AppCompatActivity {
         //food logs
         toHistory.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, LogHistoryActivity.class);
+            startActivity(intent);
+        });
+
+        //API test
+        toTest.setOnClickListener(v ->
+        {
+            Intent intent = new Intent(MainActivity.this, TestActivity.class);
             startActivity(intent);
         });
     }
