@@ -36,15 +36,15 @@ public class GeminiRequest {
 
     public static NutritionFacts fetchNutritionFactsFromDrawable(Context ctx, @DrawableRes int drawableId) throws IOException {
 
-        // Load & downscale image
+        // load & downscale image
         Bitmap bmp = BitmapFactory.decodeResource(ctx.getResources(), drawableId);
         if (bmp == null) throw new IOException("Failed to decode resource " + drawableId);
         Bitmap resized = downscale(bmp, 1280);
 
-        // Convert to Base64 JPEG
+        // convert to Base64 JPEG
         String base64 = encodeToBase64Jpeg(resized, 85);
 
-        // Prompt
+        // prompt
         String prompt = "You are analyzing a meal/food image. Carefully analyse. " +
                         "Return a JSON object with these lowercase keys: " +
                         "name, serving_size, calories, total_fat_g, saturated_fat_g, cholesterol_mg, sodium_mg, " +
@@ -80,7 +80,7 @@ public class GeminiRequest {
 
         String requestJson = MAPPER.writeValueAsString(root);
 
-        // Send HTTP POST
+        // sned http post
         Request req = new Request.Builder()
                 .url(URL + API_KEY)
                 .post(RequestBody.create(requestJson, JSON))
@@ -101,7 +101,7 @@ public class GeminiRequest {
 
             String generated = textNode.asText().trim();
 
-            // Strip markdown fences if present
+            // strip markdown fences if present
             if (generated.startsWith("```")) {
                 int first = generated.indexOf('{');
                 int last = generated.lastIndexOf('}');
@@ -110,7 +110,7 @@ public class GeminiRequest {
                 }
             }
 
-            // Parse into NutritionFacts
+            // parse response generated into the nutrition class for future use.
             return MAPPER.readValue(generated, NutritionFacts.class);
         }
     }
