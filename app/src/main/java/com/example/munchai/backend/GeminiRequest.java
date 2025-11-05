@@ -4,10 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
-
 import androidx.annotation.DrawableRes;
 
-import com.example.munchai.model.NutritionFacts;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -23,11 +21,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class GeminiRequest {
+import com.example.munchai.model.NutritionFacts;
 
+public class GeminiRequest {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final ObjectMapper MAPPER = new ObjectMapper();
-
     private static final String API_KEY = "AIzaSyDw5_eiyWlF3d0es5J7SBv__Pan5T_XUj0";
     private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
@@ -38,15 +36,15 @@ public class GeminiRequest {
 
     public static NutritionFacts fetchNutritionFactsFromDrawable(Context ctx, @DrawableRes int drawableId) throws IOException {
 
-        // Load & downscale image
+        // load & downscale image
         Bitmap bmp = BitmapFactory.decodeResource(ctx.getResources(), drawableId);
         if (bmp == null) throw new IOException("Failed to decode resource " + drawableId);
         Bitmap resized = downscale(bmp, 1280);
 
-        // Convert to Base64 JPEG
+        // convert to Base64 JPEG
         String base64 = encodeToBase64Jpeg(resized, 85);
 
-        // Prompt
+        // prompt
         String prompt = "You are analyzing a meal/food image. Carefully analyse. " +
                         "Return a JSON object with these lowercase keys: " +
                         "name, serving_size, calories, total_fat_g, saturated_fat_g, cholesterol_mg, sodium_mg, " +
@@ -82,7 +80,7 @@ public class GeminiRequest {
 
         String requestJson = MAPPER.writeValueAsString(root);
 
-        // Send HTTP POST
+        // sned http post
         Request req = new Request.Builder()
                 .url(URL + API_KEY)
                 .post(RequestBody.create(requestJson, JSON))
@@ -103,7 +101,7 @@ public class GeminiRequest {
 
             String generated = textNode.asText().trim();
 
-            // Strip markdown fences if present
+            // strip markdown fences if present
             if (generated.startsWith("```")) {
                 int first = generated.indexOf('{');
                 int last = generated.lastIndexOf('}');
@@ -112,7 +110,7 @@ public class GeminiRequest {
                 }
             }
 
-            // Parse into NutritionFacts
+            // parse response generated into the nutrition class for future use.
             return MAPPER.readValue(generated, NutritionFacts.class);
         }
     }
