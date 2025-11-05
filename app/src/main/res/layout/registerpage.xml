@@ -27,17 +27,15 @@
         android:id="@+id/register_username"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:autofillHints="username"
-        android:backgroundTint="@color/brown_primary"
-        android:hint="@string/username"
-        android:inputType="textPersonName"
+        android:hint="@string/email"
+        android:inputType="textEmailAddress"
+        android:autofillHints="Email"
         android:padding="12dp"
-        android:textColor="@color/brown_onBackground"
-
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/brown_primary"
         app:layout_constraintTop_toBottomOf="@id/register_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.8"
         tools:ignore="VisualLintTextFieldSize" />
 
@@ -51,8 +49,6 @@
         android:autofillHints="username"
         android:padding="12dp"
         android:backgroundTint="@color/brown_primary"
-        android:textColor="@color/brown_onBackground"
-
         app:layout_constraintTop_toBottomOf="@id/register_username"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -70,8 +66,7 @@
         android:padding="12dp"
         android:backgroundTint="@color/brown_primary"
         android:textColor="@color/brown_onBackground"
-
-        app:layout_constraintTop_toBottomOf="@id/register_id"
+        app:layout_constraintTop_toBottomOf="@id/register_username"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.8"

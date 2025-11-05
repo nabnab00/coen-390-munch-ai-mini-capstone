@@ -51,18 +51,15 @@ public class LogHistoryActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         loadLogs();
     }
 
-    private void loadLogs()
-    {
+    private void loadLogs() {
         List<FoodLogRow> rows = new ArrayList<>();
-        Cursor c = db.getLogsForUser(session.getLoggedInUserId());
-        if (c != null)
-        {
+        Cursor c = db.getAllLogs();
+        if (c != null) {
             int idxName = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_NAME);
             int idxUnit = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_UNIT);
             int idxQty  = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_QTY);
