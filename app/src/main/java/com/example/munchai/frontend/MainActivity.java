@@ -13,7 +13,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AuthedActivity
 {
     @Override
     protected void onCreate(Bundle savedInstanceState)

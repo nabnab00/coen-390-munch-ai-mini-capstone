@@ -124,5 +124,20 @@
             android:textColor="@android:color/white"
             />
 
+        <!-- logout button -->
+        <Button
+            android:id="@+id/settings_logout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:padding="10dp"
+            android:backgroundTint="@color/brown_primary"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            />
+
+
     </LinearLayout>
 </ScrollView>
