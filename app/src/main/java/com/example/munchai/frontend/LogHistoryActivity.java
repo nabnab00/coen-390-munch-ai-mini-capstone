@@ -61,7 +61,7 @@ public class LogHistoryActivity extends AppCompatActivity
         Cursor c = db.getAllLogs();
         if (c != null) {
             int idxName = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_NAME);
-            int idxUnit = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_UNIT);
+            int idxCals = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_CALORIES);
             int idxQty  = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_QTY);
             int idxMeal = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_MEAL);
             int idxAt   = c.getColumnIndexOrThrow(AppDatabaseHelper.COL_LOG_AT);
@@ -70,7 +70,7 @@ public class LogHistoryActivity extends AppCompatActivity
             {
                 rows.add(new FoodLogRow(
                         c.getString(idxName),
-                        c.getString(idxUnit),
+                        c.getString(idxCals),
                         c.getDouble(idxQty),
                         c.getString(idxMeal),
                         c.getString(idxAt)

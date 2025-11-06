@@ -33,8 +33,8 @@ import java.util.TimeZone;
 
 public class MealActivity extends AppCompatActivity
 {
-    private EditText nameEt, qtyEt;
-    private Spinner unitSp, mealSp;
+    private EditText nameEt, weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
+    private Spinner mealSp;
     private TextView dateTv;
     private ImageView photoIv;
     private Button retakeBtn;
@@ -57,16 +57,15 @@ public class MealActivity extends AppCompatActivity
         Button toWeight = findViewById(R.id.to_weight);
 
         nameEt = findViewById(R.id.input_food_name);
-        qtyEt  = findViewById(R.id.input_calories);
+        weightEt = findViewById(R.id.input_weight);
+        caloriesEt = findViewById(R.id.input_calories);
+        fatEt = findViewById(R.id.input_fat);
+        proteinEt = findViewById(R.id.input_protein);
+        carbsEt = findViewById(R.id.input_carbohydrates);
         mealSp = findViewById(R.id.spinner_meal);
         dateTv = findViewById(R.id.text_date_value);
 
         enableForm(false);
-
-        ArrayAdapter<CharSequence> unitAd = ArrayAdapter.createFromResource(
-                this, R.array.units_array, android.R.layout.simple_spinner_item);
-        unitAd.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        unitSp.setAdapter(unitAd);
 
         ArrayAdapter<CharSequence> mealAd = ArrayAdapter.createFromResource(
                 this, R.array.meals_array, android.R.layout.simple_spinner_item);
@@ -140,8 +139,11 @@ public class MealActivity extends AppCompatActivity
 
     private void enableForm(boolean enabled) {
         nameEt.setEnabled(enabled);
-        qtyEt.setEnabled(enabled);
-        unitSp.setEnabled(enabled);
+        weightEt.setEnabled(enabled);
+        caloriesEt.setEnabled(enabled);
+        fatEt.setEnabled(enabled);
+        proteinEt.setEnabled(enabled);
+        carbsEt.setEnabled(enabled);
         mealSp.setEnabled(enabled);
         dateTv.setEnabled(enabled);
         findViewById(R.id.save_button).setEnabled(enabled);
@@ -159,29 +161,39 @@ public class MealActivity extends AppCompatActivity
         }
 
         String name = nameEt.getText().toString().trim();
-        String qtyStr = qtyEt.getText().toString().trim();
-        String unit = (String) unitSp.getSelectedItem();
+        String weightStr = weightEt.getText().toString().trim();
+        String caloriesStr = caloriesEt.getText().toString().trim();
+        String fatStr = fatEt.getText().toString().trim();
+        String proteinStr = proteinEt.getText().toString().trim();
+        String carbsStr = carbsEt.getText().toString().trim();
         String meal = (String) mealSp.getSelectedItem();
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(qtyStr)) {
-            Toast.makeText(this, "Enter food name and quantity", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(weightStr) || TextUtils.isEmpty(caloriesStr) ||
+                TextUtils.isEmpty(fatStr) || TextUtils.isEmpty(proteinStr) || TextUtils.isEmpty(carbsStr)) {
+            Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        double qty;
+        double weight, calories, fat, protein, carbs;
         try {
-            qty = Double.parseDouble(qtyStr);
-            if (qty <= 0) throw new NumberFormatException();
+            weight = Double.parseDouble(weightStr);
+            calories = Double.parseDouble(caloriesStr);
+            fat = Double.parseDouble(fatStr);
+            protein = Double.parseDouble(proteinStr);
+            carbs = Double.parseDouble(carbsStr);
+            if (weight <= 0 || calories < 0 || fat < 0 || protein < 0 || carbs < 0) {
+                throw new NumberFormatException();
+            }
         }
         catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Quantity must be a positive number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "All numeric fields must be positive numbers", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String tsIso = selectedDateMidnightIsoUtc();
 
         long id = db.insertLog(
-            name, unit, qty, meal, tsIso
+                name, weight, calories, fat, protein, carbs, meal, tsIso
         );
 
         if (id > 0) {
