@@ -103,7 +103,13 @@ public class MealActivity extends AppCompatActivity
                 new PhotoCaptureManager.Callbacks() {
                     @Override
                     public void onPhotoReady(android.net.Uri uri) {
-                        enableForm(true);
+                        // Create an intent to start WeightScaleActivity
+                        Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
+                        // Optionally, pass the photo URI to the next activity
+                        intent.setData(uri);
+                        startActivity(intent);
+                        // Finish MealActivity so the user doesn't come back to a half-filled form
+                        finish();
                     }
                     @Override
                     public void onCaptureCanceled() {
