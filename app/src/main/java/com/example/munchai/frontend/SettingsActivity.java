@@ -50,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity
             Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            finish();
+            finishAffinity();
         });
 
         saveSettings.setOnClickListener(v ->

@@ -15,7 +15,7 @@ public abstract class AuthedActivity extends AppCompatActivity {
         super.onStart();
         SessionManager sm = new SessionManager(this);
         if (!sm.isLoggedIn()) {
-            // User is not logged in → force to Login screen and clear back stack
+            // User is not logged in leads to force to Login screen and clear back stack
             Intent i = new Intent(this, LoginActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
