@@ -11,6 +11,9 @@ import android.widget.Toast;
 import com.example.munchai.R;
 import com.example.munchai.backend.SettingsDatabaseHelper;
 
+import android.content.Intent;
+import com.example.munchai.frontend.LoginActivity;
+
 public class SettingsActivity extends AppCompatActivity
 {
     private SettingsDatabaseHelper db;
@@ -34,6 +37,17 @@ public class SettingsActivity extends AppCompatActivity
         saveSettings = findViewById(R.id.settings_save);
 
         loadSettings();
+
+        Button logoutButton = findViewById(R.id.settings_logout);
+
+        logoutButton.setOnClickListener(v -> {
+            Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
 
         saveSettings.setOnClickListener(v ->
         {
