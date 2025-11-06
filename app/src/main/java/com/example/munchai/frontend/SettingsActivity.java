@@ -12,6 +12,7 @@ import com.example.munchai.R;
 import com.example.munchai.backend.SettingsDatabaseHelper;
 
 import android.content.Intent;
+import com.example.munchai.backend.SessionManager;
 import com.example.munchai.frontend.LoginActivity;
 
 public class SettingsActivity extends AppCompatActivity
@@ -39,8 +40,11 @@ public class SettingsActivity extends AppCompatActivity
         loadSettings();
 
         Button logoutButton = findViewById(R.id.settings_logout);
+        SessionManager sessionManager = new SessionManager(this);
 
         logoutButton.setOnClickListener(v -> {
+            sessionManager.logout();
+
             Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
