@@ -5,9 +5,9 @@
 
 // ------- HX711 -------
 #define DOUT 16          // HX711 DT
-#define SCK   27          // HX711 SCK  (boot strap pin; works, but avoid if you can)
+#define SCK   23          // HX711 SCK  (boot strap pin; works, but avoid if you can)
 HX711 scale;
-float CALIBRATION_FACTOR = 50.0f;   // set yours
+float CALIBRATION_FACTOR = 349.0f;   // set yours
 const int SAMPLE_COUNT = 30;
 const float DEAD_BAND = 0.5f;   // ignore tiny noise
 static bool ema_valid = false;  // for filter reset on tare
@@ -30,7 +30,7 @@ const int LCD_D6 = 17;
 const int LCD_D7 = 4;    // per your wiring
 hd44780_pinIO lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
-#define TARE_BTN 14
+#define TARE_BTN 15
 
 
 // ------- helpers -------
