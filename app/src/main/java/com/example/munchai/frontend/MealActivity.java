@@ -173,7 +173,8 @@ public class MealActivity extends AppCompatActivity
         try {
             qty = Double.parseDouble(qtyStr);
             if (qty <= 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
+        }
+        catch (NumberFormatException nfe) {
             Toast.makeText(this, "Quantity must be a positive number", Toast.LENGTH_SHORT).show();
             return;
         }
