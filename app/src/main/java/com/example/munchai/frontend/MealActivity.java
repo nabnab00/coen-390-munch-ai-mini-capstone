@@ -57,8 +57,7 @@ public class MealActivity extends AppCompatActivity
         Button toWeight = findViewById(R.id.to_weight);
 
         nameEt = findViewById(R.id.input_food_name);
-        qtyEt  = findViewById(R.id.input_qty);
-        unitSp = findViewById(R.id.spinner_unit);
+        qtyEt  = findViewById(R.id.input_calories);
         mealSp = findViewById(R.id.spinner_meal);
         dateTv = findViewById(R.id.text_date_value);
 
@@ -173,7 +172,8 @@ public class MealActivity extends AppCompatActivity
         try {
             qty = Double.parseDouble(qtyStr);
             if (qty <= 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
+        }
+        catch (NumberFormatException nfe) {
             Toast.makeText(this, "Quantity must be a positive number", Toast.LENGTH_SHORT).show();
             return;
         }

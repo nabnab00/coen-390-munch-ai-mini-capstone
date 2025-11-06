@@ -11,17 +11,17 @@
 
     <ImageView
         android:id="@+id/photo_preview"
-        android:layout_width="0dp"
-        android:layout_height="220dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/log_meal"
-        android:background="#22000000"
-        android:layout_marginTop="12dp"
+        android:layout_width="341dp"
+        android:layout_height="177dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:background="#22000000"
+        android:contentDescription="@string/log_meal"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/retake_button"
@@ -39,124 +39,164 @@
         android:id="@+id/log_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/rammetto_one"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/alfa_slab_one"
         android:text="@string/log_meal"
         android:textColor="@color/brown_primary"
         android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/photo_preview"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/photo_preview" />
 
     <EditText
         android:id="@+id/input_food_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="24dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="24dp"
+        android:backgroundTint="@color/brown_primary"
+        android:fontFamily="@font/inter_medium"
         android:hint="@string/food_name"
-        android:fontFamily="@font/inter_medium"
         android:textColor="@color/brown_primary"
         android:textColorHint="@color/brown_primary"
-        android:backgroundTint="@color/brown_primary"
-        app:layout_constraintTop_toBottomOf="@id/log_title"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <EditText
-        android:id="@+id/input_qty"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="8dp"
-        android:hint="@string/quantity"
-        android:inputType="numberDecimal"
-        android:fontFamily="@font/inter_medium"
-        android:textColor="@color/brown_primary"
-        android:textColorHint="@color/brown_primary"
-        android:backgroundTint="@color/brown_primary"
-        app:layout_constraintTop_toBottomOf="@id/input_food_name"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/spinner_unit" />
-
-    <Spinner
-        android:id="@+id/spinner_unit"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        app:layout_constraintBaseline_toBaselineOf="@id/input_qty"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/log_title" />
 
 
     <EditText
         android:id="@+id/input_weight"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
         android:layout_marginStart="24dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="5dp"
+        android:backgroundTint="@color/brown_primary"
+        android:fontFamily="@font/inter_medium"
         android:hint="Weight (g)"
         android:inputType="numberDecimal"
-        android:fontFamily="@font/inter_medium"
         android:textColor="@color/brown_primary"
         android:textColorHint="@color/brown_primary"
-        android:backgroundTint="@color/brown_primary"
-        app:layout_constraintTop_toBottomOf="@id/input_qty"
+        app:layout_constraintEnd_toStartOf="@+id/to_weight"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/spinner_unit" />
+        app:layout_constraintTop_toBottomOf="@+id/input_food_name" />
 
-    <Spinner
-        android:id="@+id/spinner_meal"
+    <EditText
+        android:id="@+id/input_calories"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
         android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        app:layout_constraintTop_toBottomOf="@id/input_weight"
+        android:backgroundTint="@color/brown_primary"
+        android:fontFamily="@font/inter_medium"
+        android:hint="Calories (kcal)"
+        android:inputType="numberDecimal"
+        android:textColor="@color/brown_primary"
+        android:textColorHint="@color/brown_primary"
+        app:layout_constraintEnd_toStartOf="@+id/to_weight"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/to_weight" />
+
+    <EditText
+        android:id="@+id/input_carbohydrates"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/brown_primary"
+        android:fontFamily="@font/inter_medium"
+        android:hint="Carbohydrates (g)"
+        android:inputType="numberDecimal"
+        android:textColor="@color/brown_primary"
+        android:textColorHint="@color/brown_primary"
+        app:layout_constraintEnd_toStartOf="@+id/to_weight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_protein" />
+
+    <EditText
+        android:id="@+id/input_fat"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/brown_primary"
+        android:fontFamily="@font/inter_medium"
+        android:hint="Fat (g)"
+        android:inputType="numberDecimal"
+        android:textColor="@color/brown_primary"
+        android:textColorHint="@color/brown_primary"
+        app:layout_constraintEnd_toStartOf="@+id/to_weight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_carbohydrates" />
+
+    <EditText
+        android:id="@+id/input_protein"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/brown_primary"
+        android:fontFamily="@font/inter_medium"
+        android:hint="Protein (g)"
+        android:inputType="numberDecimal"
+        android:textColor="@color/brown_primary"
+        android:textColorHint="@color/brown_primary"
+        app:layout_constraintEnd_toStartOf="@+id/to_weight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_calories" />
 
     <TextView
         android:id="@+id/text_date_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Date:"
-        android:textColor="@color/brown_primary"
-        android:fontFamily="@font/inter_medium"
-        android:textSize="17sp"
-        android:layout_marginTop="16dp"
+        android:layout_width="65dp"
+        android:layout_height="37dp"
         android:layout_marginStart="24dp"
-        app:layout_constraintTop_toBottomOf="@id/spinner_meal"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/inter_medium"
+        android:text="Date:"
+        android:textAlignment="textStart"
+        android:textColor="@color/brown_primary"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_fat" />
 
     <TextView
         android:id="@+id/text_date_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="--/--/----"
-        android:textColor="@color/brown_primary"
-        android:fontFamily="@font/inter_medium"
-        android:textSize="19sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="12dp"
+        android:layout_width="130dp"
+        android:layout_height="37dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
         android:clickable="true"
         android:focusable="true"
+        android:fontFamily="@font/inter_medium"
         android:foreground="?attr/selectableItemBackgroundBorderless"
-        app:layout_constraintTop_toBottomOf="@id/spinner_meal"
-        app:layout_constraintStart_toEndOf="@id/text_date_label" />
+        android:text="--/--/----"
+        android:textColor="@color/brown_primary"
 
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@+id/text_date_label"
+        app:layout_constraintTop_toBottomOf="@+id/input_fat" />
+
+    <Spinner
+        android:id="@+id/spinner_meal"
+        android:layout_width="150dp"
+        android:layout_height="37dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/text_date_value"
+        app:layout_constraintTop_toBottomOf="@+id/input_fat" />
 
     <Button
         android:id="@+id/to_weight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="25dp"
-        android:text="weight food"
+        android:text="Weight Again"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:layout_editor_absoluteY="419dp" />
+        app:layout_constraintTop_toBottomOf="@+id/input_food_name" />
 
     <LinearLayout
         android:id="@+id/actions_row"
