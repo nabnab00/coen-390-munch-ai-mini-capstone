@@ -16,11 +16,12 @@ import android.app.DatePickerDialog;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 import com.example.munchai.R;
 import com.example.munchai.backend.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
+import com.example.munchai.backend.media.PhotoCaptureManager;
+import com.example.munchai.backend.media.PhotoStore;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,19 +41,8 @@ public class MealActivity extends AppCompatActivity
     private AppDatabaseHelper db;
     private SessionManager session;
     private int selYear, selMonth, selDay;
-    private Uri photoUri;
-    private File photoFile;
 
-    private final ActivityResultLauncher<Uri> takePicture =
-            registerForActivityResult(new ActivityResultContracts.TakePicture(), result -> {
-                if (result != null && result) {
-                    photoIv.setImageURI(photoUri);
-                    enableForm(true);
-                } else {
-                    Toast.makeText(this, "Photo required to log a meal", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-            });
+    private PhotoCaptureManager photoMgr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +86,6 @@ public class MealActivity extends AppCompatActivity
         Button cancelBtn = findViewById(R.id.cancel_button);
         saveBtn.setOnClickListener(v -> saveLog());
         cancelBtn.setOnClickListener(v -> finish());
-        retakeBtn.setOnClickListener(v -> startCameraCapture());
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -109,7 +98,26 @@ public class MealActivity extends AppCompatActivity
             startActivity(intent);
         });
 
-        startCameraCapture();
+        photoMgr = new PhotoCaptureManager(
+                this,
+                photoIv,
+                new PhotoStore(this),
+                new PhotoCaptureManager.Callbacks() {
+                    @Override
+                    public void onPhotoReady(android.net.Uri uri) {
+                        enableForm(true);
+                    }
+                    @Override
+                    public void onCaptureCanceled() {
+                        Toast.makeText(MealActivity.this,
+                                "Photo required to log a meal", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+        );
+        photoMgr.register();
+        retakeBtn.setOnClickListener(v -> photoMgr.retake());
+        photoMgr.startCapture();
     }
 
     private void showDatePicker() {
@@ -140,30 +148,13 @@ public class MealActivity extends AppCompatActivity
         findViewById(R.id.save_button).setEnabled(enabled);
     }
 
-    private void startCameraCapture() {
-        try {
-            photoUri = createImageUri();
-            takePicture.launch(photoUri);
-        } catch (IOException e) {
-            Toast.makeText(this, "Unable to start camera", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-    }
-
-    private Uri createImageUri() throws IOException {
-        File dir = new File(getCacheDir(), "images");
-        if (!dir.exists()) dir.mkdirs();
-        photoFile = File.createTempFile("meal_", ".jpg", dir);
-        return FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
-    }
-
     private void saveLog() {
         if (!session.isLoggedIn()) {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        if (photoUri == null) {
+        if (!photoMgr.hasPhoto()) {
             Toast.makeText(this, "Please take a photo first", Toast.LENGTH_SHORT).show();
             return;
         }
