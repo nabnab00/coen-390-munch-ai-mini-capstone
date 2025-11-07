@@ -64,20 +64,31 @@ static float median7(float v[7]) {
 }
 
 float readStableGrams() {
-  // Median-of-7 to reduce spikes
-  float v[7];
-  for (int i = 0; i < 7; i++) v[i] = readStableGramsOnce();
-  float med = median7(v);
+  // average 3 raw reads (minimal latency)
+  const int N = 3;
+  long rawSum = 0;
+  for (int i = 0; i < N; i++) {
+    while (!scale.is_ready());
+    rawSum += scale.read();
+  }
+  float raw = rawSum / (float)N;
 
-  // Exponential moving average for stability
-  if (!ema_valid) { ema = med; ema_valid = true; }
-  ema = 0.85f * ema + 0.15f * med;
+  // convert using your existing calibration
+  float g = (raw - scale.get_offset()) / CALIBRATION_FACTOR;
 
-  // Clamp tiny noise to zero and prevent small negatives
-  if (fabsf(ema) < DEAD_BAND) return 0.0f;
-  if (ema < 0) return 0.0f;
-  return ema;
+  // faster EMA: weight new data more
+  static float emaFast = 0.0f;
+  if (!ema_valid) { emaFast = g; ema_valid = true; }
+
+  // 30% old, 70% new -> snappy but still stable
+  emaFast = 0.30f * emaFast + 0.70f * g;
+
+  // light clamp
+  if (fabsf(emaFast) < DEAD_BAND) return 0.0f;
+  if (emaFast < 0) return 0.0f;
+  return emaFast;
 }
+
 
 void btSendWeight() {
   float g = readStableGrams();
