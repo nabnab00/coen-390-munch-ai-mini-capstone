@@ -7,8 +7,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:padding="20dp"
-    tools:context=".frontend.SettingsActivity"
-    >
+    tools:context=".frontend.SettingsActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,100 +15,121 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
-        <!-- title -->
-        <TextView
-            android:id="@+id/settings_title"
-            android:layout_width="wrap_content"
+        <!-- 🔹 Back button (top-left) + Title -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Settings"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="24dp"
-            android:textColor="?android:attr/textColorPrimary"
-            />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/back"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/black"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <TextView
+                android:id="@+id/settings_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Settings"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textColor="?android:attr/textColorPrimary" />
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="invisible" />
+        </LinearLayout>
 
         <!-- darkmode/lightmode -->
         <Switch
             android:id="@+id/switch_darkmode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enable Dark Mode"
-            android:textSize="18sp"
             android:layout_marginBottom="20dp"
+            android:minHeight="48dp"
+            android:text="Enable Dark Mode"
             android:textColor="@color/brown_onBackground"
-            />
+            android:textSize="18sp" />
 
         <!-- target calories -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Target Calories (kcal)"
-            android:textSize="16sp"
-            />
+            android:textSize="16sp" />
 
         <EditText
             android:id="@+id/settings_calories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="e.g. 2000"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/brown_onBackground"
-            />
+            android:hint="e.g. 2000"
+            android:inputType="number"
+            android:minHeight="48dp"
+            android:textColor="@color/brown_onBackground" />
 
         <!-- target protein -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Target Protein (g)"
-            android:textSize="16sp"
-            />
+            android:textSize="16sp" />
 
         <EditText
             android:id="@+id/settings_protein"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="e.g. 100"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/brown_onBackground"
-            />
+            android:hint="e.g. 100"
+            android:inputType="number"
+            android:minHeight="48dp"
+            android:textColor="@color/brown_onBackground" />
 
         <!-- target carbs -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Target Carbohydrates (g)"
-            android:textSize="16sp"
-            />
+            android:textSize="16sp" />
 
         <EditText
             android:id="@+id/settings_carbohydrates"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="e.g. 250"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/brown_onBackground"
-            />
+            android:hint="e.g. 250"
+            android:inputType="number"
+            android:minHeight="48dp"
+            android:textColor="@color/brown_onBackground" />
 
         <!-- target fat -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Target Fat (g)"
-            android:textSize="16sp"
-            />
+            android:textSize="16sp" />
 
         <EditText
             android:id="@+id/settings_fats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="e.g. 70"
             android:layout_marginBottom="24dp"
-            android:textColor="@color/brown_onBackground"
-            />
+            android:hint="e.g. 70"
+            android:inputType="number"
+            android:minHeight="48dp"
+            android:textColor="@color/brown_onBackground" />
 
         <!-- save button -->
         <Button
@@ -121,8 +141,7 @@
             android:textSize="18sp"
             android:padding="10dp"
             android:backgroundTint="?attr/colorPrimary"
-            android:textColor="@android:color/white"
-            />
+            android:textColor="@android:color/white" />
 
         <!-- logout button -->
         <Button
@@ -135,9 +154,7 @@
             android:padding="10dp"
             android:backgroundTint="@color/brown_primary"
             android:textColor="@android:color/white"
-            android:layout_marginTop="16dp"
-            />
-
+            android:layout_marginTop="16dp" />
 
     </LinearLayout>
 </ScrollView>
