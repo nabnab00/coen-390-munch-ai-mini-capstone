@@ -60,16 +60,18 @@ const float    NEAR_ZERO        = 0.6f; // consider near zero when below
 const uint32_t ZERO_HOLD_MS     = 800;  // auto-unlock hold near zero
 static uint32_t zeroSinceMs     = 0;
 
+// ---- Virtual tare in grams (do NOT change HX711 offset except at startup) ----
+static float userZero = 0.0f;  // grams to subtract from live reading
+
 // ---- Reading + display selector ----
 static float lastLive = 0.0f;
 
+// One HX711 reading in grams using calibration factor (not used in fast path)
 static float readStableGramsOnce() {
-  // One HX711 reading in grams using calibration factor
   return scale.get_units(1);
 }
 
 static float median7(float v[7]) {
-  // Simple selection sort for 7 samples
   for (int i = 0; i < 6; i++) {
     int m = i;
     for (int j = i + 1; j < 7; j++) if (v[j] < v[m]) m = j;
@@ -105,50 +107,54 @@ float readStableGrams() {
   return emaFast;
 }
 
-// Decide which value to show/transmit and manage freeze state
+// Decide what to show/transmit with virtual tare + strict 3s freeze
 float getDisplayWeight() {
+  // live raw grams
   lastLive = readStableGrams();
 
-  // state machine
+  // apply virtual tare offset
+  float adj = lastLive - userZero;
+
+  // ---- state machine on adjusted value ----
   switch (fstate) {
     case IDLE:
-      if (lastLive >= ARM_THRESHOLD) {
+      if (adj >= ARM_THRESHOLD) {
         fstate = MEASURING;
         measureStartMs = millis();
         zeroSinceMs = 0;
       } else {
-        if (lastLive < NEAR_ZERO) {
+        if (adj < NEAR_ZERO) {
           if (zeroSinceMs == 0) zeroSinceMs = millis();
         } else {
           zeroSinceMs = 0;
         }
       }
-      return lastLive;
+      return adj;
 
     case MEASURING:
       if (millis() - measureStartMs >= FREEZE_AFTER_MS) {
-        frozenValue = lastLive;  // freeze exactly at 3 s
+        frozenValue = adj;    // freeze adjusted value at exactly 3 s
         fstate = FROZEN;
         return frozenValue;
       }
-      return lastLive;
+      return adj;
 
     case FROZEN:
       // stay frozen; auto-unlock if near zero long enough
-      if (lastLive < NEAR_ZERO) {
+      if (adj < NEAR_ZERO) {
         if (zeroSinceMs == 0) zeroSinceMs = millis();
         if (millis() - zeroSinceMs >= ZERO_HOLD_MS) {
           fstate = IDLE;
-          ema_valid = false; // re-arm filter next time
+          ema_valid = false;  // re-arm filter for next placement
           zeroSinceMs = 0;
-          return lastLive;
+          return adj;
         }
       } else {
         zeroSinceMs = 0;
       }
       return frozenValue;
   }
-  return lastLive; // fallback
+  return adj; // fallback
 }
 
 void btSendWeight() {
@@ -176,7 +182,7 @@ void setup() {
   scale.begin(DOUT, SCK);
   delay(200);
   scale.set_scale(CALIBRATION_FACTOR);  // set your factor
-  scale.tare(20);                       // zero out
+  scale.tare(20);                       // hardware zero once at boot
   ema_valid = false;
 
   // Bluetooth pairing PIN (legacy)
@@ -204,25 +210,25 @@ void loop() {
   static unsigned long lastLCD = 0;
   static unsigned long lastTx  = 0;
 
-  // Local tare button
+  // Local tare button -> VIRTUAL TARE
   if (digitalRead(TARE_BTN) == LOW) {
-    scale.tare(20);
-    ema_valid = false;
-    fstate = IDLE;
-    zeroSinceMs = 0;
+    float disp = getDisplayWeight(); // current adjusted+freeze-aware reading
+    userZero += disp;                // make current displayed weight drop to 0
+    fstate = IDLE;                   // restart 3 s cycle
+    ema_valid = false;               // re-arm filter
     lcd.setCursor(0, 1); lcd.print("Tared           ");
     delay(300);
     while (digitalRead(TARE_BTN) == LOW) { /* wait for release */ }
   }
 
-  // Optional command handling (keep only tare; streaming removed)
+  // Optional command handling over BT: only virtual tare
   while (serialBT.available()) {
     char c = (char)serialBT.read();
     if (c == 't' || c == 'T') {
-      scale.tare(20);
-      ema_valid = false;
+      float disp = getDisplayWeight();
+      userZero += disp;              // virtual zero
       fstate = IDLE;
-      zeroSinceMs = 0;
+      ema_valid = false;
       serialBT.println("tared");
     }
     // ignore all other input
