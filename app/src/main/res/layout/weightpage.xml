@@ -38,12 +38,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp" />
 
-        <Button
-            android:id="@+id/streamBtn"
-            android:text="Start Stream"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp" />
 
         <Button
             android:id="@+id/tareBtn"

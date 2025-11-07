@@ -21,12 +21,11 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -34,34 +33,36 @@ import java.util.concurrent.Executors;
 
 public class WeightScaleActivity extends AppCompatActivity {
 
+    // ---- Config ----
     private static final int REQ_BT_PERMS = 2001;
-    private static final String TARGET_NAME = "ESP32-Scale";
+    private static final String TARGET_NAME = "ESP32-Scale"; // device name to auto-pick if MAC empty
     private static final UUID SPP_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
+    // ---- UI ----
     private TextView statusText, weightText;
     private EditText macInput;
-    private Button connectBtn, streamBtn, tareBtn;
+    private Button connectBtn, tareBtn;
 
+    // ---- BT state ----
     private BluetoothAdapter btAdapter;
     private BluetoothSocket socket;
     private OutputStream out;
     private InputStream in;
 
-    private final ExecutorService exec = Executors.newSingleThreadExecutor();
+    // ---- Threads ----
+    private final ExecutorService exec = Executors.newCachedThreadPool();
     private volatile boolean reading = false;
-    private volatile boolean streaming = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.weightpage);
+        setContentView(R.layout.weightpage); // make sure IDs below exist in this layout
 
         statusText = findViewById(R.id.statusText);
         weightText = findViewById(R.id.weightText);
         macInput   = findViewById(R.id.macInput);
         connectBtn = findViewById(R.id.connectBtn);
-        streamBtn  = findViewById(R.id.streamBtn);
         tareBtn    = findViewById(R.id.tareBtn);
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -71,124 +72,57 @@ public class WeightScaleActivity extends AppCompatActivity {
             return;
         }
 
-        connectBtn.setOnClickListener(v -> ensurePermsThenConnect());
-        streamBtn.setOnClickListener(v -> toggleStream());
+        connectBtn.setOnClickListener(v -> {
+            if (isSPlus() && !hasBtConnect()) {
+                requestBtPerms();
+                status("Grant Bluetooth permission");
+            } else {
+                connectBluetooth();
+            }
+        });
+
         tareBtn.setOnClickListener(v -> sendTare());
-    }
-
-    // ---- Permission helpers ----
-    private boolean isSPlus() {
-        return Build.VERSION.SDK_INT >= 31;
-    }
-
-    private boolean hasBtConnect() {
-        if (!isSPlus()) return true;
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private boolean hasBtScan() {
-        if (!isSPlus()) return true;
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestBtPerms() {
-        if (!isSPlus()) return;
-        ActivityCompat.requestPermissions(
-                this,
-                new String[]{ Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN },
-                REQ_BT_PERMS
-        );
-    }
-
-    private void ensurePermsThenConnect() {
-        if (isSPlus() && (!hasBtConnect() || !hasBtScan())) {
-            requestBtPerms();
-            return;
-        }
-        connectBluetooth();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQ_BT_PERMS) {
-            boolean granted = true;
-            for (int r : grantResults) {
-                if (r != PackageManager.PERMISSION_GRANTED) { granted = false; break; }
-            }
-            if (!granted) {
-                status("Bluetooth permission denied");
-                return;
-            }
-            connectBluetooth();
-        }
     }
 
     // ---- Connect / IO ----
     private void connectBluetooth() {
-        // Guard every adapter call
-        if (isSPlus() && !hasBtConnect()) {
-            status("Grant Bluetooth permission");
-            requestBtPerms();
-            return;
-        }
-
         String mac = macInput.getText().toString().trim();
         BluetoothDevice device = null;
 
         try {
             if (!mac.isEmpty()) {
-                // getRemoteDevice also requires BLUETOOTH_CONNECT
-                if (!hasBtConnect()) {
-                    status("Grant Bluetooth permission");
-                    requestBtPerms();
-                    return;
-                }
                 try {
-                    device = btAdapter.getRemoteDevice(mac);
+                    device = safeGetRemote(mac);
                 } catch (SecurityException se) {
                     status("Permission error (CONNECT). Grant permissions.");
                     requestBtPerms();
+                    return;
+                } catch (IllegalArgumentException iae) {
+                    status("Invalid MAC address");
                     return;
                 }
             } else {
-                Set<BluetoothDevice> bonded;
                 try {
-                    bonded = hasBtConnect() ? btAdapter.getBondedDevices() : Collections.emptySet();
-                } catch (SecurityException se) {
-                    status("Permission error (CONNECT). Grant permissions.");
-                    requestBtPerms();
-                    return;
-                }
-
-                if (bonded != null) {
+                    Set<BluetoothDevice> bonded = safeGetBonded();
                     for (BluetoothDevice d : bonded) {
-                        String name;
-                        try {
-                            name = d.getName();  // requires CONNECT on S+
-                        } catch (SecurityException se) {
-                            status("Permission error (CONNECT). Grant permissions.");
-                            requestBtPerms();
-                            return;
-                        }
-                        if (name != null && name.equals(TARGET_NAME)) {
+                        if (TARGET_NAME.equals(d.getName())) {
                             device = d;
                             break;
                         }
                     }
+                } catch (SecurityException se) {
+                    status("Permission error (CONNECT). Grant permissions.");
+                    requestBtPerms();
+                    return;
+                }
+                if (device == null) {
+                    status("Enter MAC or pair " + TARGET_NAME + " first");
+                    return;
                 }
             }
 
-            if (device == null) {
-                status("Paired 'ESP32-Scale' not found. Enter MAC.");
-                return;
-            }
-
-            status("Connecting...");
             final BluetoothDevice target = device;
-
+            status("Connecting...");
             exec.execute(() -> {
                 closeSocketQuiet();
                 try {
@@ -198,7 +132,7 @@ public class WeightScaleActivity extends AppCompatActivity {
                     out = socket.getOutputStream();
                     in  = socket.getInputStream();
                     statusOnUi("Connected");
-                    startReader();
+                    startReader(); // always read lines; firmware streams every ~200 ms
                 } catch (SecurityException se) {
                     statusOnUi("Permission error during connect");
                 } catch (IOException e) {
@@ -218,8 +152,8 @@ public class WeightScaleActivity extends AppCompatActivity {
 
         exec.execute(() -> {
             try {
-                BufferedReader br =
-                        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(in, StandardCharsets.UTF_8));
                 String line;
                 while (reading && (line = br.readLine()) != null) {
                     handleLine(line);
@@ -235,23 +169,15 @@ public class WeightScaleActivity extends AppCompatActivity {
 
     private void handleLine(String line) {
         try {
+            // Expected: {"weight_g":123.45}
             JSONObject obj = new JSONObject(line);
             double g = obj.optDouble("weight_g", Double.NaN);
             if (!Double.isNaN(g)) {
                 runOnUiThread(() -> weightText.setText(String.format("%.2f g", g)));
             }
-        } catch (Exception ignore) {}
-    }
-
-    private void toggleStream() {
-        if (socket == null || out == null) {
-            toast("Not connected");
-            return;
+        } catch (Exception ignore) {
+            // ignore non-JSON lines like {"status":"ready"} or "tared"
         }
-        streaming = !streaming;
-        sendCommand("s"); // firmware toggles on 's'
-        streamBtn.setText(streaming ? "Stop Stream" : "Start Stream");
-        status(streaming ? "Streaming..." : "Stream stopped");
     }
 
     private void sendTare() {
@@ -259,7 +185,7 @@ public class WeightScaleActivity extends AppCompatActivity {
             toast("Not connected");
             return;
         }
-        sendCommand("t");
+        sendCommand("t"); // firmware tares on 't'
         toast("Tare sent");
     }
 
@@ -274,10 +200,56 @@ public class WeightScaleActivity extends AppCompatActivity {
         });
     }
 
+    // ---- Permission helpers ----
+    private boolean isSPlus() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+    }
+
+    private boolean hasBtConnect() {
+        return ContextCompat.checkSelfPermission(
+                this, Manifest.permission.BLUETOOTH_CONNECT)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestBtPerms() {
+        if (isSPlus()) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{ Manifest.permission.BLUETOOTH_CONNECT },
+                    REQ_BT_PERMS
+            );
+        }
+    }
+
+    private Set<BluetoothDevice> safeGetBonded() throws SecurityException {
+        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no CONNECT");
+        return btAdapter.getBondedDevices();
+    }
+
+    private BluetoothDevice safeGetRemote(String mac)
+            throws SecurityException, IllegalArgumentException {
+        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no CONNECT");
+        return btAdapter.getRemoteDevice(mac);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
+        super.onRequestPermissionsResult(code, perms, res);
+        if (code == REQ_BT_PERMS && res.length > 0
+                && res[0] == PackageManager.PERMISSION_GRANTED) {
+            connectBluetooth();
+        }
+    }
+
+    // ---- UI helpers ----
     private void status(String s) {
         runOnUiThread(() -> statusText.setText(s));
     }
-    private void statusOnUi(String s) { status(s); }
+
+    private void statusOnUi(String s) {
+        runOnUiThread(() -> statusText.setText(s));
+    }
+
     private void toast(String s) {
         runOnUiThread(() -> Toast.makeText(this, s, Toast.LENGTH_SHORT).show());
     }
@@ -286,7 +258,6 @@ public class WeightScaleActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         reading = false;
-        streaming = false;
         closeSocketQuiet();
         exec.shutdownNow();
     }
