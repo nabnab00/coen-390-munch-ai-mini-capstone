@@ -48,6 +48,21 @@ const char* PAIR_PIN = "1234";       // 4–16 ASCII digits
 // ---------------- Helpers ----------------
 static float ema = 0.0f;
 
+// ---- Freeze control (strict 3 s) ----
+enum FreezeState { IDLE, MEASURING, FROZEN };
+static FreezeState fstate = IDLE;
+static uint32_t measureStartMs = 0;
+static float frozenValue = 0.0f;
+
+const uint32_t FREEZE_AFTER_MS = 3000; // strict 3 seconds
+const float    ARM_THRESHOLD    = 1.0f; // start timing when >= this (g)
+const float    NEAR_ZERO        = 0.6f; // consider near zero when below
+const uint32_t ZERO_HOLD_MS     = 800;  // auto-unlock hold near zero
+static uint32_t zeroSinceMs     = 0;
+
+// ---- Reading + display selector ----
+static float lastLive = 0.0f;
+
 static float readStableGramsOnce() {
   // One HX711 reading in grams using calibration factor
   return scale.get_units(1);
@@ -63,6 +78,7 @@ static float median7(float v[7]) {
   return v[3];
 }
 
+// ~1–3 s settle at 10 SPS, sub-second at 80 SPS
 float readStableGrams() {
   // average 3 raw reads (minimal latency)
   const int N = 3;
@@ -89,9 +105,54 @@ float readStableGrams() {
   return emaFast;
 }
 
+// Decide which value to show/transmit and manage freeze state
+float getDisplayWeight() {
+  lastLive = readStableGrams();
+
+  // state machine
+  switch (fstate) {
+    case IDLE:
+      if (lastLive >= ARM_THRESHOLD) {
+        fstate = MEASURING;
+        measureStartMs = millis();
+        zeroSinceMs = 0;
+      } else {
+        if (lastLive < NEAR_ZERO) {
+          if (zeroSinceMs == 0) zeroSinceMs = millis();
+        } else {
+          zeroSinceMs = 0;
+        }
+      }
+      return lastLive;
+
+    case MEASURING:
+      if (millis() - measureStartMs >= FREEZE_AFTER_MS) {
+        frozenValue = lastLive;  // freeze exactly at 3 s
+        fstate = FROZEN;
+        return frozenValue;
+      }
+      return lastLive;
+
+    case FROZEN:
+      // stay frozen; auto-unlock if near zero long enough
+      if (lastLive < NEAR_ZERO) {
+        if (zeroSinceMs == 0) zeroSinceMs = millis();
+        if (millis() - zeroSinceMs >= ZERO_HOLD_MS) {
+          fstate = IDLE;
+          ema_valid = false; // re-arm filter next time
+          zeroSinceMs = 0;
+          return lastLive;
+        }
+      } else {
+        zeroSinceMs = 0;
+      }
+      return frozenValue;
+  }
+  return lastLive; // fallback
+}
 
 void btSendWeight() {
-  float g = readStableGrams();
+  float g = getDisplayWeight();
   if (g > -0.5f && g < 0.5f) g = 0;     // additional clamp
   char buf[64];
   // JSON line the Android app expects: key "weight_g" with trailing newline
@@ -147,6 +208,8 @@ void loop() {
   if (digitalRead(TARE_BTN) == LOW) {
     scale.tare(20);
     ema_valid = false;
+    fstate = IDLE;
+    zeroSinceMs = 0;
     lcd.setCursor(0, 1); lcd.print("Tared           ");
     delay(300);
     while (digitalRead(TARE_BTN) == LOW) { /* wait for release */ }
@@ -158,21 +221,23 @@ void loop() {
     if (c == 't' || c == 'T') {
       scale.tare(20);
       ema_valid = false;
+      fstate = IDLE;
+      zeroSinceMs = 0;
       serialBT.println("tared");
     }
     // ignore all other input
   }
 
-  // Always transmit weight every 200 ms
-  if (millis() - lastTx >= 200) {
+  // Always transmit weight every 100 ms
+  if (millis() - lastTx >= 100) {
     lastTx = millis();
     btSendWeight();
   }
 
-  // LCD update every 500 ms
-  if (millis() - lastLCD >= 500) {
+  // LCD update every 200 ms
+  if (millis() - lastLCD >= 200) {
     lastLCD = millis();
-    float g = readStableGrams();
+    float g = getDisplayWeight();
     if (g > -0.5f && g < 0.5f) g = 0;
 
     char line[17];
