@@ -33,37 +33,34 @@ import java.util.concurrent.Executors;
 
 public class WeightScaleActivity extends AppCompatActivity {
 
-    // ---- Config ----
     private static final int REQ_BT_PERMS = 2001;
-    private static final String TARGET_NAME = "ESP32-Scale"; // device name to auto-pick if MAC empty
+    private static final String TARGET_NAME = "ESP32-Scale";
     private static final UUID SPP_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    // ---- UI ----
     private TextView statusText, weightText;
     private EditText macInput;
-    private Button connectBtn, tareBtn;
+    private Button connectBtn, tareBtn, resetBtn;
 
-    // ---- BT state ----
     private BluetoothAdapter btAdapter;
     private BluetoothSocket socket;
     private OutputStream out;
     private InputStream in;
 
-    // ---- Threads ----
     private final ExecutorService exec = Executors.newCachedThreadPool();
     private volatile boolean reading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.weightpage); // make sure IDs below exist in this layout
+        setContentView(R.layout.weightpage);
 
         statusText = findViewById(R.id.statusText);
         weightText = findViewById(R.id.weightText);
         macInput   = findViewById(R.id.macInput);
         connectBtn = findViewById(R.id.connectBtn);
         tareBtn    = findViewById(R.id.tareBtn);
+        resetBtn   = findViewById(R.id.resetBtn); // <— new button
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter == null) {
@@ -81,10 +78,13 @@ public class WeightScaleActivity extends AppCompatActivity {
             }
         });
 
-        tareBtn.setOnClickListener(v -> sendTare());
+        tareBtn.setOnClickListener(v -> sendCommand("t"));
+        resetBtn.setOnClickListener(v -> {
+            sendCommand("r");     // tell firmware to soft-reset scale
+            toast("Reset sent");
+        });
     }
 
-    // ---- Connect / IO ----
     private void connectBluetooth() {
         String mac = macInput.getText().toString().trim();
         BluetoothDevice device = null;
@@ -106,8 +106,7 @@ public class WeightScaleActivity extends AppCompatActivity {
                     Set<BluetoothDevice> bonded = safeGetBonded();
                     for (BluetoothDevice d : bonded) {
                         if (TARGET_NAME.equals(d.getName())) {
-                            device = d;
-                            break;
+                            device = d; break;
                         }
                     }
                 } catch (SecurityException se) {
@@ -127,12 +126,12 @@ public class WeightScaleActivity extends AppCompatActivity {
                 closeSocketQuiet();
                 try {
                     BluetoothSocket s = target.createRfcommSocketToServiceRecord(SPP_UUID);
-                    s.connect(); // may throw
+                    s.connect();
                     socket = s;
                     out = socket.getOutputStream();
                     in  = socket.getInputStream();
                     statusOnUi("Connected");
-                    startReader(); // always read lines; firmware streams every ~200 ms
+                    startReader();
                 } catch (SecurityException se) {
                     statusOnUi("Permission error during connect");
                 } catch (IOException e) {
@@ -152,8 +151,8 @@ public class WeightScaleActivity extends AppCompatActivity {
 
         exec.execute(() -> {
             try {
-                BufferedReader br = new BufferedReader(
-                        new InputStreamReader(in, StandardCharsets.UTF_8));
+                BufferedReader br =
+                        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
                 String line;
                 while (reading && (line = br.readLine()) != null) {
                     handleLine(line);
@@ -169,27 +168,21 @@ public class WeightScaleActivity extends AppCompatActivity {
 
     private void handleLine(String line) {
         try {
-            // Expected: {"weight_g":123.45}
             JSONObject obj = new JSONObject(line);
             double g = obj.optDouble("weight_g", Double.NaN);
             if (!Double.isNaN(g)) {
                 runOnUiThread(() -> weightText.setText(String.format("%.2f g", g)));
             }
         } catch (Exception ignore) {
-            // ignore non-JSON lines like {"status":"ready"} or "tared"
+            // ignore non-JSON lines
         }
     }
 
-    private void sendTare() {
+    private void sendCommand(String cmd) {
         if (socket == null || out == null) {
             toast("Not connected");
             return;
         }
-        sendCommand("t"); // firmware tares on 't'
-        toast("Tare sent");
-    }
-
-    private void sendCommand(String cmd) {
         exec.execute(() -> {
             try {
                 out.write(cmd.getBytes(StandardCharsets.UTF_8));
@@ -200,32 +193,21 @@ public class WeightScaleActivity extends AppCompatActivity {
         });
     }
 
-    // ---- Permission helpers ----
-    private boolean isSPlus() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
-    }
-
+    private boolean isSPlus() { return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S; }
     private boolean hasBtConnect() {
-        return ContextCompat.checkSelfPermission(
-                this, Manifest.permission.BLUETOOTH_CONNECT)
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
                 == PackageManager.PERMISSION_GRANTED;
     }
-
     private void requestBtPerms() {
         if (isSPlus()) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{ Manifest.permission.BLUETOOTH_CONNECT },
-                    REQ_BT_PERMS
-            );
+            ActivityCompat.requestPermissions(this,
+                    new String[]{ Manifest.permission.BLUETOOTH_CONNECT }, REQ_BT_PERMS);
         }
     }
-
     private Set<BluetoothDevice> safeGetBonded() throws SecurityException {
         if (isSPlus() && !hasBtConnect()) throw new SecurityException("no CONNECT");
         return btAdapter.getBondedDevices();
     }
-
     private BluetoothDevice safeGetRemote(String mac)
             throws SecurityException, IllegalArgumentException {
         if (isSPlus() && !hasBtConnect()) throw new SecurityException("no CONNECT");
@@ -235,24 +217,14 @@ public class WeightScaleActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
         super.onRequestPermissionsResult(code, perms, res);
-        if (code == REQ_BT_PERMS && res.length > 0
-                && res[0] == PackageManager.PERMISSION_GRANTED) {
+        if (code == REQ_BT_PERMS && res.length > 0 && res[0] == PackageManager.PERMISSION_GRANTED) {
             connectBluetooth();
         }
     }
 
-    // ---- UI helpers ----
-    private void status(String s) {
-        runOnUiThread(() -> statusText.setText(s));
-    }
-
-    private void statusOnUi(String s) {
-        runOnUiThread(() -> statusText.setText(s));
-    }
-
-    private void toast(String s) {
-        runOnUiThread(() -> Toast.makeText(this, s, Toast.LENGTH_SHORT).show());
-    }
+    private void status(String s) { runOnUiThread(() -> statusText.setText(s)); }
+    private void statusOnUi(String s) { runOnUiThread(() -> statusText.setText(s)); }
+    private void toast(String s) { runOnUiThread(() -> Toast.makeText(this, s, Toast.LENGTH_SHORT).show()); }
 
     @Override
     protected void onDestroy() {
