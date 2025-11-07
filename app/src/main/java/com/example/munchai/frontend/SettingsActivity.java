@@ -11,11 +11,10 @@ import android.widget.ImageButton;
 import android.content.Intent;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.SettingsDatabaseHelper;
+import com.example.munchai.backend.database.SettingsDatabaseHelper;
 
 import android.content.Intent;
 import com.example.munchai.backend.SessionManager;
-import com.example.munchai.frontend.LoginActivity;
 
 public class SettingsActivity extends AppCompatActivity
 {
