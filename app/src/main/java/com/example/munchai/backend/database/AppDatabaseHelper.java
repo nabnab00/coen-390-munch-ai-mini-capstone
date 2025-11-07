@@ -78,4 +78,29 @@ public class AppDatabaseHelper extends SQLiteOpenHelper
         SQLiteDatabase db = getWritableDatabase();
         db.delete(T_LOGS, null, null);
     }
+
+    // Returns the total calories logged today
+    public double getTodaysCalories() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double totalCalories = 0.0;
+
+        // Get today's date prefix (e.g. 2025-11-07)
+        String today = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+
+        // Sum calories × quantity for all food logs from today
+        Cursor cursor = db.rawQuery(
+                "SELECT SUM(" + COL_LOG_CALORIES + " * " + COL_LOG_QTY + ") FROM " + T_LOGS +
+                        " WHERE " + COL_LOG_AT + " LIKE ?",
+                new String[]{today + "%"}
+        );
+
+        if (cursor.moveToFirst()) {
+            totalCalories = cursor.getDouble(0);
+        }
+
+        cursor.close();
+        db.close();
+
+        return totalCalories;
+    }
 }

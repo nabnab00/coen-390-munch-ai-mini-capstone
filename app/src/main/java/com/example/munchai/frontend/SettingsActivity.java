@@ -45,6 +45,32 @@ public class SettingsActivity extends AppCompatActivity
         editFats = findViewById(R.id.settings_fats);
         saveSettings = findViewById(R.id.settings_save);
 
+        // Pre-fill current settings
+        try {
+            Cursor c = db.getSettings();
+            if (c != null && c.moveToFirst()) {
+                try {
+                    int mode = c.getInt(c.getColumnIndexOrThrow("dark_mode"));
+                    int cal = c.getInt(c.getColumnIndexOrThrow("calorie_limit"));
+                    int prot = c.getInt(c.getColumnIndexOrThrow("protein_limit"));
+                    int carbs = c.getInt(c.getColumnIndexOrThrow("carb_limit"));
+                    int fat = c.getInt(c.getColumnIndexOrThrow("fat_limit"));
+
+                    switchDarkMode.setChecked(mode == 1);
+                    editCalories.setText(String.valueOf(cal));
+                    editProtein.setText(String.valueOf(prot));
+                    editCarbohydrates.setText(String.valueOf(carbs));
+                    editFats.setText(String.valueOf(fat));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    c.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         loadSettings();
 
         Button logoutButton = findViewById(R.id.settings_logout);
@@ -61,16 +87,60 @@ public class SettingsActivity extends AppCompatActivity
             finishAffinity();
         });
 
-        saveSettings.setOnClickListener(v ->
-        {
-            int mode = switchDarkMode.isChecked() ? 1 : 0;
-            int cal = Integer.parseInt(editCalories.getText().toString());
-            int prot = Integer.parseInt(editProtein.getText().toString());
-            int carbs = Integer.parseInt(editCarbohydrates.getText().toString());
-            int fat = Integer.parseInt(editFats.getText().toString());
+        saveSettings.setOnClickListener(v -> {
+            try {
+                int mode = switchDarkMode.isChecked() ? 1 : 0;
 
-            db.updateSettings(mode, cal, prot, carbs, fat);
-            Toast.makeText(this, "Settings saved!", Toast.LENGTH_SHORT).show();
+                // Read existing values from DB to use as defaults when fields are empty
+                int cal, prot, carbs, fat;
+                Cursor cur = db.getSettings();
+                if (cur != null && cur.moveToFirst()) {
+                    try {
+                        cal = cur.getInt(cur.getColumnIndexOrThrow("calorie_limit"));
+                        prot = cur.getInt(cur.getColumnIndexOrThrow("protein_limit"));
+                        carbs = cur.getInt(cur.getColumnIndexOrThrow("carb_limit"));
+                        fat = cur.getInt(cur.getColumnIndexOrThrow("fat_limit"));
+                    } catch (Exception e) {
+                        // fallback defaults if something goes wrong
+                        e.printStackTrace();
+                        cal = 2000; prot = 50; carbs = 250; fat = 70;
+                    } finally {
+                        cur.close();
+                    }
+                } else {
+                    // No row found — use safe defaults
+                    cal = 2000; prot = 50; carbs = 250; fat = 70;
+                }
+
+                // Override only fields the user filled in
+                String s = editCalories.getText().toString().trim();
+                if (!s.isEmpty()) cal = Integer.parseInt(s);
+
+                s = editProtein.getText().toString().trim();
+                if (!s.isEmpty()) prot = Integer.parseInt(s);
+
+                s = editCarbohydrates.getText().toString().trim();
+                if (!s.isEmpty()) carbs = Integer.parseInt(s);
+
+                s = editFats.getText().toString().trim();
+                if (!s.isEmpty()) fat = Integer.parseInt(s);
+
+                // Save all (with unchanged fields preserved)
+                db.updateSettings(mode, cal, prot, carbs, fat);
+
+                android.util.Log.d("SettingsActivity", "Saved calorie_limit = " + cal);
+
+                Toast.makeText(SettingsActivity.this, "Settings saved!", Toast.LENGTH_SHORT).show();
+
+                // Close settings so MainActivity.onResume() reloads the latest values
+                finish();
+
+            } catch (NumberFormatException nfe) {
+                Toast.makeText(SettingsActivity.this, "Please enter valid numeric values", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(SettingsActivity.this, "Error saving settings", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
