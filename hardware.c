@@ -17,7 +17,7 @@
 HX711 scale;
 
 // Adjust this to your load cell:
-float CALIBRATION_FACTOR = 299.0f;
+float CALIBRATION_FACTOR = 365.0f;
 
 // Noise handling
 const int   SAMPLE_COUNT = 30;
