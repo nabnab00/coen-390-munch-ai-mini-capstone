@@ -82,11 +82,13 @@ static float median7(float v[7]) {
 
 // ~1–3 s settle at 10 SPS, sub-second at 80 SPS
 float readStableGrams() {
-  // average 3 raw reads (minimal latency)
+  // average 3 raw reads (minimal latency) — watchdog-safe wait
   const int N = 3;
   long rawSum = 0;
   for (int i = 0; i < N; i++) {
-    while (!scale.is_ready());
+    while (!scale.is_ready()) {
+      delay(1); // yield so BT/USB stays responsive
+    }
     rawSum += scale.read();
   }
   float raw = rawSum / (float)N;
@@ -166,6 +168,25 @@ void btSendWeight() {
   serialBT.print(buf);
 }
 
+// Unified command handler for USB Serial + Bluetooth
+void handleCmd(char c) {
+  if (c == 't' || c == 'T') {
+    float disp = getDisplayWeight(); // current adjusted+freeze-aware value
+    userZero += disp;                // virtual tare to zero current display
+    fstate = IDLE;                   // restart 3 s cycle
+    ema_valid = false;               // re-arm filter
+    serialBT.println("tared");
+    Serial.println("tared");
+  } else if (c == 'r' || c == 'R') {
+    userZero = 0.0f;                 // clear virtual tare
+    fstate = IDLE;                   // exit frozen state
+    ema_valid = false;               // re-arm filter
+    scale.tare(20);                  // optional: re-zero hardware baseline
+    serialBT.println("reset");
+    Serial.println("reset");
+  }
+}
+
 // ---------------- Setup / Loop ----------------
 void setup() {
   Serial.begin(115200);
@@ -202,13 +223,25 @@ void setup() {
   lcd.setCursor(0, 0); lcd.print("Weight:");
   lcd.setCursor(0, 1); lcd.print("BT: "); lcd.print(BT_NAME);
 
-  // Optional hello so the app knows we are alive
+  // hello so the app knows we are alive
   serialBT.println("{\"status\":\"ready\"}");
 }
 
 void loop() {
   static unsigned long lastLCD = 0;
   static unsigned long lastTx  = 0;
+
+  // Process USB Serial commands first
+  while (Serial.available()) {
+    char c = (char)Serial.read();
+    handleCmd(c);
+  }
+
+  // Process Bluetooth commands
+  while (serialBT.available()) {
+    char c = (char)serialBT.read();
+    handleCmd(c);
+  }
 
   // Local tare button -> VIRTUAL TARE
   if (digitalRead(TARE_BTN) == LOW) {
@@ -219,19 +252,6 @@ void loop() {
     lcd.setCursor(0, 1); lcd.print("Tared           ");
     delay(300);
     while (digitalRead(TARE_BTN) == LOW) { /* wait for release */ }
-  }
-
-  // Optional command handling over BT: only virtual tare
-  while (serialBT.available()) {
-    char c = (char)serialBT.read();
-    if (c == 't' || c == 'T') {
-      float disp = getDisplayWeight();
-      userZero += disp;              // virtual zero
-      fstate = IDLE;
-      ema_valid = false;
-      serialBT.println("tared");
-    }
-    // ignore all other input
   }
 
   // Always transmit weight every 100 ms
