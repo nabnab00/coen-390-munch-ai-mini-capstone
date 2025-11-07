@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- Bluetooth status -->
         <TextView
             android:id="@+id/statusText"
             android:text="Disconnected"
@@ -30,6 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp" />
 
+        <!-- Weight display -->
         <TextView
             android:id="@+id/weightText"
             android:text="0.00 g"
@@ -38,20 +40,36 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp" />
 
+        <!-- Units dropdown -->
+        <TextView
+            android:id="@+id/unitCaption"
+            android:text="Units"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp" />
 
+        <Spinner
+            android:id="@+id/unitSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+        <!-- Buttons -->
         <Button
             android:id="@+id/tareBtn"
             android:text="Tare"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="25dp" />
 
         <Button
             android:id="@+id/resetBtn"
-            android:layout_width="wrap_content"
+            android:text="Reset Scale"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Reset Scale" />
-
+            android:layout_marginTop="10dp" />
 
     </LinearLayout>
 </ScrollView>
