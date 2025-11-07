@@ -1,7 +1,6 @@
 package com.example.munchai.frontend;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
@@ -13,18 +12,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.app.DatePickerDialog;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.AppDatabaseHelper;
+import com.example.munchai.backend.database.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
 import com.example.munchai.backend.media.PhotoCaptureManager;
 import com.example.munchai.backend.media.PhotoStore;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;

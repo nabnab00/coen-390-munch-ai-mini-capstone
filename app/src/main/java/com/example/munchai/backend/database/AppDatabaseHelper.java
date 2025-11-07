@@ -1,4 +1,4 @@
-package com.example.munchai.backend;
+package com.example.munchai.backend.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
