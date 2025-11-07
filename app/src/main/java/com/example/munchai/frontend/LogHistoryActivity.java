@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.AppDatabaseHelper;
+import com.example.munchai.backend.database.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
 import com.example.munchai.frontend.adapter.FoodLogAdapter;
 import com.example.munchai.model.FoodLogRow;
