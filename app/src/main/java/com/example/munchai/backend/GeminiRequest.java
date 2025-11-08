@@ -5,9 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import androidx.annotation.NonNull;import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,7 +28,9 @@ public class GeminiRequest {
     // It is highly recommended to not hardcode your API key.
     // Consider moving it to a secure place like local.properties.
     private static final String API_KEY = "AIzaSyDw5_eiyWlF3d0es5J7SBv__Pan5T_XUj0";
-    private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
+
+    // --- FIX: Corrected the URL ---
+    private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
@@ -100,15 +100,20 @@ public class GeminiRequest {
 
         String requestJson = MAPPER.writeValueAsString(root);
 
+        // --- FIX: Correctly append the API Key as a query parameter ---
+        String urlWithKey = URL + "?key=" + API_KEY;
+
         // send http post
         Request req = new Request.Builder()
-                .url(URL + API_KEY)
+                .url(urlWithKey) // Use the corrected URL with the key
                 .post(RequestBody.create(requestJson, JSON))
                 .build();
 
         try (Response resp = client.newCall(req).execute()) {
             if (!resp.isSuccessful()) {
-                throw new IOException("HTTP " + resp.code() + ": " + resp.body().string());
+                // Improved error logging
+                String errorBody = resp.body() != null ? resp.body().string() : "No error body";
+                throw new IOException("HTTP " + resp.code() + ": " + errorBody);
             }
 
             String respStr = resp.body().string();
@@ -131,13 +136,9 @@ public class GeminiRequest {
                 int first = generated.indexOf('{');
                 int last = generated.lastIndexOf('}');
                 if (first >= 0 && last > first) {
-                    generated = generated.substring(first, last + 1);
-                }
+                    generated = generated.substring(first, last + 1); }
             } // parse response generated into the nutrition class for future use.
-            return MAPPER.readValue(generated, NutritionFacts.class);
-        }
-    }
-
+            return MAPPER.readValue(generated, NutritionFacts.class); } }
     public static NutritionFacts fetchNutritionFactsFromDrawable(Context ctx, @DrawableRes int drawableId) throws IOException {
         // load & downscale image
         Bitmap bmp = BitmapFactory.decodeResource(ctx.getResources(), drawableId);
@@ -158,5 +159,4 @@ public class GeminiRequest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, quality, baos);
         return Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
-    }
-}
+    }}
