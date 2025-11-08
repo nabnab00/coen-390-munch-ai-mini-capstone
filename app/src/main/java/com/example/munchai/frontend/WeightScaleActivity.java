@@ -1,286 +1,285 @@
 package com.example.munchai.frontend;
 
+import com.example.munchai.R;
+
 import android.Manifest;
-import android.annotation.SuppressLint;
-
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.BluetoothGattDescriptor;
-
-import android.content.Intent;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
-import com.example.munchai.R;
-import com.example.munchai.backend.GeminiRequest;
-import com.example.munchai.model.NutritionFacts;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@SuppressLint("MissingPermission") // Permissions are checked before use
 public class WeightScaleActivity extends AppCompatActivity {
 
-    private static final String TAG = "WeightScaleActivity";
-    // Standard Bluetooth Service and Characteristic UUIDs for Weight Scale
-    private static final UUID WEIGHT_SERVICE_UUID = UUID.fromString("0000181d-0000-1000-8000-00805f9b34fb");
-    private static final UUID WEIGHT_MEASUREMENT_UUID = UUID.fromString("00002a9d-0000-1000-8000-00805f9b34fb");
-    private static final UUID CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private static final int REQ_BT_PERMS = 2001;
+    private static final String TARGET_NAME = "ESP32-Scale";
+    private static final UUID SPP_UUID =
+            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
+    private TextView statusText;
+    private EditText macInput, weightText;
+    private Button connectBtn, tareBtn, resetBtn;
+    private Spinner unitSpinner;
 
-    private TextView weightText;
-    private Button saveBtn;
-    private final ExecutorService exec = Executors.newSingleThreadExecutor();
+    private BluetoothAdapter btAdapter;
+    private BluetoothSocket socket;
+    private OutputStream out;
+    private InputStream in;
 
-    private BluetoothAdapter bluetoothAdapter;
-    private BluetoothLeScanner scanner;
-    private BluetoothGatt gatt;
-    private Uri photoUri;
-
-    private boolean isScanning = false;
-
-    // Launcher for Bluetooth permissions
-    private final ActivityResultLauncher<String[]> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-                if (permissions.getOrDefault(Manifest.permission.BLUETOOTH_CONNECT, false) &&
-                        permissions.getOrDefault(Manifest.permission.BLUETOOTH_SCAN, false)) {
-                    startScan();
-                } else {
-                    Toast.makeText(this, "Bluetooth permissions are required to use the scale.", Toast.LENGTH_LONG).show();
-                    // Fallback to manual entry if permissions are denied
-                }
-            });
+    private final ExecutorService exec = Executors.newCachedThreadPool();
+    private volatile boolean reading = false;
 
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.weightpage);
 
-        weightText = findViewById(R.id.weightText);
-        saveBtn = findViewById(R.id.weightsave);
+        statusText  = findViewById(R.id.statusText);
+        weightText  = findViewById(R.id.weightText);
+        macInput    = findViewById(R.id.macInput);
+        connectBtn  = findViewById(R.id.connectBtn);
+        tareBtn     = findViewById(R.id.tareBtn);
+        resetBtn    = findViewById(R.id.resetBtn);
+        unitSpinner = findViewById(R.id.unitSpinner);
 
-        photoUri = getIntent().getData();
-        if (photoUri == null) {
-            Toast.makeText(this, "No photo URI provided. Cannot proceed.", Toast.LENGTH_SHORT).show();
+        setupSpinner();
+
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (btAdapter == null) {
+            toast("Bluetooth not supported");
             finish();
             return;
         }
 
-        initializeBluetooth();
-
-        saveBtn.setOnClickListener(v -> {
-            String weight = weightText.getText().toString();
-            if (weight.isEmpty() || weight.equals("---")) {
-                Toast.makeText(this, "Weight not captured. Please place food on the scale or enter manually.", Toast.LENGTH_SHORT).show();
-                return;
+        connectBtn.setOnClickListener(v -> {
+            if (isSPlus() && !hasBtConnect()) {
+                requestBtPerms();
+            } else {
+                connectBluetooth();
             }
-            // The rest of the logic is the same
-            processAndReturnData(weight);
+        });
+
+        tareBtn.setOnClickListener(v -> sendCmd("t\n"));
+        resetBtn.setOnClickListener(v -> sendCmd("r\n"));
+    }
+
+    private void setupSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.units_array,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        unitSpinner.setAdapter(adapter);
+
+        int saved = getSharedPreferences("scale_prefs", MODE_PRIVATE)
+                .getInt("unit_idx", 0);
+        unitSpinner.setSelection(saved);
+
+        unitSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent,
+                                                 android.view.View view,
+                                                 int pos,
+                                                 long id) {
+                char cmd = idxToCmd(pos);
+                sendCmd(cmd + "\n");
+                saveUnitIndex(pos);
+            }
+
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
     }
 
-    private void initializeBluetooth() {
-        BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
-        if (bluetoothManager != null) {
-            bluetoothAdapter = bluetoothManager.getAdapter();
+    private char idxToCmd(int i) {
+        switch (i) {
+            case 0: return 'G';
+            case 1: return 'O';
+            case 2: return 'L';
+            case 3: return 'K';
         }
-
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth is not supported on this device.", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (!bluetoothAdapter.isEnabled()) {
-            Toast.makeText(this, "Please enable Bluetooth.", Toast.LENGTH_LONG).show();
-            // Consider launching settings: startActivity(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE));
-        } else {
-            checkPermissionsAndScan();
-        }
+        return 'G';
     }
 
-    private void checkPermissionsAndScan() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(new String[]{
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.ACCESS_FINE_LOCATION // Required for scanning on older APIs
-            });
-        } else {
-            startScan();
-        }
+    private void saveUnitIndex(int idx) {
+        getSharedPreferences("scale_prefs", MODE_PRIVATE)
+                .edit().putInt("unit_idx", idx).apply();
     }
 
+    private void connectBluetooth() {
+        String mac = macInput.getText().toString().trim();
+        BluetoothDevice device = null;
 
-    private void startScan() {
-        if (isScanning || scanner != null) return; // Already scanning
-        scanner = bluetoothAdapter.getBluetoothLeScanner();
-        if (scanner == null) {
-            Toast.makeText(this, "Could not get Bluetooth scanner.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        isScanning = true;
-        Toast.makeText(this, "Scanning for scale...", Toast.LENGTH_SHORT).show();
-        scanner.startScan(scanCallback);
-
-        // Stop scanning after 15 seconds if no device is found
-        new android.os.Handler().postDelayed(() -> {
-            if (isScanning) {
-                stopScan();
-                Toast.makeText(this, "Scale not found. You can enter weight manually.", Toast.LENGTH_LONG).show();
-            }
-        }, 15000);
-    }
-
-    private void stopScan() {
-        if (scanner != null && isScanning) {
-            scanner.stopScan(scanCallback);
-            isScanning = false;
-            scanner = null;
-        }
-    }
-
-    private final ScanCallback scanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            // Check if the discovered device has the Weight Scale Service UUID
-            if (result.getScanRecord() != null && result.getScanRecord().getServiceUuids() != null) {
-                for (android.os.ParcelUuid uuid : result.getScanRecord().getServiceUuids()) {
-                    if (WEIGHT_SERVICE_UUID.equals(uuid.getUuid())) {
-                        Log.d(TAG, "Weight scale found: " + result.getDevice().getAddress());
-                        stopScan(); // Stop scanning once we found our device
-                        gatt = result.getDevice().connectGatt(WeightScaleActivity.this, false, gattCallback);
+        try {
+            if (!mac.isEmpty()) {
+                device = safeGetRemote(mac);
+            } else {
+                Set<BluetoothDevice> bonded = safeGetBonded();
+                for (BluetoothDevice d : bonded) {
+                    if (TARGET_NAME.equals(d.getName())) {
+                        device = d;
                         break;
                     }
                 }
-            }
-        }
-    };
-
-
-    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.d(TAG, "Connected to GATT server.");
-                gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d(TAG, "Disconnected from GATT server.");
-                runOnUiThread(() -> Toast.makeText(WeightScaleActivity.this, "Scale disconnected.", Toast.LENGTH_SHORT).show());
-            }
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                BluetoothGattService service = gatt.getService(WEIGHT_SERVICE_UUID);
-                if (service != null) {
-                    BluetoothGattCharacteristic characteristic = service.getCharacteristic(WEIGHT_MEASUREMENT_UUID);
-                    if (characteristic != null) {
-                        gatt.setCharacteristicNotification(characteristic, true);
-                        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID);
-                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                        gatt.writeDescriptor(descriptor);
-                    }
+                if (device == null) {
+                    status("Pair ESP32 first");
+                    return;
                 }
             }
+
+            status("Connecting...");
+            final BluetoothDevice target = device;
+
+            exec.execute(() -> {
+                closeSocket();
+                try {
+                    BluetoothSocket s =
+                            target.createRfcommSocketToServiceRecord(SPP_UUID);
+                    s.connect();
+                    socket = s;
+                    out = socket.getOutputStream();
+                    in = socket.getInputStream();
+                    status("Connected");
+                    startReader();
+                } catch (SecurityException se) {
+                    status("Permission denied");
+                } catch (IOException e) {
+                    status("Failed");
+                }
+            });
+
+        } catch (Exception e) {
+            status("Error: " + e.getMessage());
         }
+    }
 
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            if (WEIGHT_MEASUREMENT_UUID.equals(characteristic.getUuid())) {
-                // Parse the weight data
-                byte[] data = characteristic.getValue();
-                // The first byte contains flags.
-                int flags = data[0];
-                // Check if weight is in kg (bit 0 = 0) or lbs (bit 0 = 1)
-                boolean isImperial = (flags & 0x01) != 0;
+    private void startReader() {
+        if (reading) return;
+        reading = true;
 
-                // Weight is a 16-bit unsigned integer (2 bytes) starting from the second byte
-                int weightRaw = ByteBuffer.wrap(data, 1, 2).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xFFFF;
-
-                // The standard resolution is 0.005 kg. We need grams.
-                double weightInGrams = weightRaw * 5;
-
-                final String finalWeight = String.valueOf(Math.round(weightInGrams));
-                Log.d(TAG, "Weight received: " + finalWeight + "g");
-
-                runOnUiThread(() -> {
-                    weightText.setText(finalWeight);
-                    Toast.makeText(WeightScaleActivity.this, "Weight Captured!", Toast.LENGTH_SHORT).show();
-                });
-            }
-        }
-    };
-
-    private void processAndReturnData(String weight) {
-        // Disable button to prevent multiple clicks
-        saveBtn.setEnabled(false);
-        Toast.makeText(this, "Analyzing nutrition...", Toast.LENGTH_LONG).show();
-
-        // Run Gemini request in the background
         exec.execute(() -> {
             try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
-                // We pass the weight to Gemini for more accurate results
-                NutritionFacts facts = GeminiRequest.fetchNutritionFacts(bitmap, weight);
+                BufferedReader br =
+                        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 
-                ObjectMapper mapper = new ObjectMapper();
-                String nutritionJson = mapper.writeValueAsString(facts);
-
-                runOnUiThread(() -> {
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("weight", weight);
-                    resultIntent.putExtra("nutrition_facts", nutritionJson);
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
-                });
-
+                String line;
+                while (reading && (line = br.readLine()) != null) {
+                    handleLine(line);
+                }
             } catch (IOException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(WeightScaleActivity.this, "Failed to get nutrition data: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    saveBtn.setEnabled(true);
-                });
+                status("Disconnected");
+            } finally {
+                reading = false;
+                closeSocket();
             }
         });
+    }
+
+    private void handleLine(String line) {
+        try {
+            JSONObject obj = new JSONObject(line);
+
+            double w = obj.optDouble("weight", Double.NaN);
+            String u = obj.optString("unit", "");
+
+            if (!Double.isNaN(w) && !u.isEmpty()) {
+                runOnUiThread(() ->
+                        weightText.setText(String.format("%.2f %s", w, u))
+                );
+                return;
+            }
+
+        } catch (Exception ignore) {}
+    }
+
+    private void sendCmd(String cmd) {
+        if (socket == null || out == null) {
+            toast("Not connected");
+            return;
+        }
+        exec.execute(() -> {
+            try {
+                out.write(cmd.getBytes(StandardCharsets.UTF_8));
+                out.flush();
+            } catch (Exception e) {
+                status("Send failed");
+            }
+        });
+    }
+
+    private boolean isSPlus() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+    }
+
+    private boolean hasBtConnect() {
+        return ContextCompat.checkSelfPermission(
+                this, Manifest.permission.BLUETOOTH_CONNECT)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestBtPerms() {
+        if (isSPlus()) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{ Manifest.permission.BLUETOOTH_CONNECT },
+                    REQ_BT_PERMS
+            );
+        }
+    }
+
+    private BluetoothDevice safeGetRemote(String mac) throws SecurityException {
+        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no connect perm");
+        return btAdapter.getRemoteDevice(mac);
+    }
+
+    private Set<BluetoothDevice> safeGetBonded() throws SecurityException {
+        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no connect perm");
+        return btAdapter.getBondedDevices();
+    }
+
+    private void status(String s) {
+        runOnUiThread(() -> statusText.setText(s));
+    }
+
+    private void toast(String s) {
+        runOnUiThread(() -> Toast.makeText(this, s, Toast.LENGTH_SHORT).show());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (gatt != null) {
-            gatt.close();
-            gatt = null;
-        }
-        stopScan();
-        if (!exec.isShutdown()) {
-            exec.shutdown();
-        }
+        reading = false;
+        closeSocket();
+        exec.shutdownNow();
+    }
+
+    private void closeSocket() {
+        try { if (in != null)  in.close(); } catch (Exception ignore) {}
+        try { if (out != null) out.close(); } catch (Exception ignore) {}
+        try { if (socket != null) socket.close(); } catch (Exception ignore) {}
+        in = null; out = null; socket = null;
     }
 }

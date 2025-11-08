@@ -1,3 +1,4 @@
+
 package com.example.munchai.frontend;
 
 import android.content.Intent;
@@ -12,8 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.app.DatePickerDialog;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.munchai.R;
@@ -21,8 +20,6 @@ import com.example.munchai.backend.database.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
 import com.example.munchai.backend.media.PhotoCaptureManager;
 import com.example.munchai.backend.media.PhotoStore;
-import com.example.munchai.model.NutritionFacts;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -42,8 +39,6 @@ public class MealActivity extends AppCompatActivity
     private int selYear, selMonth, selDay;
 
     private PhotoCaptureManager photoMgr;
-
-    private ActivityResultLauncher<Intent> weightScaleLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,36 +86,10 @@ public class MealActivity extends AppCompatActivity
             getSupportActionBar().setTitle("Log Meal");
         }
 
-        weightScaleLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Intent data = result.getData();
-                        String weight = data.getStringExtra("weight");
-                        String nutritionJson = data.getStringExtra("nutrition_facts");
-
-                        weightEt.setText(weight);
-
-                        if (nutritionJson != null) {
-                            try {
-                                ObjectMapper mapper = new ObjectMapper();
-                                NutritionFacts facts = mapper.readValue(nutritionJson, NutritionFacts.class);
-                                populateNutritionFields(facts);
-                            } catch (Exception e) {
-                                Toast.makeText(this, "Failed to parse nutrition data.", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                        enableForm(true);
-                    } else {
-                        // Handle cancellation or failure
-                        Toast.makeText(this, "Could not get weight and nutrition data.", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                });
-
+        //log meal
         toWeight.setOnClickListener(v -> {
             Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
-            weightScaleLauncher.launch(intent);
+            startActivity(intent);
         });
 
         photoMgr = new PhotoCaptureManager(
@@ -130,9 +99,13 @@ public class MealActivity extends AppCompatActivity
                 new PhotoCaptureManager.Callbacks() {
                     @Override
                     public void onPhotoReady(android.net.Uri uri) {
+                        // Create an intent to start WeightScaleActivity
                         Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
+                        // Optionally, pass the photo URI to the next activity
                         intent.setData(uri);
-                        weightScaleLauncher.launch(intent);
+                        startActivity(intent);
+                        // Finish MealActivity so the user doesn't come back to a half-filled form
+                        finish();
                     }
                     @Override
                     public void onCaptureCanceled() {
@@ -146,16 +119,6 @@ public class MealActivity extends AppCompatActivity
         retakeBtn.setOnClickListener(v -> photoMgr.retake());
         photoMgr.startCapture();
     }
-
-    private void populateNutritionFields(NutritionFacts facts) {
-        if (facts == null) return;
-        nameEt.setText(facts.name.toString());
-        caloriesEt.setText(String.valueOf(facts.calories));
-        fatEt.setText(String.valueOf(facts.totalFatG));
-        proteinEt.setText(String.valueOf(facts.proteinG));
-        carbsEt.setText(String.valueOf(facts.totalCarbG));
-    }
-
 
     private void showDatePicker() {
         Calendar cal = Calendar.getInstance();

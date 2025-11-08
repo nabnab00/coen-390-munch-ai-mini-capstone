@@ -5,7 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;import com.fasterxml.jackson.databind.JsonNode;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,55 +26,34 @@ import com.example.munchai.model.NutritionFacts;
 public class GeminiRequest {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    // It is highly recommended to not hardcode your API key.
-    // Consider moving it to a secure place like local.properties.
     private static final String API_KEY = "AIzaSyDw5_eiyWlF3d0es5J7SBv__Pan5T_XUj0";
-
-    // --- FIX: Corrected the URL ---
-    private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+    private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .build();
 
-    /**
-     * Overloaded method for fetching nutrition facts when weight is not provided.
-     *
-     * @param bmp The bitmap image of the food.
-     * @return NutritionFacts object.
-     * @throws IOException If the request fails.
-     */
-    public static NutritionFacts fetchNutritionFacts(@NonNull Bitmap bmp) throws IOException {
-        return fetchNutritionFacts(bmp, null);
-    }
+    public static NutritionFacts fetchNutritionFactsFromDrawable(Context ctx, @DrawableRes int drawableId) throws IOException {
 
-    /**
-     * Fetches nutrition facts from an image, optionally including the food's weight in the analysis.
-     *
-     * @param bmp         The bitmap image of the food.
-     * @param weightGrams The weight of the food in grams. Can be null.
-     * @return NutritionFacts object.
-     * @throws IOException If the request fails.
-     */
-    public static NutritionFacts fetchNutritionFacts(@NonNull Bitmap bmp, String weightGrams) throws IOException {
-        // downscale image
+        // load & downscale image
+        Bitmap bmp = BitmapFactory.decodeResource(ctx.getResources(), drawableId);
+        if (bmp == null) throw new IOException("Failed to decode resource " + drawableId);
         Bitmap resized = downscale(bmp, 1280);
 
         // convert to Base64 JPEG
         String base64 = encodeToBase64Jpeg(resized, 85);
 
         // prompt
-        String prompt = "You are analyzing a meal/food image. Carefully analyse the image. " +
-                "The total weight of the food is " + (weightGrams != null ? weightGrams + " grams. " : "") +
-                "Calculate the nutritional values for this specific weight. " +
+        String prompt = "You are analyzing a meal/food image. Carefully analyse. " +
                 "Return a JSON object with these lowercase keys: " +
                 "name, serving_size, calories, total_fat_g, saturated_fat_g, cholesterol_mg, sodium_mg, " +
-                "total_carbohydrate_g, dietary_fiber_g, sugars_g, protein_g. " +
+                "total_carbohydrate_g, dietary_fiber_g, sugars_g, protein_g, vitamin_a_percent, " +
+                "vitamin_c_percent, calcium_percent, iron_percent. " +
                 "If a value is missing or unreadable, use null. " +
-                "Do not include any text or markdown, output only the single JSON object.";
+                "Do not include any text or markdown, output only the JSON object.";
 
-        // Build JSON request body
+        // Build JSON
         ObjectNode inlineData = MAPPER.createObjectNode();
         inlineData.put("mime_type", "image/jpeg");
         inlineData.put("data", base64);
@@ -100,20 +80,15 @@ public class GeminiRequest {
 
         String requestJson = MAPPER.writeValueAsString(root);
 
-        // --- FIX: Correctly append the API Key as a query parameter ---
-        String urlWithKey = URL + "?key=" + API_KEY;
-
-        // send http post
+        // sned http post
         Request req = new Request.Builder()
-                .url(urlWithKey) // Use the corrected URL with the key
+                .url(URL + API_KEY)
                 .post(RequestBody.create(requestJson, JSON))
                 .build();
 
         try (Response resp = client.newCall(req).execute()) {
             if (!resp.isSuccessful()) {
-                // Improved error logging
-                String errorBody = resp.body() != null ? resp.body().string() : "No error body";
-                throw new IOException("HTTP " + resp.code() + ": " + errorBody);
+                throw new IOException("HTTP " + resp.code() + ": " + resp.body().string());
             }
 
             String respStr = resp.body().string();
@@ -121,32 +96,27 @@ public class GeminiRequest {
             JsonNode textNode = rootNode.path("candidates").path(0).path("content").path("parts").path(0).path("text");
 
             if (textNode.isMissingNode() || textNode.isNull()) {
-                // Try to get a more descriptive error from the response if available
-                JsonNode error = rootNode.path("error").path("message");
-                if (!error.isMissingNode()) {
-                    throw new IOException("Gemini API Error: " + error.asText());
-                }
-                throw new IOException("Gemini returned no text field in the response.");
+                throw new IOException("Gemini returned no text field.");
             }
 
             String generated = textNode.asText().trim();
 
             // strip markdown fences if present
-            if (generated.startsWith("")) {
+            if (generated.startsWith("```")) {
                 int first = generated.indexOf('{');
                 int last = generated.lastIndexOf('}');
                 if (first >= 0 && last > first) {
-                    generated = generated.substring(first, last + 1); }
-            } // parse response generated into the nutrition class for future use.
-            return MAPPER.readValue(generated, NutritionFacts.class); } }
-    public static NutritionFacts fetchNutritionFactsFromDrawable(Context ctx, @DrawableRes int drawableId) throws IOException {
-        // load & downscale image
-        Bitmap bmp = BitmapFactory.decodeResource(ctx.getResources(), drawableId);
-        if (bmp == null) throw new IOException("Failed to decode resource " + drawableId);
-        return fetchNutritionFacts(bmp, null);
+                    generated = generated.substring(first, last + 1);
+                }
+            }
+
+            // parse response generated into the nutrition class for future use.
+            return MAPPER.readValue(generated, NutritionFacts.class);
+        }
     }
 
-    private static Bitmap downscale(Bitmap src, int maxDim) {
+    private static Bitmap downscale(Bitmap src, int maxDim)
+    {
         int w = src.getWidth(), h = src.getHeight();
         int max = Math.max(w, h);
         if (max <= maxDim) return src;
@@ -159,4 +129,5 @@ public class GeminiRequest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, quality, baos);
         return Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
-    }}
+    }
+}
