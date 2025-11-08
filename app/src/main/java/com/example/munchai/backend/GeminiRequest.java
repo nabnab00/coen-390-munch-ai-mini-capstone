@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import androidx.annotation.DrawableRes;
+import android.net.Uri;
+import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,23 +36,26 @@ public class GeminiRequest {
             .readTimeout(60, TimeUnit.SECONDS)
             .build();
 
-    public static NutritionFacts fetchNutritionFactsFromDrawable(Context ctx, @DrawableRes int drawableId) throws IOException {
+    public static NutritionFacts fetchNutritionFactsFromUri(Context ctx, Uri imageUri, String weight) throws IOException {
+        // load & downscale image from Uri
+        InputStream inputStream = ctx.getContentResolver().openInputStream(imageUri);
+        if (inputStream == null) throw new IOException("Failed to open input stream for URI: " + imageUri);
 
-        // load & downscale image
-        Bitmap bmp = BitmapFactory.decodeResource(ctx.getResources(), drawableId);
-        if (bmp == null) throw new IOException("Failed to decode resource " + drawableId);
+        Bitmap bmp = BitmapFactory.decodeStream(inputStream);
+        if (bmp == null) throw new IOException("Failed to decode bitmap from URI: " + imageUri);
+
         Bitmap resized = downscale(bmp, 1280);
 
         // convert to Base64 JPEG
         String base64 = encodeToBase64Jpeg(resized, 85);
 
-        // prompt
-        String prompt = "You are analyzing a meal/food image. Carefully analyse. " +
+        // Updated prompt to include the weight
+        String prompt = "You are analyzing a meal/food image. The total weight of the food is " + weight +
+                " grams. Carefully analyze the image and the weight. " +
                 "Return a JSON object with these lowercase keys: " +
-                "name, serving_size, calories, total_fat_g, saturated_fat_g, cholesterol_mg, sodium_mg, " +
-                "total_carbohydrate_g, dietary_fiber_g, sugars_g, protein_g, vitamin_a_percent, " +
-                "vitamin_c_percent, calcium_percent, iron_percent. " +
-                "If a value is missing or unreadable, use null. " +
+                "name, serving_size, calories, total_fat_g, protein_g, total_carbohydrate_g. " +
+                "The nutrition values you provide should correspond to the total weight of the food. " +
+                "If a value is missing, use null. " +
                 "Do not include any text or markdown, output only the JSON object.";
 
         // Build JSON
