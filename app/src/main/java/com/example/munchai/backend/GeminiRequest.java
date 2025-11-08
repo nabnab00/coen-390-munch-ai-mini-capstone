@@ -49,7 +49,7 @@ public class GeminiRequest {
         // convert to Base64 JPEG
         String base64 = encodeToBase64Jpeg(resized, 85);
 
-        // Updated prompt to include the weight
+        //prompt
         String prompt = "You are analyzing a meal/food image. The total weight of the food is " + weight +
                 " grams. Carefully analyze the image and the weight. " +
                 "Return a JSON object with these lowercase keys: " +
@@ -58,7 +58,7 @@ public class GeminiRequest {
                 "If a value is missing, use null. " +
                 "Do not include any text or markdown, output only the JSON object.";
 
-        // Build JSON
+        //JSON build
         ObjectNode inlineData = MAPPER.createObjectNode();
         inlineData.put("mime_type", "image/jpeg");
         inlineData.put("data", base64);
@@ -115,7 +115,7 @@ public class GeminiRequest {
                 }
             }
 
-            // parse response generated into the nutrition class for future use.
+            // parse response generated into the nutrition class for use.
             return MAPPER.readValue(generated, NutritionFacts.class);
         }
     }

@@ -174,9 +174,10 @@ public class MealActivity extends AppCompatActivity
         });
     }
 
-    private void populateFormWithNutritionData(NutritionFacts facts, String weight) { // Add weight parameter
+    private void populateFormWithNutritionData(NutritionFacts facts, String weight) {
         if (facts == null) return;
 
+        //PARSE OBJECTS INTO THE FIELDS
         nameEt.setText(facts.name);
         weightEt.setText(weight);
         caloriesEt.setText(facts.calories != null ? String.valueOf(facts.calories) : "");
