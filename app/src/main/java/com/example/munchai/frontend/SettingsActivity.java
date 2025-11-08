@@ -7,6 +7,8 @@ import android.widget.EditText;
 import android.widget.Button;
 import android.database.Cursor;
 import android.widget.Toast;
+import android.widget.ImageButton;
+import android.content.Intent;
 
 import com.example.munchai.R;
 import com.example.munchai.backend.database.SettingsDatabaseHelper;
@@ -29,6 +31,13 @@ public class SettingsActivity extends AppCompatActivity
 
         db = new SettingsDatabaseHelper(this);
 
+        ImageButton backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // closes SettingsActivity so you return to MainActivity
+        });
+
         switchDarkMode = findViewById(R.id.switch_darkmode);
         editCalories = findViewById(R.id.settings_calories);
         editProtein = findViewById(R.id.settings_protein);
@@ -46,7 +55,7 @@ public class SettingsActivity extends AppCompatActivity
 
             Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
 
-            Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+            Intent intent = new Intent(SettingsActivity.this, StartActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finishAffinity();
