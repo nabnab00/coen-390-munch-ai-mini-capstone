@@ -1,104 +1,285 @@
 package com.example.munchai.frontend;
 
-import androidx.appcompat.app.AppCompatActivity;
+import com.example.munchai.R;
+
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.widget.*;
-import android.content.SharedPreferences;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONObject;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-import com.example.munchai.R;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class WeightScaleActivity extends AppCompatActivity {
 
-    EditText ipInput;
-    Button saveBtn, refreshBtn, tareBtn;
-    TextView weightText;
-    SharedPreferences prefs;
-    String baseUrl;
+    private static final int REQ_BT_PERMS = 2001;
+    private static final String TARGET_NAME = "ESP32-Scale";
+    private static final UUID SPP_UUID =
+            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    ScheduledExecutorService scheduler;
+    private TextView statusText, weightText;
+    private EditText macInput;
+    private Button connectBtn, tareBtn, resetBtn;
+    private Spinner unitSpinner;
+
+    private BluetoothAdapter btAdapter;
+    private BluetoothSocket socket;
+    private OutputStream out;
+    private InputStream in;
+
+    private final ExecutorService exec = Executors.newCachedThreadPool();
+    private volatile boolean reading = false;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle b) {
+        super.onCreate(b);
         setContentView(R.layout.weightpage);
 
-        ipInput = findViewById(R.id.ipInput);
-        saveBtn = findViewById(R.id.saveBtn);
-        refreshBtn = findViewById(R.id.refreshBtn);
-        tareBtn = findViewById(R.id.tareBtn);
-        weightText = findViewById(R.id.weightText);
-        prefs = getSharedPreferences("ESP32", MODE_PRIVATE);
+        statusText  = findViewById(R.id.statusText);
+        weightText  = findViewById(R.id.weightText);
+        macInput    = findViewById(R.id.macInput);
+        connectBtn  = findViewById(R.id.connectBtn);
+        tareBtn     = findViewById(R.id.tareBtn);
+        resetBtn    = findViewById(R.id.resetBtn);
+        unitSpinner = findViewById(R.id.unitSpinner);
 
-        String savedIp = prefs.getString("ip", "");
-        ipInput.setText(savedIp);
-        if (!savedIp.isEmpty()) baseUrl = "http://" + savedIp;
+        setupSpinner();
 
-        saveBtn.setOnClickListener(v -> {
-            String ip = ipInput.getText().toString().trim();
-            if (!ip.isEmpty()) {
-                prefs.edit().putString("ip", ip).apply();
-                baseUrl = "http://" + ip;
-                Toast.makeText(this, "IP saved", Toast.LENGTH_SHORT).show();
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (btAdapter == null) {
+            toast("Bluetooth not supported");
+            finish();
+            return;
+        }
+
+        connectBtn.setOnClickListener(v -> {
+            if (isSPlus() && !hasBtConnect()) {
+                requestBtPerms();
+            } else {
+                connectBluetooth();
             }
         });
 
-        refreshBtn.setOnClickListener(v -> new Thread(this::getWeight).start());
-        tareBtn.setOnClickListener(v -> new Thread(this::tareScale).start());
-
-        // Automatically refresh weight every 1 second
-        scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(() -> getWeight(), 0, 1, TimeUnit.SECONDS);
+        tareBtn.setOnClickListener(v -> sendCmd("t\n"));
+        resetBtn.setOnClickListener(v -> sendCmd("r\n"));
     }
 
-    private void getWeight() {
-        if (baseUrl == null) return;
+    private void setupSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.units_array,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        unitSpinner.setAdapter(adapter);
+
+        int saved = getSharedPreferences("scale_prefs", MODE_PRIVATE)
+                .getInt("unit_idx", 0);
+        unitSpinner.setSelection(saved);
+
+        unitSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent,
+                                                 android.view.View view,
+                                                 int pos,
+                                                 long id) {
+                char cmd = idxToCmd(pos);
+                sendCmd(cmd + "\n");
+                saveUnitIndex(pos);
+            }
+
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+    }
+
+    private char idxToCmd(int i) {
+        switch (i) {
+            case 0: return 'G';
+            case 1: return 'O';
+            case 2: return 'L';
+            case 3: return 'K';
+        }
+        return 'G';
+    }
+
+    private void saveUnitIndex(int idx) {
+        getSharedPreferences("scale_prefs", MODE_PRIVATE)
+                .edit().putInt("unit_idx", idx).apply();
+    }
+
+    private void connectBluetooth() {
+        String mac = macInput.getText().toString().trim();
+        BluetoothDevice device = null;
+
         try {
-            URL url = new URL(baseUrl + "/weight");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(2000);
-            conn.setReadTimeout(2000);
+            if (!mac.isEmpty()) {
+                device = safeGetRemote(mac);
+            } else {
+                Set<BluetoothDevice> bonded = safeGetBonded();
+                for (BluetoothDevice d : bonded) {
+                    if (TARGET_NAME.equals(d.getName())) {
+                        device = d;
+                        break;
+                    }
+                }
+                if (device == null) {
+                    status("Pair ESP32 first");
+                    return;
+                }
+            }
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) sb.append(line);
-            reader.close();
+            status("Connecting...");
+            final BluetoothDevice target = device;
 
-            JSONObject obj = new JSONObject(sb.toString());
-            double weight = obj.getDouble("weight_g");
+            exec.execute(() -> {
+                closeSocket();
+                try {
+                    BluetoothSocket s =
+                            target.createRfcommSocketToServiceRecord(SPP_UUID);
+                    s.connect();
+                    socket = s;
+                    out = socket.getOutputStream();
+                    in = socket.getInputStream();
+                    status("Connected");
+                    startReader();
+                } catch (SecurityException se) {
+                    status("Permission denied");
+                } catch (IOException e) {
+                    status("Failed");
+                }
+            });
 
-            runOnUiThread(() -> weightText.setText(String.format("%.2f g", weight)));
         } catch (Exception e) {
-            runOnUiThread(() -> Toast.makeText(this, "Error reading weight", Toast.LENGTH_SHORT).show());
+            status("Error: " + e.getMessage());
         }
     }
 
-    private void tareScale() {
-        if (baseUrl == null) return;
+    private void startReader() {
+        if (reading) return;
+        reading = true;
+
+        exec.execute(() -> {
+            try {
+                BufferedReader br =
+                        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+
+                String line;
+                while (reading && (line = br.readLine()) != null) {
+                    handleLine(line);
+                }
+            } catch (IOException e) {
+                status("Disconnected");
+            } finally {
+                reading = false;
+                closeSocket();
+            }
+        });
+    }
+
+    private void handleLine(String line) {
         try {
-            URL url = new URL(baseUrl + "/tare");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.getInputStream().close();
-            runOnUiThread(() -> Toast.makeText(this, "Tared", Toast.LENGTH_SHORT).show());
-        } catch (Exception e) {
-            runOnUiThread(() -> Toast.makeText(this, "Error taring", Toast.LENGTH_SHORT).show());
+            JSONObject obj = new JSONObject(line);
+
+            double w = obj.optDouble("weight", Double.NaN);
+            String u = obj.optString("unit", "");
+
+            if (!Double.isNaN(w) && !u.isEmpty()) {
+                runOnUiThread(() ->
+                        weightText.setText(String.format("%.2f %s", w, u))
+                );
+                return;
+            }
+
+        } catch (Exception ignore) {}
+    }
+
+    private void sendCmd(String cmd) {
+        if (socket == null || out == null) {
+            toast("Not connected");
+            return;
         }
+        exec.execute(() -> {
+            try {
+                out.write(cmd.getBytes(StandardCharsets.UTF_8));
+                out.flush();
+            } catch (Exception e) {
+                status("Send failed");
+            }
+        });
+    }
+
+    private boolean isSPlus() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+    }
+
+    private boolean hasBtConnect() {
+        return ContextCompat.checkSelfPermission(
+                this, Manifest.permission.BLUETOOTH_CONNECT)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestBtPerms() {
+        if (isSPlus()) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{ Manifest.permission.BLUETOOTH_CONNECT },
+                    REQ_BT_PERMS
+            );
+        }
+    }
+
+    private BluetoothDevice safeGetRemote(String mac) throws SecurityException {
+        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no connect perm");
+        return btAdapter.getRemoteDevice(mac);
+    }
+
+    private Set<BluetoothDevice> safeGetBonded() throws SecurityException {
+        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no connect perm");
+        return btAdapter.getBondedDevices();
+    }
+
+    private void status(String s) {
+        runOnUiThread(() -> statusText.setText(s));
+    }
+
+    private void toast(String s) {
+        runOnUiThread(() -> Toast.makeText(this, s, Toast.LENGTH_SHORT).show());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (scheduler != null) scheduler.shutdownNow();
+        reading = false;
+        closeSocket();
+        exec.shutdownNow();
+    }
+
+    private void closeSocket() {
+        try { if (in != null)  in.close(); } catch (Exception ignore) {}
+        try { if (out != null) out.close(); } catch (Exception ignore) {}
+        try { if (socket != null) socket.close(); } catch (Exception ignore) {}
+        in = null; out = null; socket = null;
     }
 }

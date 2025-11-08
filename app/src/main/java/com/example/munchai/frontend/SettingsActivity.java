@@ -7,13 +7,14 @@ import android.widget.EditText;
 import android.widget.Button;
 import android.database.Cursor;
 import android.widget.Toast;
+import android.widget.ImageButton;
+import android.content.Intent;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.SettingsDatabaseHelper;
+import com.example.munchai.backend.database.SettingsDatabaseHelper;
 
 import android.content.Intent;
 import com.example.munchai.backend.SessionManager;
-import com.example.munchai.frontend.LoginActivity;
 
 public class SettingsActivity extends AppCompatActivity
 {
@@ -29,6 +30,13 @@ public class SettingsActivity extends AppCompatActivity
         setContentView(R.layout.settingspage);
 
         db = new SettingsDatabaseHelper(this);
+
+        ImageButton backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish(); // closes SettingsActivity so you return to MainActivity
+        });
 
         switchDarkMode = findViewById(R.id.switch_darkmode);
         editCalories = findViewById(R.id.settings_calories);

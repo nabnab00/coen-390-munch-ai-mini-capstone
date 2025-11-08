@@ -1,9 +1,5 @@
 <resources>
-    <string-array name="units_array">
-        <item>g</item>
-        <item>oz</item>
-        <item>ml</item>
-    </string-array>
+
 
     <string-array name="meals_array">
         <item>Breakfast</item>
@@ -11,4 +7,13 @@
         <item>Dinner</item>
         <item>Snack</item>
     </string-array>
+
+    <string-array name="units_array">
+            <item>g</item>
+            <item>oz</item>
+            <item>lb</item>
+            <item>kg</item>
+    </string-array>
+
+
 </resources>

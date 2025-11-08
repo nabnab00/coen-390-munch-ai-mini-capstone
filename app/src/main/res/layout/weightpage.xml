@@ -1,48 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="20dp"
-    android:gravity="center_horizontal"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/ipInput"
-        android:hint="Enter ESP32 IP (e.g. 192.168.1.23)"
-        android:inputType="textUri"
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/saveBtn"
-        android:text="Save IP"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp" />
+        <!-- Bluetooth status -->
+        <TextView
+            android:id="@+id/statusText"
+            android:text="Disconnected"
+            android:textSize="15sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/weightText"
-        android:text="0.00 g"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:layout_marginTop="40dp"
-        android:layout_width="match_parent"
-        android:gravity="center"
-        android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/macInput"
+            android:hint="ESP32 MAC (optional)"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-    <Button
-        android:id="@+id/refreshBtn"
-        android:text="Refresh Weight"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp" />
+        <Button
+            android:id="@+id/connectBtn"
+            android:text="Connect Bluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" />
 
-    <Button
-        android:id="@+id/tareBtn"
-        android:text="Tare"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp" />
+        <!-- Weight display -->
+        <TextView
+            android:id="@+id/weightText"
+            android:text="0.00 g"
+            android:textSize="36sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp" />
 
-</LinearLayout>
+        <!-- Units dropdown -->
+        <TextView
+            android:id="@+id/unitCaption"
+            android:text="Units"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp" />
+
+        <Spinner
+            android:id="@+id/unitSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+        <!-- Buttons -->
+        <Button
+            android:id="@+id/tareBtn"
+            android:text="Tare"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp" />
+
+        <Button
+            android:id="@+id/resetBtn"
+            android:text="Reset Scale"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+    </LinearLayout>
+</ScrollView>
