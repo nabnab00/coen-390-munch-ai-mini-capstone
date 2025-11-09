@@ -48,8 +48,7 @@ public class SettingsDatabaseHelper extends SQLiteOpenHelper
         onCreate(db);
     }
 
-    public void updateSettings(int mode, int calories, int protein, int carbs, int fat)
-    {
+    public void updateSettings(int mode, int calories, int protein, int carbs, int fat) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_MODE, mode);
@@ -57,7 +56,16 @@ public class SettingsDatabaseHelper extends SQLiteOpenHelper
         values.put(COLUMN_PROTEIN, protein);
         values.put(COLUMN_CARBS, carbs);
         values.put(COLUMN_FAT, fat);
-        db.update(TABLE_SETTINGS, values, COLUMN_ID + " = ?", new String[]{"1"});
+
+        // Check if a settings row exists
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SETTINGS + " LIMIT 1", null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID));
+            db.update(TABLE_SETTINGS, values, COLUMN_ID + " = ?", new String[]{String.valueOf(id)});
+        } else {
+            db.insert(TABLE_SETTINGS, null, values);
+        }
+        if (cursor != null) cursor.close();
         db.close();
     }
 
