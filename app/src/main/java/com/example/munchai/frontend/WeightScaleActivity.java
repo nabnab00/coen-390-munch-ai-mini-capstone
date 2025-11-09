@@ -2,6 +2,8 @@ package com.example.munchai.frontend;
 
 import com.example.munchai.R;
 
+import android.content.Intent;
+import android.app.Activity;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -40,11 +42,11 @@ public class WeightScaleActivity extends AppCompatActivity {
     private static final UUID SPP_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    private TextView statusText, weightText;
-    private EditText macInput;
-    private Button connectBtn, tareBtn, resetBtn;
+    private TextView statusText;
+    private EditText macInput, weightText;
+    private Button connectBtn, tareBtn, resetBtn, saveBtn;
     private Spinner unitSpinner;
-
+    public static final String EXTRA_WEIGHT = "com.example.munchai.WEIGHT";
     private BluetoothAdapter btAdapter;
     private BluetoothSocket socket;
     private OutputStream out;
@@ -64,6 +66,7 @@ public class WeightScaleActivity extends AppCompatActivity {
         connectBtn  = findViewById(R.id.connectBtn);
         tareBtn     = findViewById(R.id.tareBtn);
         resetBtn    = findViewById(R.id.resetBtn);
+        saveBtn  = findViewById(R.id.weightsave);
         unitSpinner = findViewById(R.id.unitSpinner);
 
         setupSpinner();
@@ -81,6 +84,23 @@ public class WeightScaleActivity extends AppCompatActivity {
             } else {
                 connectBluetooth();
             }
+        });
+
+        saveBtn.setOnClickListener(v -> {
+            String currentWeight = weightText.getText().toString();
+
+            // We only need the numeric part for the Gemini prompt
+            String numericWeight = currentWeight.replaceAll("[^0-9.]", "");
+
+            if (numericWeight.isEmpty()) {
+                Toast.makeText(this, "No weight measured", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(EXTRA_WEIGHT, numericWeight);
+            setResult(Activity.RESULT_OK, resultIntent);
+            finish(); // This will close WeightScaleActivity and trigger the launcher in MealActivity
         });
 
         tareBtn.setOnClickListener(v -> sendCmd("t\n"));

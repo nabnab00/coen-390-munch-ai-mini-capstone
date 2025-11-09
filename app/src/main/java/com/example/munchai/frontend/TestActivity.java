@@ -18,31 +18,5 @@ public class TestActivity extends AppCompatActivity
         setContentView(R.layout.testpage);
         TextView text = findViewById(R.id.textView);
         text.setText("Processing pizza image… ⏳");
-
-        new Thread(() ->
-        {
-            try
-            {
-                NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromDrawable(this, R.drawable.pizza);
-                String summary;
-
-                if (facts != null && facts.calories != null)
-                {
-                    summary = "Calories: " + facts.calories + " kcal";
-                }
-                else
-                {
-                    summary = "❌ No calorie data parsed.";
-                }
-
-                runOnUiThread(() -> text.setText(summary));
-            }
-
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                runOnUiThread(() -> text.setText("❌ Error: " + e.getMessage()));
-            }
-        }).start();
     }
 }

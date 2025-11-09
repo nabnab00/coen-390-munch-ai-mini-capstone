@@ -32,7 +32,7 @@
             android:layout_marginTop="12dp" />
 
         <!-- Weight display -->
-        <TextView
+        <EditText
             android:id="@+id/weightText"
             android:text="0.00 g"
             android:textSize="36sp"
@@ -54,7 +54,7 @@
             android:id="@+id/unitSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="20dp" />
 
         <!-- Buttons -->
         <Button
@@ -67,6 +67,13 @@
         <Button
             android:id="@+id/resetBtn"
             android:text="Reset Scale"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp" />
+
+        <Button
+            android:id="@+id/weightsave"
+            android:text="Save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp" />
