@@ -1,6 +1,13 @@
+
 package com.example.munchai.frontend;
 
+import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
+
+import android.view.View;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
@@ -12,6 +19,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.app.DatePickerDialog;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.munchai.R;
@@ -19,15 +28,23 @@ import com.example.munchai.backend.database.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
 import com.example.munchai.backend.media.PhotoCaptureManager;
 import com.example.munchai.backend.media.PhotoStore;
+import com.example.munchai.backend.GeminiRequest;
+import com.example.munchai.model.NutritionFacts;
 
+import java.util.concurrent.Executors;
+
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.Executor;
 
 public class MealActivity extends AppCompatActivity
 {
+    private ActivityResultLauncher<Intent> weightScaleLauncher;
+    private Uri currentPhotoUri;
     private EditText nameEt, weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
     private Spinner mealSp;
     private TextView dateTv;
@@ -97,14 +114,10 @@ public class MealActivity extends AppCompatActivity
                 new PhotoStore(this),
                 new PhotoCaptureManager.Callbacks() {
                     @Override
-                    public void onPhotoReady(android.net.Uri uri) {
-                        // Create an intent to start WeightScaleActivity
+                    public void onPhotoReady(Uri uri) {
+                        currentPhotoUri = uri; // Store the URI
                         Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
-                        // Optionally, pass the photo URI to the next activity
-                        intent.setData(uri);
-                        startActivity(intent);
-                        // Finish MealActivity so the user doesn't come back to a half-filled form
-                        finish();
+                        weightScaleLauncher.launch(intent);
                     }
                     @Override
                     public void onCaptureCanceled() {
@@ -117,6 +130,63 @@ public class MealActivity extends AppCompatActivity
         photoMgr.register();
         retakeBtn.setOnClickListener(v -> photoMgr.retake());
         photoMgr.startCapture();
+
+        weightScaleLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        String weightStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_WEIGHT);
+                        if (weightStr != null && !weightStr.isEmpty() && currentPhotoUri != null) {
+                            // We have the weight and the photo URI, now call Gemini
+                            Toast.makeText(this, "Analyzing image...", Toast.LENGTH_LONG).show();
+                            callGeminiApi(currentPhotoUri, weightStr);
+
+                            // Show the taken photo in the preview
+                            photoIv.setImageURI(currentPhotoUri);
+                        }
+                    }
+                    else {
+                        // Handle the case where the user comes back without a weight
+                        Toast.makeText(this, "Weight measurement was cancelled.", Toast.LENGTH_SHORT).show();
+                        // You might want to allow retaking the photo or exiting
+                        retakeBtn.setVisibility(View.VISIBLE);
+                    }
+                }
+        );
+
+    }
+
+    private void callGeminiApi(Uri photoUri, String weight) {
+        Executor executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            try {
+                NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromUri(this, photoUri, weight);
+                handler.post(() -> populateFormWithNutritionData(facts, weight));
+            } catch (IOException e) {
+                e.printStackTrace();
+                handler.post(() -> {
+                    Toast.makeText(MealActivity.this, "Failed to get nutrition data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    enableForm(true); // Allow manual entry
+                });
+            }
+        });
+    }
+
+    private void populateFormWithNutritionData(NutritionFacts facts, String weight) {
+        if (facts == null) return;
+
+        //PARSE OBJECTS INTO THE FIELDS
+        nameEt.setText(facts.name);
+        weightEt.setText(weight);
+        caloriesEt.setText(facts.calories != null ? String.valueOf(facts.calories) : "");
+        fatEt.setText(facts.totalFatG != null ? String.valueOf(facts.totalFatG) : "");
+        proteinEt.setText(facts.proteinG != null ? String.valueOf(facts.proteinG) : "");
+        carbsEt.setText(facts.totalCarbG != null ? String.valueOf(facts.totalCarbG) : "");
+
+        enableForm(true); // Enable the form for editing
+        Toast.makeText(this, "Nutrition data loaded!", Toast.LENGTH_SHORT).show();
     }
 
     private void showDatePicker() {
