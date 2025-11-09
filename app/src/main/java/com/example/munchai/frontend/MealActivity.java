@@ -48,7 +48,7 @@ import java.util.concurrent.Executor;
 
 public class MealActivity extends AppCompatActivity
 {
-    private EditText nameEt, qtyEt;
+    private EditText nameEt;
     private Spinner unitSp, mealSp;
     private ActivityResultLauncher<Intent> weightScaleLauncher;
     private Uri currentPhotoUri;
@@ -78,8 +78,11 @@ public class MealActivity extends AppCompatActivity
         toWeightBtn = findViewById(R.id.to_weight);
 
         nameEt = findViewById(R.id.input_food_name);
-        qtyEt  = findViewById(R.id.input_calories);
-        unitSp = findViewById(getResources().getIdentifier("spinner_unit", "id", getPackageName())); //change this (can't find unit spinner id)
+        weightEt = findViewById(R.id.input_weight);
+        caloriesEt = findViewById(R.id.input_calories);
+        fatEt = findViewById(R.id.input_fat);
+        proteinEt = findViewById(R.id.input_protein);
+        carbsEt = findViewById(R.id.input_carbohydrates);
         mealSp = findViewById(R.id.spinner_meal);
         dateTv = findViewById(R.id.text_date_value);
 
@@ -217,7 +220,7 @@ public class MealActivity extends AppCompatActivity
 
     private void enableForm(boolean enabled) {
         nameEt.setEnabled(enabled);
-        qtyEt.setEnabled(enabled);
+        weightEt.setEnabled(enabled);
         if (unitSp != null) unitSp.setEnabled(enabled);
         mealSp.setEnabled(enabled);
         dateTv.setEnabled(enabled);
@@ -236,7 +239,7 @@ public class MealActivity extends AppCompatActivity
         }
 
         String name = nameEt.getText().toString().trim();
-        String qtyStr = qtyEt.getText().toString().trim();
+        String qtyStr = weightEt.getText().toString().trim();
         String unit = (unitSp != null && unitSp.getSelectedItem() != null)
                 ? (String) unitSp.getSelectedItem() : "";
         String meal = (String) mealSp.getSelectedItem();
