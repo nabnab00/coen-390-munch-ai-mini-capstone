@@ -13,7 +13,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
 import android.database.Cursor;
-import com.example.munchai.backend.database.AppDatabaseHelper;
 import com.example.munchai.backend.database.SettingsDatabaseHelper;
 import com.example.munchai.model.CircularProgressView; // if not already present
 import android.widget.TextView;

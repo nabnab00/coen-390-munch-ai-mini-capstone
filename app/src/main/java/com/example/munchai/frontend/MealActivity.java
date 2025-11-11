@@ -239,29 +239,91 @@ public class MealActivity extends AppCompatActivity
         }
 
         String name = nameEt.getText().toString().trim();
-        String qtyStr = weightEt.getText().toString().trim();
+        String weightStr = weightEt.getText().toString().trim();
         String unit = (unitSp != null && unitSp.getSelectedItem() != null)
                 ? (String) unitSp.getSelectedItem() : "";
         String meal = (String) mealSp.getSelectedItem();
+        String calStr = caloriesEt.getText() != null ? caloriesEt.getText().toString().trim() : "";
+        String fatStr = fatEt.getText() != null ? fatEt.getText().toString().trim() : "";
+        String proStr = proteinEt.getText() != null ? proteinEt.getText().toString().trim() : "";
+        String carbStr = carbsEt.getText() != null ? carbsEt.getText().toString().trim() : "";
+
+        double calories, fat, protein, carbs, weight;
 
         if (TextUtils.isEmpty(name)) {
             Toast.makeText(this, "Enter food name", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (TextUtils.isEmpty(qtyStr)) {
-            Toast.makeText(this, "Enter food quantity", Toast.LENGTH_SHORT).show();
+
+        if (TextUtils.isEmpty(weightStr)) {
+            Toast.makeText(this, "Enter food weight", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        double qty;
         try {
-            qty = Double.parseDouble(qtyStr);
-            if (qty <= 0) throw new NumberFormatException();
+            weight = Double.parseDouble(weightStr);
+            if (weight <= 0) throw new NumberFormatException();
         } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Quantity must be a positive number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Weight must be a positive number", Toast.LENGTH_SHORT).show();
             return;
         }
+
+
+        if (TextUtils.isEmpty(calStr)) {
+            Toast.makeText(this, "Enter food calories", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            calories = Double.parseDouble(calStr);
+            if (calories < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Calories must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        if (TextUtils.isEmpty(fatStr)) {
+            Toast.makeText(this, "Enter food fat", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            fat = Double.parseDouble(fatStr);
+            if (fat < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Fat must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        if (TextUtils.isEmpty(proStr)) {
+            Toast.makeText(this, "Enter food protein", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            protein = Double.parseDouble(proStr);
+            if (protein < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Protein must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(carbStr)) {
+            Toast.makeText(this, "Enter food carbs", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            carbs = Double.parseDouble(carbStr);
+            if (carbs < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Carbs must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
 
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) {
@@ -283,10 +345,14 @@ public class MealActivity extends AppCompatActivity
         Map<String, Object> base = new HashMap<>();
         base.put("name", name);
         base.put("unit", unit);
-        base.put("qty", qty);
+        base.put("weight", weight);
         base.put("meal", meal);
         base.put("logged_at", loggedAtIso);
         base.put("imageUrl", null);
+        base.put("calories", calories);
+        base.put("fat_g", fat);
+        base.put("protein_g", protein);
+        base.put("carb_g", carbs);
 
         // save base doc (works offline)
         docRef.set(base, SetOptions.merge())

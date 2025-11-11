@@ -77,12 +77,17 @@ public class LogHistoryActivity extends AppCompatActivity {
                         for (DocumentSnapshot d : snap.getDocuments()) {
                             String name = safe(d.getString("name"));
                             String unit = safe(d.getString("unit"));
-                            Double qty = d.getDouble("qty");
+                            Double weight = d.getDouble("weight");
                             String meal = safe(d.getString("meal"));
                             String atIso = safe(d.getString("logged_at"));
+                            Double calories = d.getDouble("calories");
+                            Double fatG     = d.getDouble("fat_g");
+                            Double proteinG = d.getDouble("protein_g");
+                            Double carbG    = d.getDouble("carb_g");
+
 
                             rows.add(new FoodLogRow(
-                                    name, unit, qty != null ? qty : 0d, meal, atIso
+                                    name, unit, weight != null ? weight : 0d, meal, atIso, calories, fatG, proteinG, carbG
                             ));
                         }
                     }
