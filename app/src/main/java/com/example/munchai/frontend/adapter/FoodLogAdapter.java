@@ -56,7 +56,27 @@ public class FoodLogAdapter extends RecyclerView.Adapter<FoodLogAdapter.VH>
         catch (ParseException ignored) {}
 
         h.top.setText(dateStr + " \u2022 " + r.meal);
-        h.bottom.setText(r.name + " — " + trimQty(r.qty) + " " + r.unit);
+
+        StringBuilder bottom = new StringBuilder();
+        bottom.append(r.name)
+                .append(" — ")
+                .append(trimQty(r.weight))
+                .append(" ")
+                .append(r.unit);
+
+        if (r.calories != null) {
+            bottom.append(" \u2022 ").append(trimQty(r.calories)).append(" kcal");
+        }
+
+        StringBuilder macros = new StringBuilder();
+        if (r.proteinG != null) { macros.append("Protein ").append(trimQty(r.proteinG)).append("g"); }
+        if (r.carbG != null)    { macros.append(" \u2022 "); macros.append("Carbs ").append(trimQty(r.carbG)).append("g"); }
+        if (r.fatG != null)     {macros.append(" \u2022 "); macros.append("Fat ").append(trimQty(r.fatG)).append("g"); }
+
+        bottom.append(" \u2022 ").append(macros);
+
+        h.bottom.setText(bottom.toString());
+
     }
 
     @Override

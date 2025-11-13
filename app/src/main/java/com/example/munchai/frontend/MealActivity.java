@@ -1,4 +1,3 @@
-
 package com.example.munchai.frontend;
 
 import android.app.Activity;
@@ -24,49 +23,59 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.database.AppDatabaseHelper;
 import com.example.munchai.backend.SessionManager;
 import com.example.munchai.backend.media.PhotoCaptureManager;
 import com.example.munchai.backend.media.PhotoStore;
 import com.example.munchai.backend.GeminiRequest;
 import com.example.munchai.model.NutritionFacts;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.concurrent.Executors;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Executor;
 
 public class MealActivity extends AppCompatActivity
 {
+    private EditText nameEt;
+    private Spinner unitSp, mealSp;
     private ActivityResultLauncher<Intent> weightScaleLauncher;
     private Uri currentPhotoUri;
-    private EditText nameEt, weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
-    private Spinner mealSp;
+    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
     private TextView dateTv;
     private ImageView photoIv;
-    private Button retakeBtn;
-    private AppDatabaseHelper db;
+    private Button retakeBtn, toWeightBtn, saveBtn, cancelBtn;
+
     private SessionManager session;
     private int selYear, selMonth, selDay;
 
     private PhotoCaptureManager photoMgr;
+
+    private final SimpleDateFormat isoUtc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log_screen);
 
-        db = new AppDatabaseHelper(this);
+        isoUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
         session = new SessionManager(this);
 
         photoIv = findViewById(R.id.photo_preview);
         retakeBtn = findViewById(R.id.retake_button);
-        Button toWeight = findViewById(R.id.to_weight);
+        toWeightBtn = findViewById(R.id.to_weight);
 
         nameEt = findViewById(R.id.input_food_name);
         weightEt = findViewById(R.id.input_weight);
@@ -77,7 +86,17 @@ public class MealActivity extends AppCompatActivity
         mealSp = findViewById(R.id.spinner_meal);
         dateTv = findViewById(R.id.text_date_value);
 
+        saveBtn = findViewById(R.id.save_button);
+        cancelBtn = findViewById(R.id.cancel_button);
+
         enableForm(false);
+
+        if (unitSp != null) {
+            ArrayAdapter<CharSequence> unitAd = ArrayAdapter.createFromResource(
+                    this, R.array.units_array, android.R.layout.simple_spinner_item);
+            unitAd.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            unitSp.setAdapter(unitAd);
+        }
 
         ArrayAdapter<CharSequence> mealAd = ArrayAdapter.createFromResource(
                 this, R.array.meals_array, android.R.layout.simple_spinner_item);
@@ -89,24 +108,18 @@ public class MealActivity extends AppCompatActivity
         selMonth = now.get(Calendar.MONTH);
         selDay = now.get(Calendar.DAY_OF_MONTH);
         dateTv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", selDay, selMonth + 1, selYear));
-
         dateTv.setOnClickListener(v -> showDatePicker());
 
-        Button saveBtn = findViewById(R.id.save_button);
-        Button cancelBtn = findViewById(R.id.cancel_button);
         saveBtn.setOnClickListener(v -> saveLog());
         cancelBtn.setOnClickListener(v -> finish());
+        //log meal
+        toWeightBtn.setOnClickListener(v -> startActivity(new Intent(this, WeightScaleActivity.class)));
+
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Log Meal");
         }
-
-        //log meal
-        toWeight.setOnClickListener(v -> {
-            Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
-            startActivity(intent);
-        });
 
         photoMgr = new PhotoCaptureManager(
                 this,
@@ -193,31 +206,25 @@ public class MealActivity extends AppCompatActivity
         Calendar cal = Calendar.getInstance();
         cal.set(selYear, selMonth, selDay);
 
-        DatePickerDialog dlg = new DatePickerDialog(
+        new DatePickerDialog(
                 this,
                 (view, y, m, d) -> {
-                    selYear = y;
-                    selMonth = m;
-                    selDay = d;
+                    selYear = y; selMonth = m; selDay = d;
                     dateTv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", d, m + 1, y));
                 },
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)
-        );
-        dlg.show();
+        ).show();
     }
 
     private void enableForm(boolean enabled) {
         nameEt.setEnabled(enabled);
         weightEt.setEnabled(enabled);
-        caloriesEt.setEnabled(enabled);
-        fatEt.setEnabled(enabled);
-        proteinEt.setEnabled(enabled);
-        carbsEt.setEnabled(enabled);
+        if (unitSp != null) unitSp.setEnabled(enabled);
         mealSp.setEnabled(enabled);
         dateTv.setEnabled(enabled);
-        findViewById(R.id.save_button).setEnabled(enabled);
+        saveBtn.setEnabled(enabled);
     }
 
     private void saveLog() {
@@ -233,64 +240,160 @@ public class MealActivity extends AppCompatActivity
 
         String name = nameEt.getText().toString().trim();
         String weightStr = weightEt.getText().toString().trim();
-        String caloriesStr = caloriesEt.getText().toString().trim();
-        String fatStr = fatEt.getText().toString().trim();
-        String proteinStr = proteinEt.getText().toString().trim();
-        String carbsStr = carbsEt.getText().toString().trim();
+        String unit = (unitSp != null && unitSp.getSelectedItem() != null)
+                ? (String) unitSp.getSelectedItem() : "";
         String meal = (String) mealSp.getSelectedItem();
+        String calStr = caloriesEt.getText() != null ? caloriesEt.getText().toString().trim() : "";
+        String fatStr = fatEt.getText() != null ? fatEt.getText().toString().trim() : "";
+        String proStr = proteinEt.getText() != null ? proteinEt.getText().toString().trim() : "";
+        String carbStr = carbsEt.getText() != null ? carbsEt.getText().toString().trim() : "";
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(weightStr) || TextUtils.isEmpty(caloriesStr) ||
-                TextUtils.isEmpty(fatStr) || TextUtils.isEmpty(proteinStr) || TextUtils.isEmpty(carbsStr)) {
-            Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_SHORT).show();
+        double calories, fat, protein, carbs, weight;
+
+        if (TextUtils.isEmpty(name)) {
+            Toast.makeText(this, "Enter food name", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        double weight, calories, fat, protein, carbs;
+
+        if (TextUtils.isEmpty(weightStr)) {
+            Toast.makeText(this, "Enter food weight", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         try {
             weight = Double.parseDouble(weightStr);
-            calories = Double.parseDouble(caloriesStr);
-            fat = Double.parseDouble(fatStr);
-            protein = Double.parseDouble(proteinStr);
-            carbs = Double.parseDouble(carbsStr);
-            if (weight <= 0 || calories < 0 || fat < 0 || protein < 0 || carbs < 0) {
-                throw new NumberFormatException();
-            }
-        }
-        catch (NumberFormatException nfe) {
-            Toast.makeText(this, "All numeric fields must be positive numbers", Toast.LENGTH_SHORT).show();
+            if (weight <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Weight must be a positive number", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String tsIso = selectedDateMidnightIsoUtc();
 
-        long id = db.insertLog(
-                name, weight, calories, fat, protein, carbs, meal, tsIso
-        );
-
-        if (id > 0) {
-            Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MealActivity.this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-        } else {
-            Toast.makeText(this, "Save failed", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(calStr)) {
+            Toast.makeText(this, "Enter food calories", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        try {
+            calories = Double.parseDouble(calStr);
+            if (calories < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Calories must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        if (TextUtils.isEmpty(fatStr)) {
+            Toast.makeText(this, "Enter food fat", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            fat = Double.parseDouble(fatStr);
+            if (fat < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Fat must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        if (TextUtils.isEmpty(proStr)) {
+            Toast.makeText(this, "Enter food protein", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            protein = Double.parseDouble(proStr);
+            if (protein < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Protein must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(carbStr)) {
+            Toast.makeText(this, "Enter food carbs", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            carbs = Double.parseDouble(carbStr);
+            if (carbs < 0) throw new NumberFormatException();
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Carbs must be a non-negative number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) {
+            Toast.makeText(this, "User not logged in, please sign in first.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Calendar localMidnight = Calendar.getInstance();
+        localMidnight.set(selYear, selMonth, selDay, 0, 0, 0);
+        localMidnight.set(Calendar.MILLISECOND, 0);
+        String loggedAtIso = isoUtc.format(localMidnight.getTime());
+
+        FirebaseFirestore fs = FirebaseFirestore.getInstance();
+
+        //pre-create doc to get an ID
+        DocumentReference docRef = fs.collection("users").document(uid).collection("food_logs").document();
+        String logId = docRef.getId();
+
+        Map<String, Object> base = new HashMap<>();
+        base.put("name", name);
+        base.put("unit", unit);
+        base.put("weight", weight);
+        base.put("meal", meal);
+        base.put("logged_at", loggedAtIso);
+        base.put("imageUrl", null);
+        base.put("calories", calories);
+        base.put("fat_g", fat);
+        base.put("protein_g", protein);
+        base.put("carb_g", carbs);
+
+        // save base doc (works offline)
+        docRef.set(base, SetOptions.merge())
+                .addOnSuccessListener(v -> uploadPhoto(uid, logId, docRef))
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Save failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    private String selectedDateMidnightIsoUtc() {
-        Calendar local = Calendar.getInstance();
-        local.set(Calendar.YEAR, selYear);
-        local.set(Calendar.MONTH, selMonth);
-        local.set(Calendar.DAY_OF_MONTH, selDay);
-        local.set(Calendar.HOUR_OF_DAY, 0);
-        local.set(Calendar.MINUTE, 0);
-        local.set(Calendar.SECOND, 0);
-        local.set(Calendar.MILLISECOND, 0);
+    private void uploadPhoto(String uid, String logId, DocumentReference docRef) {
+        Uri photoUri = photoMgr.getCurrentUri();
+        if (photoUri == null) {
+            Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
+            navigateHome();
+            return;
+        }
 
-        SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-        iso.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return iso.format(new Date(local.getTimeInMillis()));
+        StorageReference ref = FirebaseStorage.getInstance().getReference()
+                .child("users").child(uid).child("food_images").child(logId + ".jpg");
+        ref.putFile(photoUri)
+                .continueWithTask(task -> {
+                   if (!task.isSuccessful()) throw task.getException();
+                   return ref.getDownloadUrl();
+                })
+                .addOnSuccessListener(uri -> {
+                    Map<String, Object> upd = new HashMap<>();
+                    upd.put("imageUrl", uri.toString());
+                    docRef.set(upd, SetOptions.merge());
+                    Toast.makeText(this, "Saved with photo", Toast.LENGTH_SHORT).show();
+                    navigateHome();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Save failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    navigateHome();
+                });
+    }
+
+    private void navigateHome() {
+        Intent intent = new Intent(MealActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override

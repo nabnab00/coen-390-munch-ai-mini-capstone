@@ -12,6 +12,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
+import android.database.Cursor;
+import com.example.munchai.backend.database.SettingsDatabaseHelper;
+import com.example.munchai.model.CircularProgressView; // if not already present
+import android.widget.TextView;
 
 public class MainActivity extends AuthedActivity
 {
@@ -60,4 +64,47 @@ public class MainActivity extends AuthedActivity
             startActivity(intent);
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Get updated settings (like calorie limit)
+        SettingsDatabaseHelper settingsDb = new SettingsDatabaseHelper(this);
+        Cursor settingsCursor = settingsDb.getSettings();
+
+        int targetCalories = 2000;  // Default value
+        int targetProtein = 100;
+        int targetCarbs = 250;
+        int targetFat = 70;
+
+        if (settingsCursor != null && settingsCursor.moveToFirst()) {
+            try {
+                targetCalories = settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("calorie_limit"));
+                targetProtein = settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("protein_limit"));
+                targetCarbs = settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("carb_limit"));
+                targetFat = settingsCursor.getInt(settingsCursor.getColumnIndexOrThrow("fat_limit"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            settingsCursor.close();
+        }
+
+        // For now, we don't track daily calories — just display 0 / target
+        int todaysCalories = 0;
+
+        // Update the circular progress and text on the main page
+        CircularProgressView calorieRing = findViewById(R.id.calorie_progress_ring);
+        TextView dailyCaloriesText = findViewById(R.id.dailycalories);
+
+        if (calorieRing != null) {
+            calorieRing.setMax(targetCalories);
+            calorieRing.setProgress(todaysCalories);
+        }
+
+        if (dailyCaloriesText != null) {
+            dailyCaloriesText.setText(todaysCalories + "/" + targetCalories);
+        }
+    }
+
 }

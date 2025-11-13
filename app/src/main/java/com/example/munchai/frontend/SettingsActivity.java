@@ -45,6 +45,21 @@ public class SettingsActivity extends AppCompatActivity
         editFats = findViewById(R.id.settings_fats);
         saveSettings = findViewById(R.id.settings_save);
 
+        // Prefill current settings
+        try {
+            Cursor c = db.getSettings();
+            if (c != null && c.moveToFirst()) {
+                switchDarkMode.setChecked(c.getInt(c.getColumnIndexOrThrow("dark_mode")) == 1);
+                editCalories.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("calorie_limit"))));
+                editProtein.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("protein_limit"))));
+                editCarbohydrates.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("carb_limit"))));
+                editFats.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("fat_limit"))));
+                c.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         loadSettings();
 
         Button logoutButton = findViewById(R.id.settings_logout);
@@ -61,16 +76,50 @@ public class SettingsActivity extends AppCompatActivity
             finishAffinity();
         });
 
-        saveSettings.setOnClickListener(v ->
-        {
-            int mode = switchDarkMode.isChecked() ? 1 : 0;
-            int cal = Integer.parseInt(editCalories.getText().toString());
-            int prot = Integer.parseInt(editProtein.getText().toString());
-            int carbs = Integer.parseInt(editCarbohydrates.getText().toString());
-            int fat = Integer.parseInt(editFats.getText().toString());
+        saveSettings.setOnClickListener(v -> {
+            try {
+                int mode = switchDarkMode.isChecked() ? 1 : 0;
 
-            db.updateSettings(mode, cal, prot, carbs, fat);
-            Toast.makeText(this, "Settings saved!", Toast.LENGTH_SHORT).show();
+                // Get existing DB values first
+                Cursor cur = db.getSettings();
+                int cal = 2000, prot = 50, carbs = 250, fat = 70;
+                if (cur != null && cur.moveToFirst()) {
+                    cal = cur.getInt(cur.getColumnIndexOrThrow("calorie_limit"));
+                    prot = cur.getInt(cur.getColumnIndexOrThrow("protein_limit"));
+                    carbs = cur.getInt(cur.getColumnIndexOrThrow("carb_limit"));
+                    fat = cur.getInt(cur.getColumnIndexOrThrow("fat_limit"));
+                    cur.close();
+                }
+
+                // Only override if field is filled in
+                String s = editCalories.getText().toString().trim();
+                if (!s.isEmpty()) cal = Integer.parseInt(s);
+
+                s = editProtein.getText().toString().trim();
+                if (!s.isEmpty()) prot = Integer.parseInt(s);
+
+                s = editCarbohydrates.getText().toString().trim();
+                if (!s.isEmpty()) carbs = Integer.parseInt(s);
+
+                s = editFats.getText().toString().trim();
+                if (!s.isEmpty()) fat = Integer.parseInt(s);
+
+                // Save to DB
+                db.updateSettings(mode, cal, prot, carbs, fat);
+                Toast.makeText(this, "Settings saved!", Toast.LENGTH_SHORT).show();
+
+                // Go back to main and refresh values
+                Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
+
+            } catch (NumberFormatException nfe) {
+                Toast.makeText(this, "Please enter valid numeric values", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Error saving settings", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
