@@ -51,7 +51,7 @@ public class GeminiRequest {
 
         //prompt
         String prompt = "You are analyzing a meal/food image. The total weight of the food is " + weight +
-                ". Carefully analyze the image and the weight. " +
+                " grams. Carefully analyze the image and the weight. " +
                 "Return a JSON object with these lowercase keys: " +
                 "name, serving_size, calories, total_fat_g, protein_g, total_carbohydrate_g. " +
                 "The nutrition values you provide should correspond to the total weight of the food. " +

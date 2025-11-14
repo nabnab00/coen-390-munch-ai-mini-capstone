@@ -16,7 +16,6 @@ public class NutritionFacts
     @JsonProperty("sugars_g") public Double sugarsG;
     @JsonProperty("protein_g") public Double proteinG;
     @JsonProperty("vitamin_a_percent") public Double vitaminAPercent;
-    @JsonProperty("vitamin_b_percent") public Double vitaminBPercent;
     @JsonProperty("vitamin_c_percent") public Double vitaminCPercent;
     @JsonProperty("calcium_percent") public Double calciumPercent;
     @JsonProperty("iron_percent") public Double ironPercent;
@@ -29,10 +28,7 @@ public class NutritionFacts
                 "Carbs: " + safe(totalCarbG) + " g\n" +
                 "Fat: " + safe(totalFatG) + " g\n" +
                 "Sodium: " + safe(sodiumMg) + " mg\n" +
-                "Vitamin A: " + safe(vitaminAPercent) + " mg\n" +
-                "Vitamin B: " + safe(vitaminBPercent) + " mg\n" +
-                "Vitamin C: " + safe(vitaminCPercent) + " mg\n"
-                ;
+                "Cholesterol: " + safe(cholesterolMg) + " mg\n";
     }
 
     private String safe(Object v) { return (v == null) ? "N/A" : v.toString(); }

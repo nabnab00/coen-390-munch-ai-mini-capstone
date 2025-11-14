@@ -47,7 +47,6 @@ public class WeightScaleActivity extends AppCompatActivity {
     private Button connectBtn, tareBtn, resetBtn, saveBtn;
     private Spinner unitSpinner;
     public static final String EXTRA_WEIGHT = "com.example.munchai.WEIGHT";
-    public static final String EXTRA_UNIT = "com.example.munchai.UNIT";
     private BluetoothAdapter btAdapter;
     private BluetoothSocket socket;
     private OutputStream out;
@@ -88,23 +87,20 @@ public class WeightScaleActivity extends AppCompatActivity {
         });
 
         saveBtn.setOnClickListener(v -> {
-            String currentWeightWithUnit = weightText.getText().toString();
-            // This extracts only the numbers, e.g., "123.45 g" -> "123.45"
-            String numericWeight = currentWeightWithUnit.replaceAll("[^\\d.]", "");
+            String currentWeight = weightText.getText().toString();
+
+            // We only need the numeric part for the Gemini prompt
+            String numericWeight = currentWeight.replaceAll("[^0-9.]", "");
 
             if (numericWeight.isEmpty()) {
                 Toast.makeText(this, "No weight measured", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Get the selected unit from the spinner
-            String selectedUnit = unitSpinner.getSelectedItem().toString();
-
             Intent resultIntent = new Intent();
             resultIntent.putExtra(EXTRA_WEIGHT, numericWeight);
-            resultIntent.putExtra(EXTRA_UNIT, selectedUnit); // Add the unit to the intent
             setResult(Activity.RESULT_OK, resultIntent);
-            finish();
+            finish(); // This will close WeightScaleActivity and trigger the launcher in MealActivity
         });
 
         tareBtn.setOnClickListener(v -> sendCmd("t\n"));

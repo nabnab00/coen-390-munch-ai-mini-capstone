@@ -52,7 +52,7 @@ public class MealActivity extends AppCompatActivity
     private Spinner unitSp, mealSp;
     private ActivityResultLauncher<Intent> weightScaleLauncher;
     private Uri currentPhotoUri;
-    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt, sodiumEt, vitaminAEt, vitaminBEt, vitaminCEt, ironEt;
+    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
     private TextView dateTv;
     private ImageView photoIv;
     private Button retakeBtn, toWeightBtn, saveBtn, cancelBtn;
@@ -112,12 +112,9 @@ public class MealActivity extends AppCompatActivity
 
         saveBtn.setOnClickListener(v -> saveLog());
         cancelBtn.setOnClickListener(v -> finish());
-
         //log meal
-        toWeightBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, WeightScaleActivity.class);
-            weightScaleLauncher.launch(intent);
-        });
+        toWeightBtn.setOnClickListener(v -> startActivity(new Intent(this, WeightScaleActivity.class)));
+
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -152,17 +149,12 @@ public class MealActivity extends AppCompatActivity
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         String weightStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_WEIGHT);
-                        String unitStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_UNIT); // Get the unit
-
-                        // Check if we have all the necessary data
-                        if (weightStr != null && !weightStr.isEmpty() && unitStr != null && currentPhotoUri != null) {
-                            // Combine weight and unit for the API call (e.g., "150.5 g")
-                            String weightWithUnit = weightStr + " " + unitStr;
-
+                        if (weightStr != null && !weightStr.isEmpty() && currentPhotoUri != null) {
+                            // We have the weight and the photo URI, now call Gemini
                             Toast.makeText(this, "Analyzing image...", Toast.LENGTH_LONG).show();
-                            // Pass the combined string to the Gemini API
-                            callGeminiApi(currentPhotoUri, weightWithUnit);
+                            callGeminiApi(currentPhotoUri, weightStr);
 
+                            // Show the taken photo in the preview
                             photoIv.setImageURI(currentPhotoUri);
                         }
                     }
@@ -177,16 +169,14 @@ public class MealActivity extends AppCompatActivity
 
     }
 
-    // Change this method signature and its contents
-    private void callGeminiApi(Uri photoUri, String weightWithUnit) { // <-- Use weightWithUnit here
+    private void callGeminiApi(Uri photoUri, String weight) {
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
             try {
-                // Now this line is correct
-                NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromUri(this, photoUri, weightWithUnit);
-                handler.post(() -> populateFormWithNutritionData(facts, weightWithUnit));
+                NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromUri(this, photoUri, weight);
+                handler.post(() -> populateFormWithNutritionData(facts, weight));
             } catch (IOException e) {
                 e.printStackTrace();
                 handler.post(() -> {
@@ -196,6 +186,7 @@ public class MealActivity extends AppCompatActivity
             }
         });
     }
+
     private void populateFormWithNutritionData(NutritionFacts facts, String weight) {
         if (facts == null) return;
 
@@ -206,11 +197,6 @@ public class MealActivity extends AppCompatActivity
         fatEt.setText(facts.totalFatG != null ? String.valueOf(facts.totalFatG) : "");
         proteinEt.setText(facts.proteinG != null ? String.valueOf(facts.proteinG) : "");
         carbsEt.setText(facts.totalCarbG != null ? String.valueOf(facts.totalCarbG) : "");
-        sodiumEt.setText(facts.sodiumMg != null ? String.valueOf(facts.sodiumMg) : "");
-        vitaminAEt.setText(facts.vitaminAPercent != null ? String.valueOf(facts.vitaminAPercent) : "");
-        vitaminBEt.setText(facts.vitaminBPercent != null ? String.valueOf(facts.vitaminBPercent) : "");
-        vitaminCEt.setText(facts.vitaminCPercent != null ? String.valueOf(facts.vitaminCPercent) : "");
-        ironEt.setText(facts.ironPercent != null ? String.valueOf(facts.ironPercent) : "");
 
         enableForm(true); // Enable the form for editing
         Toast.makeText(this, "Nutrition data loaded!", Toast.LENGTH_SHORT).show();
@@ -366,6 +352,7 @@ public class MealActivity extends AppCompatActivity
         base.put("calories", calories);
         base.put("fat_g", fat);
         base.put("protein_g", protein);
+        base.put("carb_g", carbs);
 
         // save base doc (works offline)
         docRef.set(base, SetOptions.merge())
