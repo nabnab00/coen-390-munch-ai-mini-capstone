@@ -56,7 +56,7 @@ public class MealActivity extends AppCompatActivity
     private Spinner unitSp, mealSp;
     private ActivityResultLauncher<Intent> weightScaleLauncher;
     private Uri currentPhotoUri;
-    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
+    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt, sodiumEt, vitaminAEt, vitaminBEt, vitaminCEt, ironEt;
     private TextView dateTv;
     private ImageView photoIv;
     private Button retakeBtn, toWeightBtn, saveBtn, cancelBtn;
