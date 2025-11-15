@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -95,13 +94,26 @@
                 android:layout_marginEnd="5dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
-                android:hint="Weight (g)"
+                android:hint="Weight"
                 android:inputType="numberDecimal"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_food_name"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                app:layout_constraintEnd_toStartOf="@id/measurement_weight" />
+
+            <TextView
+                android:id="@+id/measurement_weight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(g)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_weight"
+                app:layout_constraintStart_toEndOf="@id/input_weight"
+                app:layout_constraintEnd_toStartOf="@id/to_weight"
+                />
 
             <!-- WEIGHT AGAIN BUTTON -->
             <Button
@@ -129,6 +141,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/to_weight"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_calories" />
+
+            <TextView
+                android:id="@+id/measurement_calories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(kcal)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_calories"
+                app:layout_constraintStart_toEndOf="@id/input_calories"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- PROTEIN -->
@@ -146,6 +171,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_calories"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_protein" />
+
+            <TextView
+                android:id="@+id/measurement_protein"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(g)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_protein"
+                app:layout_constraintStart_toEndOf="@id/input_protein"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- CARBS -->
@@ -163,6 +201,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_protein"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_carbohydrates" />
+
+            <TextView
+                android:id="@+id/measurement_carbohydrates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(g)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_carbohydrates"
+                app:layout_constraintStart_toEndOf="@id/input_carbohydrates"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- FAT -->
@@ -180,6 +231,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_carbohydrates"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_fat" />
+
+            <TextView
+                android:id="@+id/measurement_fat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(g)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_fat"
+                app:layout_constraintStart_toEndOf="@id/input_fat"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- Sodium -->
@@ -197,6 +261,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_fat"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_sodium" />
+
+            <TextView
+                android:id="@+id/measurement_sodium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(mg)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_sodium"
+                app:layout_constraintStart_toEndOf="@id/input_sodium"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- Vitamin A -->
@@ -214,6 +291,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_sodium"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_vitaminA" />
+
+            <TextView
+                android:id="@+id/measurement_vitaminA"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(mg)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_vitaminA"
+                app:layout_constraintStart_toEndOf="@id/input_vitaminA"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- Vitamin B -->
@@ -231,6 +321,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_vitaminA"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_vitaminB" />
+
+            <TextView
+                android:id="@+id/measurement_vitaminB"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(mg)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_vitaminB"
+                app:layout_constraintStart_toEndOf="@id/input_vitaminB"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- vitamin C -->
@@ -248,6 +351,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_vitaminB"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_vitaminC" />
+
+            <TextView
+                android:id="@+id/measurement_vitaminC"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(mg)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_vitaminC"
+                app:layout_constraintStart_toEndOf="@id/input_vitaminC"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- Iron -->
@@ -265,6 +381,19 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_vitaminC"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/measurement_iron" />
+
+            <TextView
+                android:id="@+id/measurement_iron"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_medium"
+                android:text="(mg)"
+                android:textColor="@color/brown_primary"
+                android:textSize="18sp"
+                android:visibility="invisible"
+                app:layout_constraintBaseline_toBaselineOf="@id/input_iron"
+                app:layout_constraintStart_toEndOf="@id/input_iron"
                 app:layout_constraintEnd_toStartOf="@id/to_weight" />
 
             <!-- DATE LABEL -->
@@ -304,48 +433,41 @@
                 android:layout_height="37dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="24dp"
-                android:textColor="@color/brown_primary"
-                app:layout_constraintTop_toBottomOf="@id/input_iron"
-                app:layout_constraintStart_toEndOf="@id/text_date_value" />
+                app:layout_constraintStart_toEndOf="@id/text_date_value"
+                app:layout_constraintTop_toBottomOf="@id/input_iron" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-
-    <!-- ▼ FIXED SAVE/CANCEL OUTSIDE SCROLLVIEW ▼ -->
+    <!-- ▼ ACTION BUTTONS (ALWAYS VISIBLE) ▼ -->
     <LinearLayout
         android:id="@+id/actions_row"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        android:layout_marginTop="24dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <Button
-            android:id="@+id/save_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/save"
-            android:textColor="@color/brown_background"/>
-
-        <Space
-            android:layout_width="12dp"
-            android:layout_height="wrap_content"/>
+        android:paddingBottom="16dp"
+        >
 
         <Button
             android:id="@+id/cancel_button"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/cancel"
-            android:textColor="@color/brown_background"/>
+            android:text="Cancel"
+            android:layout_marginEnd="12dp"
+            />
+
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:layout_marginStart="12dp"
+            />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

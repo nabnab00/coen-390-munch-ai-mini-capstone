@@ -26,6 +26,8 @@ public class NutritionFacts
                 "Calories: " + safe(calories) + "\n" +
                 "Protein: " + safe(proteinG) + " g\n" +
                 "Carbs: " + safe(totalCarbG) + " g\n" +
+                "Fiber: " + safe(fiberG) + " g\n" +
+                "Sugars: " + safe(sugarsG) + " g\n" +
                 "Fat: " + safe(totalFatG) + " g\n" +
                 "Sodium: " + safe(sodiumMg) + " mg\n" +
                 "Cholesterol: " + safe(cholesterolMg) + " mg\n";
