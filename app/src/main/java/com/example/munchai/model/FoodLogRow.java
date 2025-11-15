@@ -1,18 +1,22 @@
 package com.example.munchai.model;
 
-public class FoodLogRow
-{
-    public final String name, unit, meal, loggedAtIso;
+import java.io.Serializable;
+
+public class FoodLogRow implements Serializable {
+
+    public final String name;
+    public final String unit;
     public final double weight;
+    public final String meal;
+    public final String loggedAtIso;
     public final Double calories;
     public final Double fatG;
     public final Double proteinG;
     public final Double carbG;
-
+    public final String imageUrl;
 
     public FoodLogRow(String name, String unit, double weight, String meal, String loggedAtIso,
-                      Double calories, Double fatG, Double proteinG, Double carbG)
-    {
+                      Double calories, Double fatG, Double proteinG, Double carbG, String imageUrl) {
         this.name = name;
         this.unit = unit;
         this.weight = weight;
@@ -22,6 +26,6 @@ public class FoodLogRow
         this.fatG = fatG;
         this.proteinG = proteinG;
         this.carbG = carbG;
-
+        this.imageUrl = imageUrl;
     }
 }

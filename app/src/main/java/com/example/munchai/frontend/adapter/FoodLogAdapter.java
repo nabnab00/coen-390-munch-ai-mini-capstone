@@ -1,5 +1,7 @@
 package com.example.munchai.frontend.adapter;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.munchai.R;
+import com.example.munchai.frontend.DisplayLogActivity;
 import com.example.munchai.model.FoodLogRow;
 
 import java.text.ParseException;
@@ -40,7 +43,7 @@ public class FoodLogAdapter extends RecyclerView.Adapter<FoodLogAdapter.VH>
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_food_log, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.logmodel, parent, false);
         return new VH(v);
     }
 
@@ -77,6 +80,12 @@ public class FoodLogAdapter extends RecyclerView.Adapter<FoodLogAdapter.VH>
 
         h.bottom.setText(bottom.toString());
 
+        h.itemView.setOnClickListener(v -> {
+            Context context = v.getContext();
+            Intent intent = new Intent(context, DisplayLogActivity.class);
+            intent.putExtra("food_log", r);
+            context.startActivity(intent);
+        });
     }
 
     @Override
