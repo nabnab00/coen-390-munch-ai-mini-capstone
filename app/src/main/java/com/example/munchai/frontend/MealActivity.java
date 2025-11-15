@@ -46,12 +46,17 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Executor;
 
-public class MealActivity extends AppCompatActivity {
+import android.Manifest;
+import android.content.pm.PackageManager;
+import androidx.core.content.ContextCompat;
+
+public class MealActivity extends AppCompatActivity
+{
     private EditText nameEt;
     private Spinner unitSp, mealSp;
     private ActivityResultLauncher<Intent> weightScaleLauncher;
     private Uri currentPhotoUri;
-    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt, sodiumEt, vitaminAEt, vitaminBEt, vitaminCEt, ironEt;
+    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
     private TextView dateTv;
     private ImageView photoIv;
     private Button retakeBtn, toWeightBtn, saveBtn, cancelBtn;
@@ -62,7 +67,7 @@ public class MealActivity extends AppCompatActivity {
     private PhotoCaptureManager photoMgr;
 
     private final SimpleDateFormat isoUtc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +123,7 @@ public class MealActivity extends AppCompatActivity {
 
         saveBtn.setOnClickListener(v -> saveLog());
         cancelBtn.setOnClickListener(v -> finish());
+        //log meal
         toWeightBtn.setOnClickListener(v -> startActivity(new Intent(this, WeightScaleActivity.class)));
 
 
@@ -125,7 +131,21 @@ public class MealActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Log Meal");
         }
-
+        requestCameraPermissionLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.RequestPermission(),
+                        isGranted -> {
+                            if (isGranted) {
+                                openCamera();
+                            } else {
+                                Toast.makeText(
+                                        this,
+                                        "Camera permission is required to take a meal photo.",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        }
+                );
         photoMgr = new PhotoCaptureManager(
                 this,
                 photoIv,
@@ -147,8 +167,8 @@ public class MealActivity extends AppCompatActivity {
                 }
         );
         photoMgr.register();
-        retakeBtn.setOnClickListener(v -> photoMgr.retake());
-        photoMgr.startCapture();
+        retakeBtn.setOnClickListener(v -> startCameraWithPermissionCheck());
+        startCameraWithPermissionCheck();
 
         weightScaleLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -172,6 +192,22 @@ public class MealActivity extends AppCompatActivity {
                 }
         );
 
+    }
+    private void startCameraWithPermissionCheck() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void openCamera() {
+        if (photoMgr != null) {
+            photoMgr.startCapture();
+        }
     }
 
     private void callGeminiApi(Uri photoUri, String weight, String unit) {
