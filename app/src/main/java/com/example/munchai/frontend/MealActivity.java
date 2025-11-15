@@ -155,11 +155,12 @@ public class MealActivity extends AppCompatActivity
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         String weightStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_WEIGHT);
+                        String unitStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_UNIT);
 
                         if (weightStr != null && !weightStr.isEmpty() && currentPhotoUri != null) {
                             //-----------------------------------------------------------------------------------------------------We have the weight and the photo URI, now call Gemini
                             Toast.makeText(this, "Analyzing image...", Toast.LENGTH_LONG).show();
-                            callGeminiApi(currentPhotoUri, weightStr);
+                            callGeminiApi(currentPhotoUri, weightStr, unitStr);
 
                             //-----------------------------------------------------------------------------------------------------Show the taken photo in the preview
                             photoIv.setImageURI(currentPhotoUri);
@@ -174,13 +175,13 @@ public class MealActivity extends AppCompatActivity
 
     }
 
-    private void callGeminiApi(Uri photoUri, String weight) {
+    private void callGeminiApi(Uri photoUri, String weight, String unit) {
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
         executor.execute(() -> {
             try {
-                NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromUri(this, photoUri, weight);
+                NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromUri(this, photoUri, weight, unit);
                 handler.post(() -> populateFormWithNutritionData(facts, weight));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -273,142 +274,61 @@ public class MealActivity extends AppCompatActivity
 
         try {
             weight = Double.parseDouble(weightStr);
-            if (weight <= 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Weight must be a positive number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-        if (TextUtils.isEmpty(calStr)) {
-            Toast.makeText(this, "Enter food calories", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            calories = Double.parseDouble(calStr);
-            if (calories < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Calories must be a non-negative number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-        if (TextUtils.isEmpty(fatStr)) {
-            Toast.makeText(this, "Enter food fat", Toast.LENGTH_SHORT).show();
+            if (weight < 0) {
+                Toast.makeText(this, "Weight must be positive", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid weight", Toast.LENGTH_SHORT).show();
             return;
         }
 
         try {
-            fat = Double.parseDouble(fatStr);
-            if (fat < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Fat must be a non-negative number", Toast.LENGTH_SHORT).show();
+            calories = TextUtils.isEmpty(calStr) ? 0 : Double.parseDouble(calStr);
+            fat = TextUtils.isEmpty(fatStr) ? 0 : Double.parseDouble(fatStr);
+            protein = TextUtils.isEmpty(proStr) ? 0 : Double.parseDouble(proStr);
+            carbs = TextUtils.isEmpty(carbStr) ? 0 : Double.parseDouble(carbStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid macro value", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        Calendar cal = Calendar.getInstance();
+        cal.set(selYear, selMonth, selDay);
 
-        if (TextUtils.isEmpty(proStr)) {
-            Toast.makeText(this, "Enter food protein", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            protein = Double.parseDouble(proStr);
-            if (protein < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Protein must be a non-negative number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (TextUtils.isEmpty(carbStr)) {
-            Toast.makeText(this, "Enter food carbs", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            carbs = Double.parseDouble(carbStr);
-            if (carbs < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Carbs must be a non-negative number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
+        String date = isoUtc.format(cal.getTime());
         String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) {
-            Toast.makeText(this, "User not logged in, please sign in first.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        String docId = uid + "_" + date + "_" + meal;
 
-        Calendar localMidnight = Calendar.getInstance();
-        localMidnight.set(selYear, selMonth, selDay, 0, 0, 0);
-        localMidnight.set(Calendar.MILLISECOND, 0);
-        String loggedAtIso = isoUtc.format(localMidnight.getTime());
+        String photoName = "meal_" + System.currentTimeMillis() + ".jpg";
+        StorageReference photoRef = FirebaseStorage.getInstance()
+                .getReference("meal-photos/" + uid + "/" + photoName);
 
-        FirebaseFirestore fs = FirebaseFirestore.getInstance();
+        photoRef.putFile(currentPhotoUri) // Use currentPhotoUri directly
+                .addOnSuccessListener(task -> photoRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String photoUrl = uri.toString();
 
-        //pre-create doc to get an ID
-        DocumentReference docRef = fs.collection("users").document(uid).collection("food_logs").document();
-        String logId = docRef.getId();
+                    Map<String, Object> log = new HashMap<>();
+                    log.put("name", name);
+                    log.put("weight", weight);
+                    log.put("unit", unit);
+                    log.put("mealType", meal);
+                    log.put("date", date);
+                    log.put("calories", calories);
+                    log.put("fat", fat);
+                    log.put("protein", protein);
+                    log.put("carbohydrates", carbs);
+                    log.put("photoUrl", photoUrl);
 
-        Map<String, Object> base = new HashMap<>();
-        base.put("name", name);
-        base.put("unit", unit);
-        base.put("weight", weight);
-        base.put("meal", meal);
-        base.put("logged_at", loggedAtIso);
-        base.put("imageUrl", null);
-        base.put("calories", calories);
-        base.put("fat_g", fat);
-        base.put("protein_g", protein);
-        base.put("carb_g", carbs);
-
-        // save base doc (works offline)
-        docRef.set(base, SetOptions.merge())
-                .addOnSuccessListener(v -> uploadPhoto(uid, logId, docRef))
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Save failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    }
-
-    private void uploadPhoto(String uid, String logId, DocumentReference docRef) {
-        Uri photoUri = photoMgr.getCurrentUri();
-        if (photoUri == null) {
-            Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show();
-            navigateHome();
-            return;
-        }
-
-        StorageReference ref = FirebaseStorage.getInstance().getReference()
-                .child("users").child(uid).child("food_images").child(logId + ".jpg");
-        ref.putFile(photoUri)
-                .continueWithTask(task -> {
-                   if (!task.isSuccessful()) throw task.getException();
-                   return ref.getDownloadUrl();
-                })
-                .addOnSuccessListener(uri -> {
-                    Map<String, Object> upd = new HashMap<>();
-                    upd.put("imageUrl", uri.toString());
-                    docRef.set(upd, SetOptions.merge());
-                    Toast.makeText(this, "Saved with photo", Toast.LENGTH_SHORT).show();
-                    navigateHome();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Save failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    navigateHome();
-                });
-    }
-
-    private void navigateHome() {
-        Intent intent = new Intent(MealActivity.this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        finish();
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    db.collection("mealLogs").document(docId)
+                            .set(log, SetOptions.merge())
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Meal logged successfully", Toast.LENGTH_SHORT).show();
+                                finish();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to log meal", Toast.LENGTH_SHORT).show());
+                }))
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to upload photo", Toast.LENGTH_SHORT).show());
     }
 }
