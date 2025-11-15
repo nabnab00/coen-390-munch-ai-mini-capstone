@@ -128,18 +128,5 @@
         android:layout_marginTop="16dp"
         />
 
-    <Button
-        android:id="@+id/to_test"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View Gemini testing"
-        android:textColor="@color/brown_background"
-        android:fontFamily="@font/inter_medium"
-        app:layout_constraintTop_toBottomOf="@id/to_history"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

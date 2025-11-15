@@ -52,7 +52,7 @@ public class MealActivity extends AppCompatActivity
     private Spinner unitSp, mealSp;
     private ActivityResultLauncher<Intent> weightScaleLauncher;
     private Uri currentPhotoUri;
-    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt;
+    private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt, sodiumEt, vitaminAEt, vitaminBEt, vitaminCEt, ironEt;
     private TextView dateTv;
     private ImageView photoIv;
     private Button retakeBtn, toWeightBtn, saveBtn, cancelBtn;
@@ -77,12 +77,19 @@ public class MealActivity extends AppCompatActivity
         retakeBtn = findViewById(R.id.retake_button);
         toWeightBtn = findViewById(R.id.to_weight);
 
+        //-----------------------------------------------------------------------------------------------------MACROS
         nameEt = findViewById(R.id.input_food_name);
         weightEt = findViewById(R.id.input_weight);
         caloriesEt = findViewById(R.id.input_calories);
         fatEt = findViewById(R.id.input_fat);
         proteinEt = findViewById(R.id.input_protein);
         carbsEt = findViewById(R.id.input_carbohydrates);
+        sodiumEt = findViewById(R.id.input_sodium);
+        vitaminAEt = findViewById(R.id.input_vitaminA);
+        vitaminBEt = findViewById(R.id.input_vitaminB);
+        vitaminCEt = findViewById(R.id.input_vitaminC);
+        ironEt = findViewById(R.id.input_iron);
+
         mealSp = findViewById(R.id.spinner_meal);
         dateTv = findViewById(R.id.text_date_value);
 
@@ -112,7 +119,6 @@ public class MealActivity extends AppCompatActivity
 
         saveBtn.setOnClickListener(v -> saveLog());
         cancelBtn.setOnClickListener(v -> finish());
-        //log meal
         toWeightBtn.setOnClickListener(v -> startActivity(new Intent(this, WeightScaleActivity.class)));
 
 
@@ -128,7 +134,7 @@ public class MealActivity extends AppCompatActivity
                 new PhotoCaptureManager.Callbacks() {
                     @Override
                     public void onPhotoReady(Uri uri) {
-                        currentPhotoUri = uri; // Store the URI
+                        currentPhotoUri = uri; //-----------------------------------------------------------------------------------------------------Store the URI
                         Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
                         weightScaleLauncher.launch(intent);
                     }
@@ -149,19 +155,18 @@ public class MealActivity extends AppCompatActivity
                 result -> {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         String weightStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_WEIGHT);
+
                         if (weightStr != null && !weightStr.isEmpty() && currentPhotoUri != null) {
-                            // We have the weight and the photo URI, now call Gemini
+                            //-----------------------------------------------------------------------------------------------------We have the weight and the photo URI, now call Gemini
                             Toast.makeText(this, "Analyzing image...", Toast.LENGTH_LONG).show();
                             callGeminiApi(currentPhotoUri, weightStr);
 
-                            // Show the taken photo in the preview
+                            //-----------------------------------------------------------------------------------------------------Show the taken photo in the preview
                             photoIv.setImageURI(currentPhotoUri);
                         }
                     }
                     else {
-                        // Handle the case where the user comes back without a weight
                         Toast.makeText(this, "Weight measurement was cancelled.", Toast.LENGTH_SHORT).show();
-                        // You might want to allow retaking the photo or exiting
                         retakeBtn.setVisibility(View.VISIBLE);
                     }
                 }
@@ -190,15 +195,20 @@ public class MealActivity extends AppCompatActivity
     private void populateFormWithNutritionData(NutritionFacts facts, String weight) {
         if (facts == null) return;
 
-        //PARSE OBJECTS INTO THE FIELDS
+        //------------------------------------------------------------------------------------------------------------------------------PARSE OBJECTS
         nameEt.setText(facts.name);
         weightEt.setText(weight);
         caloriesEt.setText(facts.calories != null ? String.valueOf(facts.calories) : "");
         fatEt.setText(facts.totalFatG != null ? String.valueOf(facts.totalFatG) : "");
         proteinEt.setText(facts.proteinG != null ? String.valueOf(facts.proteinG) : "");
         carbsEt.setText(facts.totalCarbG != null ? String.valueOf(facts.totalCarbG) : "");
+        sodiumEt.setText(facts.sodiumMg != null ? String.valueOf(facts.sodiumMg) : "");
+        vitaminAEt.setText(facts.vitaminAPercent != null ? String.valueOf(facts.vitaminAPercent) : "");
+        vitaminBEt.setText(facts.vitaminBPercent != null ? String.valueOf(facts.vitaminBPercent) : "");
+        vitaminCEt.setText(facts.vitaminCPercent != null ? String.valueOf(facts.vitaminCPercent) : "");
+        ironEt.setText(facts.ironPercent != null ? String.valueOf(facts.ironPercent) : "");
 
-        enableForm(true); // Enable the form for editing
+        enableForm(true); //-----------------------------------------------------------------------------------------------------Form enabler (might remove in the future)
         Toast.makeText(this, "Nutrition data loaded!", Toast.LENGTH_SHORT).show();
     }
 

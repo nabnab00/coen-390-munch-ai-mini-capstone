@@ -67,12 +67,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <!-- FOOD NAME LABEL -->
+            <TextView
+                android:id="@+id/food_name_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:fontFamily="@font/inter_medium"
+                android:text="Food Name"
+                android:textColor="@color/brown_primary"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_food_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_food_name" />
+
             <!-- FOOD NAME -->
             <EditText
                 android:id="@+id/input_food_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
@@ -80,171 +94,193 @@
                 android:hint="@string/food_name"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/food_name_label"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- WEIGHT LABEL -->
+            <TextView
+                android:id="@+id/weight_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:fontFamily="@font/inter_medium"
+                android:text="Weight"
+                android:textColor="@color/brown_primary"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_weight"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toTopOf="@+id/input_weight" />
 
             <!-- WEIGHT -->
             <EditText
                 android:id="@+id/input_weight"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
+                android:layout_width="184dp"
+                android:layout_height="62dp"
+                android:layout_marginStart="5dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="5dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Weight"
                 android:inputType="numberDecimal"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
-                app:layout_constraintTop_toBottomOf="@id/input_food_name"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_weight" />
-
-            <TextView
-                android:id="@+id/measurement_weight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_medium"
-                android:text="(g)"
-                android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_weight"
-                app:layout_constraintStart_toEndOf="@id/input_weight"
                 app:layout_constraintEnd_toStartOf="@id/to_weight"
-                />
+                app:layout_constraintStart_toEndOf="@+id/weight_label"
+                app:layout_constraintTop_toBottomOf="@id/input_food_name" />
 
             <!-- WEIGHT AGAIN BUTTON -->
             <Button
                 android:id="@+id/to_weight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="97dp"
+                android:layout_height="68dp"
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="25dp"
                 android:text="Weight Again"
-                app:layout_constraintTop_toBottomOf="@id/input_food_name"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/input_food_name" />
+
+            <!-- CALORIES LABEL -->
+            <TextView
+                android:id="@+id/calories_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:fontFamily="@font/inter_medium"
+                android:text="Calories (kcal)"
+                android:textColor="@color/brown_primary"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_calories"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_calories" />
 
             <!-- CALORIES -->
             <EditText
                 android:id="@+id/input_calories"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
+                android:layout_width="209dp"
+                android:layout_height="63dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Calories (kcal)"
                 android:inputType="numberDecimal"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
-                app:layout_constraintTop_toBottomOf="@id/to_weight"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_calories" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/calories_label"
+                app:layout_constraintTop_toBottomOf="@id/to_weight" />
 
+            <!-- PROTEIN LABEL -->
             <TextView
-                android:id="@+id/measurement_calories"
+                android:id="@+id/protein_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(kcal)"
+                android:text="Protein (g)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_calories"
-                app:layout_constraintStart_toEndOf="@id/input_calories"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_protein"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_protein" />
 
             <!-- PROTEIN -->
             <EditText
                 android:id="@+id/input_protein"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
+                android:layout_width="264dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="12dp"
                 android:layout_marginTop="12dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Protein (g)"
                 android:inputType="numberDecimal"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
-                app:layout_constraintTop_toBottomOf="@id/input_calories"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_protein" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/protein_label"
+                app:layout_constraintTop_toBottomOf="@id/input_calories" />
 
+            <!-- CARB LABEL -->
             <TextView
-                android:id="@+id/measurement_protein"
+                android:id="@+id/carbohydrates_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(g)"
+                android:text="Carbohydrates (g)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_protein"
-                app:layout_constraintStart_toEndOf="@id/input_protein"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_carbohydrates"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_carbohydrates" />
 
             <!-- CARBS -->
             <EditText
                 android:id="@+id/input_carbohydrates"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="187dp"
+                android:layout_height="61dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Carbohydrates (g)"
                 android:inputType="numberDecimal"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
-                app:layout_constraintTop_toBottomOf="@id/input_protein"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_carbohydrates" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/carbohydrates_label"
+                app:layout_constraintTop_toBottomOf="@id/input_protein" />
 
+            <!-- FAT LABEL -->
             <TextView
-                android:id="@+id/measurement_carbohydrates"
+                android:id="@+id/fat_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(g)"
+                android:text="Fats (g)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_carbohydrates"
-                app:layout_constraintStart_toEndOf="@id/input_carbohydrates"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_fat"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_fat" />
 
             <!-- FAT -->
             <EditText
                 android:id="@+id/input_fat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="281dp"
+                android:layout_height="59dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Fat (g)"
                 android:inputType="numberDecimal"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
-                app:layout_constraintTop_toBottomOf="@id/input_carbohydrates"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_fat" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/fat_label"
+                app:layout_constraintTop_toBottomOf="@id/input_carbohydrates" />
 
+            <!-- SODIUM LABEL -->
             <TextView
-                android:id="@+id/measurement_fat"
+                android:id="@+id/sodium_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(g)"
+                android:text="Sodium (mg)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_fat"
-                app:layout_constraintStart_toEndOf="@id/input_fat"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_sodium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_sodium" />
 
             <!-- Sodium -->
             <EditText
@@ -253,6 +289,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Sodium (mg)"
@@ -260,21 +297,22 @@
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_fat"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_sodium" />
+                app:layout_constraintStart_toEndOf="@id/sodium_label"
+                app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- VITAMIN A LABEL -->
             <TextView
-                android:id="@+id/measurement_sodium"
+                android:id="@+id/vitaminA_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(mg)"
+                android:text="Vitamin A (%)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_sodium"
-                app:layout_constraintStart_toEndOf="@id/input_sodium"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_vitaminA"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_vitaminA" />
 
             <!-- Vitamin A -->
             <EditText
@@ -283,6 +321,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Vitamin A (mg)"
@@ -290,21 +329,22 @@
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_sodium"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_vitaminA" />
+                app:layout_constraintStart_toEndOf="@id/vitaminA_label"
+                app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- VITAMIN B LABEL -->
             <TextView
-                android:id="@+id/measurement_vitaminA"
+                android:id="@+id/vitaminB_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(mg)"
+                android:text="Vitamin B (%)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_vitaminA"
-                app:layout_constraintStart_toEndOf="@id/input_vitaminA"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_vitaminB"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_vitaminB" />
 
             <!-- Vitamin B -->
             <EditText
@@ -313,6 +353,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Vitamin B (mg)"
@@ -320,21 +361,22 @@
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_vitaminA"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_vitaminB" />
+                app:layout_constraintStart_toEndOf="@id/vitaminB_label"
+                app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- VITAMIN C LABEL -->
             <TextView
-                android:id="@+id/measurement_vitaminB"
+                android:id="@+id/vitaminC_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(mg)"
+                android:text="Vitamin C (%)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_vitaminB"
-                app:layout_constraintStart_toEndOf="@id/input_vitaminB"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_vitaminC"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_vitaminC" />
 
             <!-- vitamin C -->
             <EditText
@@ -343,6 +385,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Vitamin C (mg)"
@@ -350,21 +393,22 @@
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_vitaminB"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_vitaminC" />
+                app:layout_constraintStart_toEndOf="@id/vitaminC_label"
+                app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- VITAMIN C LABEL -->
             <TextView
-                android:id="@+id/measurement_vitaminC"
+                android:id="@+id/iron_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:fontFamily="@font/inter_medium"
-                android:text="(mg)"
+                android:text="Iron (%)"
                 android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_vitaminC"
-                app:layout_constraintStart_toEndOf="@id/input_vitaminC"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/input_iron"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/input_iron" />
 
             <!-- Iron -->
             <EditText
@@ -373,6 +417,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
                 android:backgroundTint="@color/brown_primary"
                 android:fontFamily="@font/inter_medium"
                 android:hint="Iron (mg)"
@@ -380,21 +425,8 @@
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintTop_toBottomOf="@id/input_vitaminC"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/measurement_iron" />
-
-            <TextView
-                android:id="@+id/measurement_iron"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_medium"
-                android:text="(mg)"
-                android:textColor="@color/brown_primary"
-                android:textSize="18sp"
-                android:visibility="invisible"
-                app:layout_constraintBaseline_toBaselineOf="@id/input_iron"
-                app:layout_constraintStart_toEndOf="@id/input_iron"
-                app:layout_constraintEnd_toStartOf="@id/to_weight" />
+                app:layout_constraintStart_toEndOf="@id/iron_label"
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <!-- DATE LABEL -->
             <TextView
@@ -402,7 +434,7 @@
                 android:layout_width="65dp"
                 android:layout_height="37dp"
                 android:layout_marginStart="24dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="30dp"
                 android:fontFamily="@font/inter_medium"
                 android:text="Date:"
                 android:textColor="@color/brown_primary"
@@ -416,7 +448,7 @@
                 android:layout_width="130dp"
                 android:layout_height="37dp"
                 android:layout_marginStart="10dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="30dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:fontFamily="@font/inter_medium"
@@ -432,7 +464,7 @@
                 android:layout_width="150dp"
                 android:layout_height="37dp"
                 android:layout_marginStart="10dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="30dp"
                 app:layout_constraintStart_toEndOf="@id/text_date_value"
                 app:layout_constraintTop_toBottomOf="@id/input_iron" />
 
