@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.ProgressBar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -125,13 +124,7 @@ public class MainActivity extends AuthedActivity {
 
         // Food logs
         btnHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LogHistoryActivity.class);
-            startActivity(intent);
-        });
-
-        // API test
-        btnTest.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, TestActivity.class);
+            Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
             startActivity(intent);
         });
     }
