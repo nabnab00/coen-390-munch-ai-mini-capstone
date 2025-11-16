@@ -21,7 +21,7 @@
             android:id="@+id/main_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome!"
+            android:text="Munch AI"
             android:textColor="#6D4C41"
             android:textSize="32sp"
             android:fontFamily="@font/rammetto_one"
@@ -96,7 +96,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Macronutrients"
+                        android:text="Macros"
                         android:textColor="#6D4C41"
                         android:textSize="16sp"
                         android:fontFamily="@font/inter_semibold"
@@ -205,7 +205,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Consumed"
+                                    android:text="Logged"
                                     android:textSize="11sp"
                                     android:textColor="#9D7E63"
                                     android:fontFamily="@font/inter_medium" />
@@ -231,7 +231,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Remaining"
+                                    android:text="Left"
                                     android:textSize="11sp"
                                     android:textColor="#9D7E63"
                                     android:fontFamily="@font/inter_medium" />
