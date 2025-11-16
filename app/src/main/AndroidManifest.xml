@@ -5,6 +5,7 @@
     <uses-permission
         android:name="android.permission.INTERNET"
         />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
@@ -37,11 +38,10 @@
         <activity android:name=".frontend.RegisterActivity" />
         <activity android:name=".frontend.MainActivity" />
         <activity android:name=".frontend.SettingsActivity" />
-        <activity android:name=".frontend.LogHistoryActivity" />
+        <activity android:name=".frontend.HistoryActivity" />
         <activity android:name=".frontend.MealActivity" />
-        <activity android:name=".frontend.StatsActivity" />
+        <activity android:name=".frontend.DisplayLogActivity" />
         <activity android:name=".frontend.WeightScaleActivity"/>
-        <activity android:name=".frontend.TestActivity" />
 
         <meta-data
             android:name="preloaded_fonts"

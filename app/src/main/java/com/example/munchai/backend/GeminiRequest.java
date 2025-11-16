@@ -29,14 +29,14 @@ public class GeminiRequest {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String API_KEY = "AIzaSyDw5_eiyWlF3d0es5J7SBv__Pan5T_XUj0";
-    private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .build();
 
-    public static NutritionFacts fetchNutritionFactsFromUri(Context ctx, Uri imageUri, String weight) throws IOException {
+    public static NutritionFacts fetchNutritionFactsFromUri(Context ctx, Uri imageUri, String weight, String unit) throws IOException {
         // load & downscale image from Uri
         InputStream inputStream = ctx.getContentResolver().openInputStream(imageUri);
         if (inputStream == null) throw new IOException("Failed to open input stream for URI: " + imageUri);
@@ -50,10 +50,10 @@ public class GeminiRequest {
         String base64 = encodeToBase64Jpeg(resized, 85);
 
         //prompt
-        String prompt = "You are analyzing a meal/food image. The total weight of the food is " + weight +
-                " grams. Carefully analyze the image and the weight. " +
+        String prompt = "You are analyzing a meal/food image. The total weight of the food is " + weight + " " + unit +
+                ". Carefully analyze the image and the weight. " +
                 "Return a JSON object with these lowercase keys: " +
-                "name, serving_size, calories, total_fat_g, protein_g, total_carbohydrate_g. " +
+                "name, calories, total_fat_g, protein_g, total_carbohydrate_g, sodium_mg, vitamin_a_percent, vitamin_b_percent, vitamin_c_percent, iron_percent " +
                 "The nutrition values you provide should correspond to the total weight of the food. " +
                 "If a value is missing, use null. " +
                 "Do not include any text or markdown, output only the JSON object.";
@@ -107,15 +107,7 @@ public class GeminiRequest {
             String generated = textNode.asText().trim();
 
             // strip markdown fences if present
-            if (generated.startsWith("```")) {
-                int first = generated.indexOf('{');
-                int last = generated.lastIndexOf('}');
-                if (first >= 0 && last > first) {
-                    generated = generated.substring(first, last + 1);
-                }
-            }
-
-            // parse response generated into the nutrition class for use.
+            if (generated.startsWith("")) { int first = generated.indexOf('{'); int last = generated.lastIndexOf('}'); if (first >= 0 && last > first) { generated = generated.substring(first, last + 1); } }        // parse response generated into the nutrition class for use.
             return MAPPER.readValue(generated, NutritionFacts.class);
         }
     }
@@ -134,5 +126,4 @@ public class GeminiRequest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, quality, baos);
         return Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
-    }
-}
+    }}
