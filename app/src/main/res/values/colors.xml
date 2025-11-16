@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- THEME COLORS -->
     <color name="brown_primary">#795548</color>        <!-- medium brown -->
     <color name="brown_onPrimary">#FFFFFF</color>      <!-- text on brown -->
@@ -13,4 +12,42 @@
     <color name="white">#FFFFFFFF</color>
     <color name="chocolate">#453933</color>
     <color name="cookiedough">#AF8563</color>
+
+    <!-- Primary palette -->
+    <color name="munch_rich_black">#000F0B</color>
+    <color name="munch_dark_green">#022221</color>
+    <color name="munch_bangladesh_green">#02624C</color>
+    <color name="munch_mountain_meadow">#2CC395</color>
+    <color name="munch_caribbean_green">#00DF81</color>
+    <color name="munch_anti_flash_white">#F1F7F5</color>
+
+    <!-- Secondary greens -->
+    <color name="munch_pine">#063B29</color>
+    <color name="munch_basil">#08453A</color>
+    <color name="munch_forest">#0B5544</color>
+    <color name="munch_frog">#178D79</color>
+    <color name="munch_mint">#2F846C</color>
+
+    <!-- Neutrals -->
+    <color name="munch_stone">#707D7D</color>
+    <color name="munch_pistachio">#ACC8C4</color>
+    <color name="munch_white">#FFFFFF</color>
+
+    <!-- Semantic aliases -->
+    <color name="colorPrimary">@color/munch_bangladesh_green</color>
+    <color name="colorPrimaryVariant">@color/munch_dark_green</color>
+    <color name="colorOnPrimary">@color/munch_white</color>
+
+    <color name="colorBackground">@color/munch_anti_flash_white</color>
+    <color name="colorSurface">@color/munch_white</color>
+    <color name="colorOnBackground">@color/munch_rich_black</color>
+    <color name="colorOnSurface">@color/munch_rich_black</color>
+
+    <!-- Additional UI colors -->
+    <color name="macro_protein">#3B82F6</color>
+    <color name="macro_carbs">#A855F7</color>
+    <color name="macro_fat">#F97316</color>
+
+    <!-- Background overlays -->
+    <color name="overlay_light">#1A2CC395</color>
 </resources>
