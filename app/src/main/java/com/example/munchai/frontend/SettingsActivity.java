@@ -33,8 +33,6 @@ public class SettingsActivity extends AppCompatActivity
 
         ImageButton backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> {
-            Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
-            startActivity(intent);
             finish(); // closes SettingsActivity so you return to MainActivity
         });
 

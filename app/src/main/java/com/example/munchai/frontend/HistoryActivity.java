@@ -2,6 +2,7 @@ package com.example.munchai.frontend;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +23,7 @@ import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogHistoryActivity extends AppCompatActivity {
+public class HistoryActivity extends AppCompatActivity {
     private SessionManager session;
     private FoodLogAdapter adapter;
     private TextView empty;
@@ -34,13 +35,16 @@ public class LogHistoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.foodlogpage);
+        setContentView(R.layout.historypage);
 
         session = new SessionManager(this);
 
 
         RecyclerView rv = findViewById(R.id.logs_list);
         empty = findViewById(R.id.empty_state);
+
+        ImageButton backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
 
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FoodLogAdapter();
@@ -84,10 +88,11 @@ public class LogHistoryActivity extends AppCompatActivity {
                             Double fatG     = d.getDouble("fat_g");
                             Double proteinG = d.getDouble("protein_g");
                             Double carbG    = d.getDouble("carb_g");
+                            String imageUrl = safe(d.getString("image_url"));
 
 
                             rows.add(new FoodLogRow(
-                                    name, unit, weight != null ? weight : 0d, meal, atIso, calories, fatG, proteinG, carbG
+                                    name, unit, weight != null ? weight : 0d, meal, atIso, calories, fatG, proteinG, carbG, imageUrl
                             ));
                         }
                     }

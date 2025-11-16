@@ -6,7 +6,6 @@ import android.widget.ImageButton;
 import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -30,7 +29,6 @@ public class MainActivity extends AuthedActivity
         ImageButton toSetting = findViewById(R.id.to_settings);
         Button toFoodlog = findViewById(R.id.to_foodlog);
         Button toHistory = findViewById(R.id.to_history);
-        Button toTest = findViewById(R.id.to_test);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -53,14 +51,7 @@ public class MainActivity extends AuthedActivity
 
         //food logs
         toHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LogHistoryActivity.class);
-            startActivity(intent);
-        });
-
-        //API test
-        toTest.setOnClickListener(v ->
-        {
-            Intent intent = new Intent(MainActivity.this, TestActivity.class);
+            Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
             startActivity(intent);
         });
     }
