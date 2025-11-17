@@ -67,7 +67,7 @@ public class WeightScaleActivity extends AppCompatActivity {
         connectBtn  = findViewById(R.id.connectBtn);
         tareBtn     = findViewById(R.id.tareBtn);
         resetBtn    = findViewById(R.id.resetBtn);
-        saveBtn  = findViewById(R.id.weightsave);
+        saveBtn     = findViewById(R.id.weightsave);
         unitSpinner = findViewById(R.id.unitSpinner);
 
         setupSpinner();
@@ -89,22 +89,23 @@ public class WeightScaleActivity extends AppCompatActivity {
 
         saveBtn.setOnClickListener(v -> {
             String currentWeight = weightText.getText().toString();
+            // Extract just the number, removing units like " g"
             String numericWeight = currentWeight.replaceAll("[^0-9.]", "");
 
-            if (numericWeight.isEmpty()) {
+            if (numericWeight.isEmpty() || Double.parseDouble(numericWeight) == 0) {
                 Toast.makeText(this, "No weight measured", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Get the selected unit from the spinner
             String selectedUnit = unitSpinner.getSelectedItem().toString();
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra(EXTRA_WEIGHT, numericWeight);
-            resultIntent.putExtra(EXTRA_UNIT, selectedUnit); // Add this line
+            resultIntent.putExtra(EXTRA_UNIT, selectedUnit);
             setResult(Activity.RESULT_OK, resultIntent);
             finish();
         });
+
 
         tareBtn.setOnClickListener(v -> sendCmd("t\n"));
         resetBtn.setOnClickListener(v -> sendCmd("r\n"));
