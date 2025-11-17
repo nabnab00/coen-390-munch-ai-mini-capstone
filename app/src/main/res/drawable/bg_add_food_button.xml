@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Pill shape -->
+    <corners android:radius="28dp" />
+
+    <!-- Horizontal green gradient -->
+    <gradient
+        android:startColor="#00C853"
+        android:endColor="#00E676"
+        android:angle="0" />
+
+    <!-- Optional padding so text/icon breathe a bit -->
+    <padding
+        android:left="16dp"
+        android:right="16dp"
+        android:top="8dp"
+        android:bottom="8dp" />
+</shape>
