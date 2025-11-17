@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="140dp"
+    android:height="140dp"
+    android:viewportWidth="140"
+    android:viewportHeight="140">
+
+    <!-- ==== RING FROM OLD LOGO ==== -->
+
+    <!-- Outer Circle - Primary Green -->
+    <path
+        android:fillColor="#02624C"
+        android:pathData="M70,70m-68,0a68,68 0,1 1,136 0a68,68 0,1 1,-136 0" />
+
+    <!-- Middle Circle - Darker Green -->
+    <path
+        android:fillColor="#0B5544"
+        android:pathData="M70,70m-58,0a58,58 0,1 1,116 0a58,58 0,1 1,-116 0" />
+
+    <!-- Inner Circle - Light background -->
+    <path
+        android:fillColor="#F1F7F5"
+        android:pathData="M70,70m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0" />
+
+    <!-- ==== SCALED & CENTERED KIWI INSIDE RING ==== -->>
+    <group
+        android:pivotX="60"
+        android:pivotY="60"
+        android:scaleX="1.1"
+        android:scaleY="1.1"
+        android:translateX="10"
+        android:translateY="10">
+
+        <!-- Ground shadow -->
+        <path
+            android:fillColor="@color/overlay_light"
+            android:pathData="M60,96m-26,0a26,9 0,1 0,52 0a26,9 0,1 0,-52 0" />
+
+        <!-- Angled kiwi group -->
+        <group
+            android:pivotX="60"
+            android:pivotY="60"
+            android:rotation="-18">
+
+            <!-- Half-sphere kiwi body (longer bottom) -->
+            <path
+                android:fillColor="#5B3A29"
+                android:pathData="M28,60a32,30 0,1 0,64 0a32,30 0,1 0,-64 0" />
+
+            <!-- Darker lower shading (matches new curve) -->
+            <path
+                android:fillColor="#4A2F21"
+                android:fillAlpha="0.85"
+                android:pathData="M32,68a28,24 0,1 0,56 0a28,24 0,1 0,-56 0" />
+
+
+            <!-- Outer brown skin (top rim ellipse) -->
+            <path
+                android:fillColor="#5B3A29"
+                android:pathData="M28,52a32,22 0,1 0,64 0a32,22 0,1 0,-64 0" />
+
+            <!-- Kiwi green flesh -->
+            <path
+                android:fillColor="@color/munch_mountain_meadow"
+                android:pathData="M32,52a28,18 0,1 0,56 0a28,18 0,1 0,-56 0" />
+
+            <!-- Inner greener ring (subtle shading) -->
+            <path
+                android:fillColor="@color/munch_caribbean_green"
+                android:fillAlpha="0.7"
+                android:pathData="M38,52a22,14 0,1 0,44 0a22,14 0,1 0,-44 0" />
+
+            <!-- Center core -->
+            <path
+                android:fillColor="@color/munch_anti_flash_white"
+                android:pathData="M60,52a9,7 0,1 0,18 0a9,7 0,1 0,-18 0" />
+
+            <!-- Light highlight on topleft of skin -->
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:fillAlpha="0.45"
+                android:pathData="M32,46a20,10 0,1 0,34,-4a24,12 0,1 0,-34,4" />
+
+            <!-- soft rays -->
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M60,50 L60,40 L62,50 Z" />
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M60,54 L58,64 L62,64 Z" />
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M56,52 L44,52 L56,50 Z" />
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M64,52 L76,52 L64,50 Z" />
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M58,50 L50,45 L59,48 Z" />
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M62,50 L61,48 L70,45 Z" />
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M58,54 L59,56 L50,59 Z" />
+            <path
+                android:fillColor="@color/munch_pistachio"
+                android:pathData="M62,54 L70,59 L61,56 Z" />
+
+            <!-- Seeds -->
+            <group android:pivotX="60" android:pivotY="52" android:rotation="0">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="40">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="80">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="120">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="160">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="200">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="240">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="280">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+            <group android:pivotX="60" android:pivotY="52" android:rotation="320">
+                <path
+                    android:fillColor="@color/munch_rich_black"
+                    android:pathData="M60,40a1.6,3 0,1 0,3.2 0a1.6,3 0,1 0,-3.2 0" />
+            </group>
+
+            <!-- Bite cutout -->
+            <path
+                android:fillColor="@color/colorBackground"
+                android:pathData="M86,52a10,10 0,1 0,20 0a10,10 0,1 0,-20 0" />
+
+            <!-- Bite crumbs -->
+            <path
+                android:fillColor="@color/munch_mountain_meadow"
+                android:pathData="M104,48a2,2 0,1 0,4 0a2,2 0,1 0,-4 0" />
+            <path
+                android:fillColor="@color/munch_mountain_meadow"
+                android:pathData="M102,56a1.6,1.6 0,1 0,3.2 0a1.6,1.6 0,1 0,-3.2 0" />
+
+        </group>
+    </group>
+
+</vector>
