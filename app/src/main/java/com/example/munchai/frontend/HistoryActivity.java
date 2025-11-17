@@ -92,8 +92,9 @@ public class HistoryActivity extends AppCompatActivity {
 
 
                             rows.add(new FoodLogRow(
-                                    name, unit, weight != null ? weight : 0d, meal, atIso, calories, fatG, proteinG, carbG, imageUrl
+                                    name, unit, weight != null ? weight : 0d, meal, atIso, calories, fatG, proteinG, carbG, imageUrl, d.getId()
                             ));
+
                         }
                     }
                     adapter.setItems(rows);
