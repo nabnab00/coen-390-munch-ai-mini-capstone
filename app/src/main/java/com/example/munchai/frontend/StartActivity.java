@@ -15,17 +15,12 @@ public class StartActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.startpage);
-        Button startButton = findViewById(R.id.start_button);
 
-        startButton.setOnClickListener(v ->
-        {
             if (FirebaseAuth.getInstance().getCurrentUser() == null) {
                 startActivity(new Intent(this, LoginActivity.class));
             } else {
                 startActivity(new Intent(this, MainActivity.class));
             }
             finish();
-        });
     }
 }

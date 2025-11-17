@@ -22,7 +22,7 @@
             android:id="@+id/app_logo"
             android:layout_width="140dp"
             android:layout_height="140dp"
-            android:src="@drawable/logo_munchai_alt"
+            android:src="@drawable/logo_munchai_kiwi"
             android:contentDescription="@string/app_logo_desc"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
