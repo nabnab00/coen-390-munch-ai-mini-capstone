@@ -59,7 +59,7 @@ public class MealActivity extends AppCompatActivity
     private EditText weightEt, caloriesEt, fatEt, proteinEt, carbsEt, sodiumEt, vitaminAEt, vitaminBEt, vitaminCEt, ironEt;
     private TextView dateTv;
     private ImageView photoIv;
-    private Button retakeBtn, toWeightBtn, saveBtn, cancelBtn;
+    private Button retakeBtn, weightAgainBtn, saveBtn, cancelBtn;
 
     private SessionManager session;
     private int selYear, selMonth, selDay;
@@ -79,7 +79,7 @@ public class MealActivity extends AppCompatActivity
 
         photoIv = findViewById(R.id.photo_preview);
         retakeBtn = findViewById(R.id.retake_button);
-        toWeightBtn = findViewById(R.id.to_weight);
+        weightAgainBtn = findViewById(R.id.weight_again_button);
 
         //-----------------------------------------------------------------------------------------------------MACROS
         nameEt = findViewById(R.id.input_food_name);
@@ -93,12 +93,11 @@ public class MealActivity extends AppCompatActivity
         vitaminBEt = findViewById(R.id.input_vitaminB);
         vitaminCEt = findViewById(R.id.input_vitaminC);
         ironEt = findViewById(R.id.input_iron);
-
         mealSp = findViewById(R.id.spinner_meal);
         dateTv = findViewById(R.id.text_date_value);
-
         saveBtn = findViewById(R.id.save_button);
         cancelBtn = findViewById(R.id.cancel_button);
+
 
         enableForm(false);
 
@@ -112,25 +111,33 @@ public class MealActivity extends AppCompatActivity
         ArrayAdapter<CharSequence> mealAd = ArrayAdapter.createFromResource(
                 this, R.array.meals_array, android.R.layout.simple_spinner_item);
         mealAd.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mealSp.setAdapter(mealAd);
+        if (mealSp != null) mealSp.setAdapter(mealAd);
+
 
         Calendar now = Calendar.getInstance();
         selYear = now.get(Calendar.YEAR);
         selMonth = now.get(Calendar.MONTH);
         selDay = now.get(Calendar.DAY_OF_MONTH);
-        dateTv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", selDay, selMonth + 1, selYear));
-        dateTv.setOnClickListener(v -> showDatePicker());
 
-        saveBtn.setOnClickListener(v -> saveLog());
-        cancelBtn.setOnClickListener(v -> finish());
-        //log meal
-        toWeightBtn.setOnClickListener(v -> startActivity(new Intent(this, WeightScaleActivity.class)));
+        if(dateTv != null) {
+            dateTv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", selDay, selMonth + 1, selYear));
+            dateTv.setOnClickListener(v -> showDatePicker());
+        }
+
+        if(saveBtn != null) saveBtn.setOnClickListener(v -> saveLog());
+        if(cancelBtn != null) cancelBtn.setOnClickListener(v -> finish());
+
+        weightAgainBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, WeightScaleActivity.class);
+            weightScaleLauncher.launch(intent);
+        });
 
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Log Meal");
         }
+
         requestCameraPermissionLauncher =
                 registerForActivityResult(
                         new ActivityResultContracts.RequestPermission(),
@@ -146,6 +153,7 @@ public class MealActivity extends AppCompatActivity
                             }
                         }
                 );
+
         photoMgr = new PhotoCaptureManager(
                 this,
                 photoIv,
@@ -153,7 +161,7 @@ public class MealActivity extends AppCompatActivity
                 new PhotoCaptureManager.Callbacks() {
                     @Override
                     public void onPhotoReady(Uri uri) {
-                        currentPhotoUri = uri; //-----------------------------------------------------------------------------------------------------Store the URI
+                        currentPhotoUri = uri; // Store the URI
                         Intent intent = new Intent(MealActivity.this, WeightScaleActivity.class);
                         weightScaleLauncher.launch(intent);
                     }
@@ -178,11 +186,11 @@ public class MealActivity extends AppCompatActivity
                         String unitStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_UNIT);
 
                         if (weightStr != null && !weightStr.isEmpty() && currentPhotoUri != null) {
-                            //-----------------------------------------------------------------------------------------------------We have the weight and the photo URI, now call Gemini
+                            // We have the weight and the photo URI, now call Gemini
                             Toast.makeText(this, "Analyzing image...", Toast.LENGTH_LONG).show();
                             callGeminiApi(currentPhotoUri, weightStr, unitStr);
 
-                            //-----------------------------------------------------------------------------------------------------Show the taken photo in the preview
+                            // Show the taken photo in the preview
                             photoIv.setImageURI(currentPhotoUri);
                         }
                     } else {
@@ -191,7 +199,6 @@ public class MealActivity extends AppCompatActivity
                     }
                 }
         );
-
     }
     private void startCameraWithPermissionCheck() {
         if (ContextCompat.checkSelfPermission(

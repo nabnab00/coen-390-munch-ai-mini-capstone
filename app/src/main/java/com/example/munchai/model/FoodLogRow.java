@@ -14,9 +14,12 @@ public class FoodLogRow implements Serializable {
     public final Double proteinG;
     public final Double carbG;
     public final String imageUrl;
+    public String documentId;
 
-    public FoodLogRow(String name, String unit, double weight, String meal, String loggedAtIso,
-                      Double calories, Double fatG, Double proteinG, Double carbG, String imageUrl) {
+    public FoodLogRow(String name, String unit, Double weight, String meal,
+                      String loggedAtIso, Double calories, Double fatG,
+                      Double proteinG, Double carbG, String imageUrl,
+                      String documentId) {
         this.name = name;
         this.unit = unit;
         this.weight = weight;
@@ -27,5 +30,6 @@ public class FoodLogRow implements Serializable {
         this.proteinG = proteinG;
         this.carbG = carbG;
         this.imageUrl = imageUrl;
+        this.documentId = documentId;
     }
 }

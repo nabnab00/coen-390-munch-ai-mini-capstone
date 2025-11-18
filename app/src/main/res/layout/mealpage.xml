@@ -125,13 +125,13 @@
                 android:inputType="numberDecimal"
                 android:textColor="@color/brown_primary"
                 android:textColorHint="@color/brown_primary"
-                app:layout_constraintEnd_toStartOf="@id/to_weight"
+                app:layout_constraintEnd_toStartOf="@id/weight_again_button"
                 app:layout_constraintStart_toEndOf="@+id/weight_label"
                 app:layout_constraintTop_toBottomOf="@id/input_food_name" />
 
             <!-- WEIGHT AGAIN BUTTON -->
             <Button
-                android:id="@+id/to_weight"
+                android:id="@+id/weight_again_button"
                 android:layout_width="97dp"
                 android:layout_height="68dp"
                 android:layout_marginTop="12dp"
@@ -170,7 +170,7 @@
                 android:textColorHint="@color/brown_primary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/calories_label"
-                app:layout_constraintTop_toBottomOf="@id/to_weight" />
+                app:layout_constraintTop_toBottomOf="@id/weight_again_button" />
 
             <!-- PROTEIN LABEL -->
             <TextView

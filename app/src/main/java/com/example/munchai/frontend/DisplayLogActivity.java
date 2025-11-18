@@ -6,10 +6,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.munchai.R;
 import com.example.munchai.model.FoodLogRow;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,7 +22,6 @@ public class DisplayLogActivity extends AppCompatActivity {
 
     private final SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
     private final SimpleDateFormat out = new SimpleDateFormat("dd/MM/yyyy 'at' HH:mm", Locale.getDefault());
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +34,17 @@ public class DisplayLogActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
 
         FoodLogRow foodLog = (FoodLogRow) getIntent().getSerializableExtra("food_log");
+
+        ImageButton deleteButton = findViewById(R.id.deleteMealButton);
+
+        deleteButton.setOnClickListener(v -> {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Delete Meal")
+                    .setMessage("Are you sure you want to delete this meal?")
+                    .setPositiveButton("Delete", (dialog, which) -> deleteMeal(foodLog))
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
 
         if (foodLog != null) {
             ImageView logImagePreview = findViewById(R.id.log_image_preview);
@@ -76,4 +88,26 @@ public class DisplayLogActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void deleteMeal(FoodLogRow row) {
+
+        String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getUid();
+        if (uid == null || row.documentId == null) {
+            Toast.makeText(this, "Error: missing document ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseFirestore.getInstance()
+                .collection("users").document(uid)
+                .collection("food_logs").document(row.documentId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Meal deleted", Toast.LENGTH_SHORT).show();
+                    finish(); // go back to HistoryActivity
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error deleting: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+    }
+
 }
