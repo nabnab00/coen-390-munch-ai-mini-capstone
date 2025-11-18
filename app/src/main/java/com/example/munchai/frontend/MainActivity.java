@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -23,10 +24,12 @@ import java.util.Locale;
 public class MainActivity extends AuthedActivity {
 
     // Circular Rings
-    private CircularProgressView ringCalories;
-    private CircularProgressView ringProtein;
-    private CircularProgressView ringCarbs;
-    private CircularProgressView ringFat;
+    private CircularProgressView ringCalories;   // big main ring only
+
+    // Macro progress bars 
+    private ProgressBar pbProtein;
+    private ProgressBar pbCarbs;
+    private ProgressBar pbFat;
 
     // Center Progress Text
     private TextView tvProgressCenter;
@@ -75,9 +78,11 @@ public class MainActivity extends AuthedActivity {
     private void initializeViews() {
         // Rings
         ringCalories = findViewById(R.id.ring_calories);
-        ringProtein  = findViewById(R.id.ring_protein);
-        ringCarbs    = findViewById(R.id.ring_carbs);
-        ringFat      = findViewById(R.id.ring_fat);
+
+        // Macro progress bars
+        pbProtein = findViewById(R.id.pb_protein);
+        pbCarbs   = findViewById(R.id.pb_carbs);
+        pbFat     = findViewById(R.id.pb_fats);
 
         // Center text
         tvProgressCenter = findViewById(R.id.tv_progress_center);
@@ -90,7 +95,7 @@ public class MainActivity extends AuthedActivity {
         // Date
         currentDateText = findViewById(R.id.current_date);
 
-        // Macros
+        // Macros text
         tvProteinValue = findViewById(R.id.tv_protein_value);
         tvCarbsValue   = findViewById(R.id.tv_carbs_value);
         tvFatsValue    = findViewById(R.id.tv_fats_value);
@@ -205,20 +210,19 @@ public class MainActivity extends AuthedActivity {
             ringCalories.setProgress(caloriesPercent);
         }
 
-// Macro rings
-        if (ringProtein != null) {
-            ringProtein.setMax(100);
-            ringProtein.setProgress(proteinPercent);
+        // Macro progress bars
+        if (pbProtein != null) {
+            pbProtein.setMax(100);
+            pbProtein.setProgress(proteinPercent);
         }
-        if (ringCarbs != null) {
-            ringCarbs.setMax(100);
-            ringCarbs.setProgress(carbsPercent);
+        if (pbCarbs != null) {
+            pbCarbs.setMax(100);
+            pbCarbs.setProgress(carbsPercent);
         }
-        if (ringFat != null) {
-            ringFat.setMax(100);
-            ringFat.setProgress(fatPercent);
+        if (pbFat != null) {
+            pbFat.setMax(100);
+            pbFat.setProgress(fatPercent);
         }
-
 
         // Stats under ring
         if (tvGoalValue != null) {
@@ -249,3 +253,4 @@ public class MainActivity extends AuthedActivity {
         return Math.min(100, (int) ((current * 100.0f) / goal));
     }
 }
+
