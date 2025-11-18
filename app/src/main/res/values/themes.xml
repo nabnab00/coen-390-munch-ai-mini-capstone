@@ -1,22 +1,37 @@
-<resources 
-    xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Base.Theme.MunchAI" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Primary brand color -->
-        <item name="colorPrimary">@color/brown_primary</item>
-        <item name="colorOnPrimary">@color/brown_onPrimary</item>
+    <!-- LIGHT THEME -->
+    <style name="Base.Theme.MunchAI" parent="Theme.Material3.Light.NoActionBar">
 
-        <!-- Secondary color -->
-        <item name="colorSecondary">@color/brown_secondary</item>
+        <!-- Primary brand -->
+        <item name="colorPrimary">@color/munch_bangladesh_green</item>
+        <item name="colorOnPrimary">@color/munch_white</item>
+        <item name="colorPrimaryContainer">@color/munch_mountain_meadow</item>
+        <item name="colorOnPrimaryContainer">@color/munch_rich_black</item>
 
-        <!-- Background colors -->
-        <item name="android:colorBackground">@color/brown_background</item>
-        <item name="colorOnBackground">@color/brown_onBackground</item>
+        <!-- Secondary / accents -->
+        <item name="colorSecondary">@color/munch_frog</item>
+        <item name="colorOnSecondary">@color/munch_white</item>
+        <item name="colorSecondaryContainer">@color/munch_mint</item>
+        <item name="colorOnSecondaryContainer">@color/munch_white</item>
 
-        <!-- Optional: status bar / navigation bar -->
-        <item name="android:statusBarColor">@color/brown_primary</item>
-        <item name="android:navigationBarColor">@color/brown_primary</item>
+        <!-- Backgrounds & surfaces -->
+        <item name="android:colorBackground">@color/munch_anti_flash_white</item>
+        <item name="colorOnBackground">@color/munch_rich_black</item>
+
+        <item name="colorSurface">@color/munch_white</item>
+        <item name="colorOnSurface">@color/munch_rich_black</item>
+
+        <!-- Status / nav bars -->
+        <item name="android:statusBarColor">@color/munch_dark_green</item>
+        <item name="android:navigationBarColor">@color/munch_dark_green</item>
+
+        <!-- Optional: default window background for normal screens -->
+        <item name="android:windowBackground">@color/munch_anti_flash_white</item>
     </style>
 
+    <!-- App theme alias -->
     <style name="Theme.MunchAI" parent="Base.Theme.MunchAI" />
+
 </resources>
+

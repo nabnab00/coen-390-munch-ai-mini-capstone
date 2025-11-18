@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="140dp"
+    android:height="140dp"
+    android:viewportWidth="140"
+    android:viewportHeight="140">
+
+    <!-- Outer Circle - Primary Green -->
+    <path
+        android:fillColor="#02624C"
+        android:pathData="M70,70m-68,0a68,68 0,1 1,136 0a68,68 0,1 1,-136 0" />
+
+    <!-- Middle Circle - Gradient Effect -->
+    <path
+        android:fillColor="#0B5544"
+        android:pathData="M70,70m-58,0a58,58 0,1 1,116 0a58,58 0,1 1,-116 0" />
+
+    <!-- Inner Circle - Light -->
+    <path
+        android:fillColor="#F1F7F5"
+        android:pathData="M70,70m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0" />
+
+    <!-- Central Bowl/Plate -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,65 Q40,82 52,88 L88,88 Q100,82 100,65 L40,65 Z" />
+
+    <!-- Bowl Rim Highlight -->
+    <path
+        android:fillColor="#2CC395"
+        android:fillAlpha="0.3"
+        android:pathData="M40,65 L100,65 L97,62 L43,62 Z" />
+
+    <!-- Apple/Fruit 1 - Red/Orange (cx=58, cy=60, r=9) -->
+    <path
+        android:fillColor="#F97316"
+        android:pathData="M58,60 m-9,0 a9,9 0,1 1 18,0 a9,9 0,1 1 -18,0" />
+
+    <!-- Apple Leaf -->
+    <path
+        android:fillColor="#2CC395"
+        android:pathData="M58,51 Q56,54 58,57 Q60,54 58,51 Z" />
+
+    <!-- Blueberry 1 (cx=72, cy=58, r=7) -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M72,58 m-7,0 a7,7 0,1 1 14,0 a7,7 0,1 1 -14,0" />
+
+    <!-- Blueberry 2 (cx=82, cy=62, r=6.5) -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M82,62 m-6.5,0 a6.5,6.5 0,1 1 13,0 a6.5,6.5 0,1 1 -13,0" />
+
+    <!-- Grape/Purple (cx=65, cy=70, r=7.5) -->
+    <path
+        android:fillColor="#A855F7"
+        android:pathData="M65,70 m-7.5,0 a7.5,7.5 0,1 1 15,0 a7.5,7.5 0,1 1 -15,0" />
+
+    <!-- Green Veggie (cx=48, cy=69, r=6.5) -->
+    <path
+        android:fillColor="#2CC395"
+        android:pathData="M48,69 m-6.5,0 a6.5,6.5 0,1 1 13,0 a6.5,6.5 0,1 1 -13,0" />
+
+    <!-- AI Circuit Design Top -->
+    <path
+        android:strokeColor="#00DF81"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M50,32 L55,37 M55,37 L60,32 M55,37 L55,42" />
+
+    <path
+        android:strokeColor="#00DF81"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M80,32 L85,37 M85,37 L90,32 M85,37 L85,42" />
+
+    <!-- AI Nodes -->
+    <!-- (50,32,r=3.5) -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M50,32 m-3.5,0 a3.5,3.5 0,1 1 7,0 a3.5,3.5 0,1 1 -7,0" />
+
+    <!-- (60,32,r=3.5) -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M60,32 m-3.5,0 a3.5,3.5 0,1 1 7,0 a3.5,3.5 0,1 1 -7,0" />
+
+    <!-- (55,42,r=3) -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M55,42 m-3,0 a3,3 0,1 1 6,0 a3,3 0,1 1 -6,0" />
+
+    <!-- (80,32,r=3.5) -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M80,32 m-3.5,0 a3.5,3.5 0,1 1 7,0 a3.5,3.5 0,1 1 -7,0" />
+
+    <!-- (90,32,r=3.5) -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M90,32 m-3.5,0 a3.5,3.5 0,1 1 7,0 a3.5,3.5 0,1 1 -7,0" />
+
+    <!-- (85,42,r=3) -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M85,42 m-3,0 a3,3 0,1 1 6,0 a3,3 0,1 1 -6,0" />
+
+    <!-- Sparkle Accents -->
+    <path
+        android:fillColor="#2CC395"
+        android:pathData="M28,95 L30,100 L35,102 L30,104 L28,109 L26,104 L21,102 L26,100 Z" />
+
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M112,95 L114,100 L119,102 L114,104 L112,109 L110,104 L105,102 L110,100 Z" />
+
+    <!-- Small accent dots -->
+    <!-- (25,50,r=2.5) -->
+    <path
+        android:fillColor="#2CC395"
+        android:pathData="M25,50 m-2.5,0 a2.5,2.5 0,1 1 5,0 a2.5,2.5 0,1 1 -5,0" />
+
+    <!-- (115,50,r=2.5) -->
+    <path
+        android:fillColor="#00DF81"
+        android:pathData="M115,50 m-2.5,0 a2.5,2.5 0,1 1 5,0 a2.5,2.5 0,1 1 -5,0" />
+
+</vector>

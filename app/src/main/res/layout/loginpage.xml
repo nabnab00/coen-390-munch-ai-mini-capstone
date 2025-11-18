@@ -1,94 +1,298 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/munch_anti_flash_white"
+    android:fillViewport="true"
     tools:context=".frontend.LoginActivity">
 
-    <!-- Login Title -->
-    <TextView
-        android:id="@+id/login_title"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:fontFamily="@font/rammetto_one"
-        android:text="@string/login_title"
-        android:textColor="@color/brown_primary"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="48dp">
 
-    <!-- Username Input -->
-    <EditText
-        android:id="@+id/login_username"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:backgroundTint="@color/brown_primary"
-        android:hint="email"
-        android:inputType="textEmailAddress"
-        android:autofillHints="username"
-        android:padding="12dp"
-        android:textColor="@color/brown_onBackground"
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/app_logo"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:src="@drawable/logo_munchai_kiwi"
+            android:contentDescription="@string/app_logo_desc"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/login_title"
-        app:layout_constraintWidth_percent="0.8"
-        tools:ignore="VisualLintTextFieldSize" />
+        <!-- App Name with AI badge -->
+        <LinearLayout
+            android:id="@+id/branding_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/app_logo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Password Input -->
-    <EditText
-        android:id="@+id/login_password"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:backgroundTint="@color/brown_primary"
-        android:textColor="@color/brown_onBackground"
-        android:hint="@string/password_hint"
-        android:inputType="textPassword"
-        android:autofillHints="password"
-        android:padding="12dp"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="munch"
+                android:textColor="@color/munch_bangladesh_green"
+                android:textSize="42sp"
+                android:fontFamily="@font/outfit_bold"
+                android:letterSpacing="-0.02" />
 
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/login_username"
-        app:layout_constraintWidth_percent="0.8"
-        tools:ignore="VisualLintTextFieldSize" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/munch_caribbean_green">
 
-    <!-- Login Button -->
-    <Button
-        android:id="@+id/login_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/login_button"
-        android:textAllCaps="true"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI"
+                    android:textColor="@color/munch_dark_green"
+                    android:textSize="18sp"
+                    android:fontFamily="@font/outfit_extrabold"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp" />
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
 
-        app:layout_constraintTop_toBottomOf="@id/login_password"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.8"
-        tools:ignore="VisualLintButtonSize" />
+        <!-- Tagline -->
+        <TextView
+            android:id="@+id/app_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Smart nutrition tracking for a healthier you"
+            android:textColor="@color/munch_forest"
+            android:textSize="15sp"
+            android:fontFamily="@font/outfit_medium"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/branding_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Register Text -->
-    <TextView
-        android:id="@+id/to_register"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
-        android:minHeight="48dp"
-        android:paddingTop="8dp"
-        android:text="@string/register_text"
-        android:textColor="@color/brown_primary"
-        android:textSize="14sp"
+        <!-- Login Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/login_card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="12dp"
+            app:cardBackgroundColor="@color/munch_white"
+            app:layout_constraintTop_toBottomOf="@id/app_subtitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/login_button" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="32dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Login Title -->
+                <TextView
+                    android:id="@+id/login_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_title"
+                    android:textColor="@color/munch_dark_green"
+                    android:textSize="28sp"
+                    android:fontFamily="@font/outfit_bold"
+                    android:layout_gravity="start"
+                    android:layout_marginBottom="6dp" />
+
+                <!-- Email Label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email Address"
+                    android:textColor="@color/munch_bangladesh_green"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Email Input Container -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/email_input_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    app:boxStrokeColor="@color/munch_bangladesh_green"
+                    app:boxBackgroundColor="#F8FCFB"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:hintEnabled="false"
+                    app:startIconDrawable="@drawable/ic_email"
+                    app:startIconTint="@color/munch_mountain_meadow"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/login_username"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="you@example.com"
+                        android:inputType="textEmailAddress"
+                        android:autofillHints="username"
+                        android:textColor="@color/munch_dark_green"
+                        android:textColorHint="@color/munch_pistachio"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/outfit_medium"
+                        android:padding="18dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Password Label -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Password"
+                    android:textColor="@color/munch_bangladesh_green"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Password Input Container -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/password_input_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="32dp"
+                    app:boxStrokeColor="@color/munch_bangladesh_green"
+                    app:boxBackgroundColor="#F8FCFB"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:hintEnabled="false"
+                    app:passwordToggleEnabled="true"
+                    app:passwordToggleTint="@color/munch_mountain_meadow"
+                    app:startIconDrawable="@drawable/ic_lock"
+                    app:startIconTint="@color/munch_mountain_meadow"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/login_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/password_hint"
+                        android:inputType="textPassword"
+                        android:autofillHints="password"
+                        android:textColor="@color/munch_dark_green"
+                        android:textColorHint="@color/munch_pistachio"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/outfit_medium"
+                        android:padding="18dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Login Button with gradient effect -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/login_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="58dp"
+                    android:text="@string/login_button"
+                    android:textColor="@color/munch_white"
+                    android:textSize="17sp"
+                    android:fontFamily="@font/outfit_bold"
+                    android:letterSpacing="0.03"
+                    app:backgroundTint="@color/munch_bangladesh_green"
+                    app:cornerRadius="16dp"
+                    app:elevation="4dp"
+                    android:layout_marginBottom="20dp" />
+
+                <!-- Divider with text -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="20dp">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="@color/munch_pistachio" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="or"
+                        android:textColor="@color/munch_stone"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/outfit_medium"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="@color/munch_pistachio" />
+                </LinearLayout>
+
+                <!-- Register Text -->
+                <TextView
+                    android:id="@+id/to_register"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:text="@string/register_text"
+                    android:textColor="@color/munch_bangladesh_green"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:padding="8dp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Footer -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/login_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Powered by"
+                android:textColor="@color/munch_stone"
+                android:textSize="13sp"
+                android:fontFamily="@font/outfit_regular" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" AI Technology"
+                android:textColor="@color/munch_mountain_meadow"
+                android:textSize="13sp"
+                android:fontFamily="@font/outfit_semibold" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

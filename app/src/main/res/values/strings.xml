@@ -1,7 +1,6 @@
 <resources>
 
 <!-- LOGIN PAGE -->
-    <string name="app_name">Munch AI</string>
     <string name="start_button">Munch Time</string>
     <string name="logfood_button">LOG MEAL</string>
     <string name="login_title">MunchAI Login</string>
@@ -33,6 +32,9 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="register_button">Register</string>
     <string name="already_have_account">Already have an account? Login</string>
+
+    <string name="app_name">munchAI</string>
+    <string name="app_logo_desc">munchAI Logo - Food Bowl with AI</string>
 
     <string name="back">Back</string>
 </resources>
