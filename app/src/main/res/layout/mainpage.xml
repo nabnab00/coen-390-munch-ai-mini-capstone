@@ -13,8 +13,8 @@
         android:layout_height="wrap_content"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
-        android:paddingTop="40dp"
-        android:paddingBottom="40dp">
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp">
 
         <!-- Header: Title -->
         <TextView
@@ -22,9 +22,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Welcome back,"
-            android:textColor="@color/munch_dark_green"
-            android:textSize="28sp"
-            android:fontFamily="@font/outfit_bold"
+            android:textColor="@color/munch_forest"
+            android:textSize="24sp"
+            android:fontFamily="@font/outfit_semibold"
+            android:letterSpacing="0.02"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -38,31 +39,33 @@
             android:contentDescription="@string/settings_button_desc"
             android:scaleType="centerInside"
             android:padding="8dp"
+            android:layout_marginTop="6dp"
             app:tint="@color/munch_forest"
             app:layout_constraintTop_toTopOf="@id/main_title"
-            app:layout_constraintBottom_toBottomOf="@id/main_title"
             app:layout_constraintEnd_toEndOf="parent" />
+
+
 
         <!-- Date Text -->
         <TextView
             android:id="@+id/current_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sunday, November 16"
+            android:text="Monday, November 17"
             android:textColor="@color/munch_pistachio"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:fontFamily="@font/outfit_medium"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="2dp"
             app:layout_constraintTop_toBottomOf="@id/main_title"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="@id/main_title" />
 
-        <!-- Main White Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/main_card"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="12dp"
             app:cardCornerRadius="28dp"
+            app:cardUseCompatPadding="true"
             app:cardElevation="8dp"
             app:cardBackgroundColor="@color/munch_white"
             app:layout_constraintTop_toBottomOf="@id/current_date"
@@ -80,6 +83,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
+                    android:gravity="center"
                     android:layout_marginBottom="16dp">
 
                     <TextView
@@ -87,362 +91,311 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Daily Goal"
-                        android:textColor="@color/munch_dark_green"
-                        android:textSize="16sp"
-                        android:fontFamily="@font/outfit_semibold"
-                        android:gravity="center" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Macronutrients"
-                        android:textColor="@color/munch_dark_green"
-                        android:textSize="16sp"
-                        android:fontFamily="@font/outfit_semibold"
+                        android:textColor="@color/munch_bangladesh_green"
+                        android:textSize="24sp"
+                        android:fontFamily="@font/outfit_bold"
                         android:gravity="center" />
                 </LinearLayout>
 
-                <!-- Content Row -->
+                <!-- Big Ring Centered -->
+                <FrameLayout
+                    android:layout_width="170dp"
+                    android:layout_height="170dp"
+                    android:layout_gravity="center">
+
+                    <com.example.munchai.model.CircularProgressView
+                        android:id="@+id/ring_calories"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:cpv_backgroundColor="@color/munch_pistachio"
+                        app:cpv_progressColor="@color/munch_bangladesh_green"
+                        app:cpv_strokeWidth="20dp"
+                        app:cpv_max="100"
+                        app:cpv_progress="0" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tv_progress_center"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0%"
+                            android:textSize="26sp"
+                            android:textColor="@color/munch_bangladesh_green"
+                            android:fontFamily="@font/outfit_semibold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Complete"
+                            android:textSize="12sp"
+                            android:textColor="@color/munch_stone"
+                            android:fontFamily="@font/outfit_medium"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <!-- Stats Below Ring -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:baselineAligned="false">
+                    android:layout_marginTop="16dp"
+                    android:gravity="center">
 
-                    <!-- LEFT: Daily Goal Ring -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:gravity="center"
-                        android:paddingEnd="8dp">
+                        android:gravity="center">
 
-                        <!-- Ring + center text -->
-                        <FrameLayout
-                            android:layout_width="150dp"
-                            android:layout_height="150dp">
-
-                            <com.example.munchai.model.CircularProgressView
-                                android:id="@+id/ring_calories"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                app:cpv_backgroundColor="@color/munch_pistachio"
-                                app:cpv_progressColor="@color/munch_bangladesh_green"
-                                app:cpv_strokeWidth="18dp"
-                                app:cpv_max="100"
-                                app:cpv_progress="0" />
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:orientation="vertical"
-                                android:gravity="center">
-
-                                <TextView
-                                    android:id="@+id/tv_progress_center"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0%"
-                                    android:textSize="28sp"
-                                    android:textColor="@color/munch_dark_green"
-                                    android:fontFamily="@font/outfit_semibold" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Complete"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/munch_stone"
-                                    android:fontFamily="@font/outfit_medium"
-                                    android:layout_marginTop="2dp" />
-                            </LinearLayout>
-                        </FrameLayout>
-
-                        <!-- Stats Below Ring -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="16dp"
-                            android:gravity="center">
+                            android:text="Goal"
+                            android:textSize="11sp"
+                            android:textColor="@color/munch_stone"
+                            android:fontFamily="@font/outfit_medium" />
 
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:gravity="center">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Goal"
-                                    android:textSize="11sp"
-                                    android:textColor="@color/munch_stone"
-                                    android:fontFamily="@font/outfit_medium" />
-
-                                <TextView
-                                    android:id="@+id/tv_goal_value"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="2000"
-                                    android:textSize="16sp"
-                                    android:textColor="@color/munch_dark_green"
-                                    android:fontFamily="@font/outfit_semibold"
-                                    android:layout_marginTop="4dp" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:gravity="center">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Intake"
-                                    android:textSize="11sp"
-                                    android:textColor="@color/munch_stone"
-                                    android:fontFamily="@font/outfit_medium" />
-
-                                <TextView
-                                    android:id="@+id/tv_consumed_value"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"
-                                    android:textSize="16sp"
-                                    android:textColor="@color/munch_dark_green"
-                                    android:fontFamily="@font/outfit_semibold"
-                                    android:layout_marginTop="4dp" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:gravity="center">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Left"
-                                    android:textSize="11sp"
-                                    android:textColor="@color/munch_stone"
-                                    android:fontFamily="@font/outfit_medium" />
-
-                                <TextView
-                                    android:id="@+id/tv_remaining_value"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="2000"
-                                    android:textSize="16sp"
-                                    android:textColor="@color/munch_dark_green"
-                                    android:fontFamily="@font/outfit_semibold"
-                                    android:layout_marginTop="4dp" />
-                            </LinearLayout>
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/tv_goal_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2000"
+                            android:textSize="16sp"
+                            android:textColor="@color/munch_dark_green"
+                            android:fontFamily="@font/outfit_semibold"
+                            android:layout_marginTop="4dp" />
                     </LinearLayout>
 
-                    <!-- RIGHT: Macronutrients -->
                     <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:paddingStart="8dp"
-                        android:gravity="center_vertical">
+                        android:gravity="center">
 
-                        <!-- Protein Card -->
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:layout_marginBottom="8dp"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="@color/munch_anti_flash_white">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Intake"
+                            android:textSize="11sp"
+                            android:textColor="@color/munch_stone"
+                            android:fontFamily="@font/outfit_medium" />
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:padding="12dp">
+                        <TextView
+                            android:id="@+id/tv_consumed_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textSize="16sp"
+                            android:textColor="@color/munch_dark_green"
+                            android:fontFamily="@font/outfit_semibold"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
 
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
 
-                                    <com.example.munchai.model.CircularProgressView
-                                        android:id="@+id/ring_protein"
-                                        android:layout_width="32dp"
-                                        android:layout_height="32dp"
-                                        app:cpv_max="100"
-                                        app:cpv_progress="0"
-                                        app:cpv_backgroundColor="@color/munch_anti_flash_white"
-                                        app:cpv_progressColor="@color/macro_protein"
-                                        app:cpv_strokeWidth="6dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Left"
+                            android:textSize="11sp"
+                            android:textColor="@color/munch_stone"
+                            android:fontFamily="@font/outfit_medium" />
 
-                                    <LinearLayout
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:orientation="vertical"
-                                        android:layout_marginStart="10dp">
-
-                                        <TextView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="Protein"
-                                            android:textColor="@color/munch_dark_green"
-                                            android:textSize="11sp"
-                                            android:fontFamily="@font/outfit_semibold" />
-
-                                        <TextView
-                                            android:id="@+id/tv_protein_value"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="0 / 150g"
-                                            android:textColor="@color/munch_stone"
-                                            android:textSize="12sp"
-                                            android:fontFamily="@font/outfit_medium"
-                                            android:layout_marginTop="2dp" />
-                                    </LinearLayout>
-                                </LinearLayout>
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-
-                        <!-- Carbohydrates Card -->
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:layout_marginBottom="8dp"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="@color/munch_anti_flash_white">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:padding="12dp">
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical">
-
-                                    <com.example.munchai.model.CircularProgressView
-                                        android:id="@+id/ring_carbs"
-                                        android:layout_width="32dp"
-                                        android:layout_height="32dp"
-                                        app:cpv_max="100"
-                                        app:cpv_progress="0"
-                                        app:cpv_backgroundColor="@color/munch_anti_flash_white"
-                                        app:cpv_progressColor="@color/macro_carbs"
-                                        app:cpv_strokeWidth="6dp" />
-
-                                    <LinearLayout
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:orientation="vertical"
-                                        android:layout_marginStart="10dp">
-
-                                        <TextView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="Carbohydrates"
-                                            android:textColor="@color/munch_dark_green"
-                                            android:textSize="11sp"
-                                            android:fontFamily="@font/outfit_semibold" />
-
-                                        <TextView
-                                            android:id="@+id/tv_carbs_value"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="0 / 200g"
-                                            android:textColor="@color/munch_stone"
-                                            android:textSize="12sp"
-                                            android:fontFamily="@font/outfit_medium"
-                                            android:layout_marginTop="2dp" />
-                                    </LinearLayout>
-                                </LinearLayout>
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-
-                        <!-- Fats Card -->
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="@color/munch_anti_flash_white">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:padding="12dp">
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal"
-                                    android:gravity="center_vertical">
-
-                                    <com.example.munchai.model.CircularProgressView
-                                        android:id="@+id/ring_fat"
-                                        android:layout_width="32dp"
-                                        android:layout_height="32dp"
-                                        app:cpv_max="100"
-                                        app:cpv_progress="0"
-                                        app:cpv_backgroundColor="@color/munch_anti_flash_white"
-                                        app:cpv_progressColor="@color/macro_fat"
-                                        app:cpv_strokeWidth="6dp" />
-
-                                    <LinearLayout
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:orientation="vertical"
-                                        android:layout_marginStart="10dp">
-
-                                        <TextView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="Fats"
-                                            android:textColor="@color/munch_dark_green"
-                                            android:textSize="11sp"
-                                            android:fontFamily="@font/outfit_semibold" />
-
-                                        <TextView
-                                            android:id="@+id/tv_fats_value"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:text="0 / 65g"
-                                            android:textColor="@color/munch_stone"
-                                            android:textSize="12sp"
-                                            android:fontFamily="@font/outfit_medium"
-                                            android:layout_marginTop="2dp" />
-                                    </LinearLayout>
-                                </LinearLayout>
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
+                        <TextView
+                            android:id="@+id/tv_remaining_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2000"
+                            android:textSize="16sp"
+                            android:textColor="@color/munch_dark_green"
+                            android:fontFamily="@font/outfit_semibold"
+                            android:layout_marginTop="4dp" />
                     </LinearLayout>
                 </LinearLayout>
+
+                <!-- Space between stats & macro cards -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
+
+                <!-- Protein Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/munch_anti_flash_white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <com.example.munchai.model.CircularProgressView
+                            android:id="@+id/ring_protein"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            app:cpv_backgroundColor="@color/munch_anti_flash_white"
+                            app:cpv_max="100"
+                            app:cpv_progress="0"
+                            app:cpv_progressColor="@color/macro_protein"
+                            app:cpv_strokeWidth="6dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/outfit_semibold"
+                                android:text="Protein"
+                                android:textColor="@color/munch_dark_green"
+                                android:textSize="13sp" />
+
+                            <TextView
+                                android:id="@+id/tv_protein_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/outfit_medium"
+                                android:text="0 / 150g"
+                                android:textColor="@color/munch_stone"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Carbohydrates Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/munch_anti_flash_white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="14dp"
+                        android:gravity="center_vertical">
+
+                        <com.example.munchai.model.CircularProgressView
+                            android:id="@+id/ring_carbs"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            app:cpv_max="100"
+                            app:cpv_progress="0"
+                            app:cpv_backgroundColor="@color/munch_anti_flash_white"
+                            app:cpv_progressColor="@color/macro_carbs"
+                            app:cpv_strokeWidth="6dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Carbohydrates"
+                                android:textColor="@color/munch_dark_green"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/outfit_semibold" />
+
+                            <TextView
+                                android:id="@+id/tv_carbs_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0 / 200g"
+                                android:textColor="@color/munch_stone"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/outfit_medium"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Fats Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/munch_anti_flash_white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="14dp"
+                        android:gravity="center_vertical">
+
+                        <com.example.munchai.model.CircularProgressView
+                            android:id="@+id/ring_fat"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            app:cpv_max="100"
+                            app:cpv_progress="0"
+                            app:cpv_backgroundColor="@color/munch_anti_flash_white"
+                            app:cpv_progressColor="@color/macro_fat"
+                            app:cpv_strokeWidth="6dp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Fats"
+                                android:textColor="@color/munch_dark_green"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/outfit_semibold" />
+
+                            <TextView
+                                android:id="@+id/tv_fats_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0 / 65g"
+                                android:textColor="@color/munch_stone"
+                                android:textSize="12sp"
+                                android:fontFamily="@font/outfit_medium"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
 
         <!-- Bottom Buttons -->
         <LinearLayout
@@ -451,49 +404,75 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="24dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             app:layout_constraintTop_toBottomOf="@id/main_card"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <!-- Primary action -->
+            <!-- Primary action: Add Food -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/to_foodlog"
-                android:layout_width="0dp"
+                android:layout_width="150dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="12dp"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
                 android:text="Add Food"
                 android:textAllCaps="false"
                 android:textColor="@color/munch_white"
                 android:textSize="15sp"
                 android:fontFamily="@font/outfit_semibold"
-                android:letterSpacing="0.02"
                 android:background="@drawable/bg_add_food_button"
-                app:backgroundTint="@color/munch_bangladesh_green"
-                app:elevation="4dp"
-                app:icon="@drawable/ic_add"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp" />
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_add_circle"
+                app:iconSize="30dp"
+                app:iconPadding="12dp"
+                app:iconGravity="textStart" />
 
 
-
-            <!-- Secondary action -->
+            <!-- Secondary action: Food Log -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/to_history"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
+                android:layout_width="150dp"
+                android:layout_height="63dp"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="12dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
                 android:text="Food Log"
+                android:textAllCaps="false"
                 android:textColor="@color/munch_bangladesh_green"
                 android:textSize="15sp"
                 android:fontFamily="@font/outfit_semibold"
                 app:backgroundTint="@color/munch_white"
-                app:cornerRadius="16dp"
                 app:strokeColor="@color/munch_bangladesh_green"
                 app:strokeWidth="2dp"
-                app:elevation="0dp" />
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_book"
+                app:iconTint="@null"
+                app:iconSize="30dp"
+                app:iconPadding="12dp"
+                app:iconGravity="textStart" />
+
+
         </LinearLayout>
+
+        <!-- Footer -->
+        <TextView
+            android:id="@+id/footer_ai"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Powered by  AI Technology"
+            android:textSize="11sp"
+            android:textColor="@color/munch_stone"
+            android:fontFamily="@font/outfit_medium"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/button_row"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
+
