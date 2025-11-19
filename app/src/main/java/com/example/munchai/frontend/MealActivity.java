@@ -35,6 +35,7 @@ import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.Date;
 import java.util.concurrent.Executors;
 
 import java.io.IOException;
@@ -73,8 +74,6 @@ public class MealActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.mealpage);
-
-        isoUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
         session = new SessionManager(this);
 
         photoIv = findViewById(R.id.photo_preview);
@@ -386,10 +385,13 @@ public class MealActivity extends AppCompatActivity
             return;
         }
 
+        Date now = new Date();
+        isoUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
+
         Calendar localMidnight = Calendar.getInstance();
         localMidnight.set(selYear, selMonth, selDay, 0, 0, 0);
         localMidnight.set(Calendar.MILLISECOND, 0);
-        String loggedAtIso = isoUtc.format(localMidnight.getTime());
+        String loggedAtIso = isoUtc.format(now);
 
         FirebaseFirestore fs = FirebaseFirestore.getInstance();
 
