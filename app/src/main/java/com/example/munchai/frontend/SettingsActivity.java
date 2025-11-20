@@ -6,6 +6,7 @@ import android.widget.Switch;
 import android.widget.EditText;
 import android.widget.Button;
 import android.database.Cursor;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageButton;
 import android.content.Intent;
@@ -21,7 +22,7 @@ public class SettingsActivity extends AppCompatActivity
     private SettingsDatabaseHelper db;
     private Switch switchDarkMode;
     private EditText editCalories, editProtein, editCarbohydrates, editFats;
-    private Button saveSettings;
+    private TextView saveSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -107,9 +108,6 @@ public class SettingsActivity extends AppCompatActivity
                 Toast.makeText(this, "Settings saved!", Toast.LENGTH_SHORT).show();
 
                 // Go back to main and refresh values
-                Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
                 finish();
 
             } catch (NumberFormatException nfe) {
