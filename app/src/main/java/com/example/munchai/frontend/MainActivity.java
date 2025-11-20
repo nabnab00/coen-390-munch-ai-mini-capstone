@@ -16,10 +16,15 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.munchai.R;
 import com.example.munchai.backend.database.SettingsDatabaseHelper;
 import com.example.munchai.model.CircularProgressView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class MainActivity extends AuthedActivity {
 
@@ -57,6 +62,9 @@ public class MainActivity extends AuthedActivity {
     private int goalProteinValue = 100;
     private int goalCarbsValue   = 250;
     private int goalFatValue     = 70;
+
+    private final SimpleDateFormat isoUtc =
+            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,35 +170,78 @@ public class MainActivity extends AuthedActivity {
             settingsCursor.close();
         }
 
-        // TODO later: replace this with real totals from the logs
-        updateUIWithDemoData();
+        loadTodayTotals();
     }
 
     /**
      * Temporary demo values so the UI doesn't look empty.
      * Replace with real data once logging totals are available.
      */
-    private void updateUIWithDemoData() {
-        // Demo percentages of the daily goal
-        int calPercent     = 65;
-        int proteinPercent = 40;
-        int carbsPercent   = 80;
-        int fatPercent     = 30;
+    private void loadTodayTotals() {
 
-        int consumedCalories = (goalCaloriesValue * calPercent) / 100;
-        int consumedProtein  = (goalProteinValue * proteinPercent) / 100;
-        int consumedCarbs    = (goalCarbsValue * carbsPercent) / 100;
-        int consumedFat      = (goalFatValue * fatPercent) / 100;
+        String uid = FirebaseAuth.getInstance().getUid();
 
-        updateUI(consumedCalories, consumedProtein, consumedCarbs, consumedFat);
+        if (uid == null) {
+            updateUI(0,0,0,0);
+            return;
+        }
+
+        isoUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        Calendar startLocal = Calendar.getInstance();
+        startLocal.set(Calendar.HOUR_OF_DAY, 0);
+        startLocal.set(Calendar.MINUTE, 0);
+        startLocal.set(Calendar.SECOND, 0);
+        startLocal.set(Calendar.MILLISECOND, 0);
+
+        Calendar endLocal = (Calendar) startLocal.clone();
+        endLocal.add(Calendar.DAY_OF_MONTH, 1);
+
+        String startIso = isoUtc.format(new Date(startLocal.getTimeInMillis()));
+        String endIso = isoUtc.format(new Date(endLocal.getTimeInMillis()));
+
+
+        FirebaseFirestore.getInstance()
+                .collection("users").document(uid)
+                .collection("food_logs")
+                .whereGreaterThanOrEqualTo("logged_at", startIso)
+                .whereLessThan("logged_at", endIso)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    double totalCal=0;
+                    double totalProtein=0;
+                    double totalCarbs=0;
+                    double totalFat=0;
+
+                    if (snap != null) {
+                        for (DocumentSnapshot d : snap.getDocuments()) {
+                            Double c = d.getDouble("calories");
+                            Double p = d.getDouble("protein_g");
+                            Double cb = d.getDouble("carb_g");
+                            Double f = d.getDouble("fat_g");
+
+                            if (c != null) totalCal += c;
+                            if (p != null) totalProtein += p;
+                            if (cb != null) totalCarbs += cb;
+                            if (f != null) totalFat += f;
+                        }
+                    }
+
+                    int calInt = (int) Math.round(totalCal);
+                    int proteinInt = (int) Math.round(totalProtein);
+                    int carbsInt = (int) Math.round(totalCarbs);
+                    int fatInt = (int) Math.round(totalFat);
+
+                    updateUI(calInt, proteinInt, carbsInt, fatInt);
+                })
+                .addOnFailureListener(e -> {
+                    e.printStackTrace();
+                    updateUI(0,0,0,0);
+                });
+
     }
 
-    /**
-     * Call this later when you have real totals from the DB.
-     */
-    public void updateUIWithRealData(int totalCalories, int totalProtein, int totalCarbs, int totalFat) {
-        updateUI(totalCalories, totalProtein, totalCarbs, totalFat);
-    }
+
 
     private void updateUI(int calories, int protein, int carbs, int fat) {
         // Percentages relative to goals
