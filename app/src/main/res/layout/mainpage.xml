@@ -21,13 +21,15 @@
             android:id="@+id/main_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="4dp"
+            android:fontFamily="@font/outfit_semibold"
+            android:letterSpacing="0.02"
             android:text="Welcome back,"
             android:textColor="@color/munch_forest"
             android:textSize="24sp"
-            android:fontFamily="@font/outfit_semibold"
-            android:letterSpacing="0.02"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Settings Button -->
         <ImageButton
