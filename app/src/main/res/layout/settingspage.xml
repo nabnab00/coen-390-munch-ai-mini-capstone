@@ -15,7 +15,7 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
-        <!-- 🔹 Back button (top-left) + Title -->
+        <!-- 🔹 Back button (top-left) + Title + Save button (top-right) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,11 +27,10 @@
                 android:id="@+id/backButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/back"
                 android:src="@drawable/ic_arrow_back"
-                app:tint="@color/black"
+                app:tint="?attr/colorOnSurface"
                 tools:ignore="TouchTargetSizeCheck" />
 
             <TextView
@@ -40,16 +39,27 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Settings"
+                android:fontFamily="@font/outfit_semibold"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="28sp"
                 android:textStyle="bold"
-                android:gravity="center"
-                android:textColor="?android:attr/textColorPrimary" />
+                android:gravity="center" />
 
-            <View
-                android:layout_width="40dp"
+            <TextView
+                android:id="@+id/settings_save"
+                android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
-                android:visibility="invisible" />
+                android:gravity="center"
+                android:text="Save"
+                android:textSize="18sp"
+                android:fontFamily="@font/outfit_semibold"
+                android:textColor="?attr/colorPrimary"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"/>
+
         </LinearLayout>
 
         <!-- darkmode/lightmode -->
@@ -60,88 +70,107 @@
             android:layout_marginBottom="20dp"
             android:minHeight="48dp"
             android:text="Enable Dark Mode"
-            android:textColor="@color/brown_onBackground"
+            android:fontFamily="@font/outfit_semibold"
+            android:textColor="?attr/colorPrimary"
             android:textSize="18sp" />
 
-        <!-- target calories -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Target Calories (kcal)"
-            android:textSize="16sp" />
-
-        <EditText
-            android:id="@+id/settings_calories"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="e.g. 2000"
-            android:inputType="number"
-            android:minHeight="48dp"
-            android:textColor="@color/brown_onBackground" />
-
-        <!-- target protein -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Target Protein (g)"
-            android:textSize="16sp" />
-
-        <EditText
-            android:id="@+id/settings_protein"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="e.g. 100"
-            android:inputType="number"
-            android:minHeight="48dp"
-            android:textColor="@color/brown_onBackground" />
-
-        <!-- target carbs -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Target Carbohydrates (g)"
-            android:textSize="16sp" />
-
-        <EditText
-            android:id="@+id/settings_carbohydrates"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="e.g. 250"
-            android:inputType="number"
-            android:minHeight="48dp"
-            android:textColor="@color/brown_onBackground" />
-
-        <!-- target fat -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Target Fat (g)"
-            android:textSize="16sp" />
-
-        <EditText
-            android:id="@+id/settings_fats"
+        <!-- Target Macros Card -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:hint="e.g. 70"
-            android:inputType="number"
-            android:minHeight="48dp"
-            android:textColor="@color/brown_onBackground" />
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@color/munch_anti_flash_white"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="6dp">
 
-        <!-- save button -->
-        <Button
-            android:id="@+id/settings_save"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save Settings"
-            android:textAllCaps="false"
-            android:textSize="18sp"
-            android:padding="10dp"
-            android:backgroundTint="?attr/colorPrimary"
-            android:textColor="@android:color/white" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- target calories -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Target Calories (kcal)"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/settings_calories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:background="@android:color/transparent"
+                    android:hint="e.g. 2000"
+                    android:inputType="number"
+                    android:minHeight="48dp"
+                    android:textColor="@color/brown_onBackground" />
+
+                <!-- target protein -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Target Protein (g)"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/settings_protein"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:background="@android:color/transparent"
+                    android:hint="e.g. 100"
+                    android:inputType="number"
+                    android:minHeight="48dp"
+                    android:textColor="@color/brown_onBackground" />
+
+                <!-- target carbs -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Target Carbohydrates (g)"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/settings_carbohydrates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:background="@android:color/transparent"
+                    android:hint="e.g. 250"
+                    android:inputType="number"
+                    android:minHeight="48dp"
+                    android:textColor="@color/brown_onBackground" />
+
+                <!-- target fat -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Target Fat (g)"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/settings_fats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="e.g. 70"
+                    android:inputType="number"
+                    android:minHeight="48dp"
+                    android:textColor="@color/brown_onBackground" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- logout button -->
         <Button
