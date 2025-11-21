@@ -1,21 +1,18 @@
 package com.example.munchai.frontend;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+
 import android.os.Bundle;
 import android.widget.Switch;
 import android.widget.EditText;
-import android.widget.Button;
 import android.database.Cursor;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageButton;
-import android.content.Intent;
 
 import com.example.munchai.R;
 import com.example.munchai.backend.database.SettingsDatabaseHelper;
-
-import android.content.Intent;
-import com.example.munchai.backend.SessionManager;
 
 public class SettingsActivity extends AppCompatActivity
 {
@@ -33,31 +30,14 @@ public class SettingsActivity extends AppCompatActivity
         db = new SettingsDatabaseHelper(this);
 
         ImageButton backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> {
-            finish(); // closes SettingsActivity so you return to MainActivity
-        });
+        backButton.setOnClickListener(v -> finish());
 
-        switchDarkMode = findViewById(R.id.switch_darkmode);
-        editCalories = findViewById(R.id.settings_calories);
-        editProtein = findViewById(R.id.settings_protein);
-        editCarbohydrates = findViewById(R.id.settings_carbohydrates);
-        editFats = findViewById(R.id.settings_fats);
-        saveSettings = findViewById(R.id.settings_save);
-
-        // Prefill current settings
-        try {
-            Cursor c = db.getSettings();
-            if (c != null && c.moveToFirst()) {
-                switchDarkMode.setChecked(c.getInt(c.getColumnIndexOrThrow("dark_mode")) == 1);
-                editCalories.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("calorie_limit"))));
-                editProtein.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("protein_limit"))));
-                editCarbohydrates.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("carb_limit"))));
-                editFats.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("fat_limit"))));
-                c.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        switchDarkMode     = findViewById(R.id.switch_darkmode);
+        editCalories       = findViewById(R.id.settings_calories);
+        editProtein        = findViewById(R.id.settings_protein);
+        editCarbohydrates  = findViewById(R.id.settings_carbohydrates);
+        editFats           = findViewById(R.id.settings_fats);
+        saveSettings       = findViewById(R.id.settings_save);
 
         loadSettings();
 
@@ -65,18 +45,20 @@ public class SettingsActivity extends AppCompatActivity
             try {
                 int mode = switchDarkMode.isChecked() ? 1 : 0;
 
-                // Get existing DB values first
-                Cursor cur = db.getSettings();
+                Cursor cur = null;
                 int cal = 2000, prot = 50, carbs = 250, fat = 70;
-                if (cur != null && cur.moveToFirst()) {
-                    cal = cur.getInt(cur.getColumnIndexOrThrow("calorie_limit"));
-                    prot = cur.getInt(cur.getColumnIndexOrThrow("protein_limit"));
-                    carbs = cur.getInt(cur.getColumnIndexOrThrow("carb_limit"));
-                    fat = cur.getInt(cur.getColumnIndexOrThrow("fat_limit"));
-                    cur.close();
+                try {
+                    cur = db.getSettings();
+                    if (cur != null && cur.moveToFirst()) {
+                        cal   = cur.getInt(cur.getColumnIndexOrThrow("calorie_limit"));
+                        prot  = cur.getInt(cur.getColumnIndexOrThrow("protein_limit"));
+                        carbs = cur.getInt(cur.getColumnIndexOrThrow("carb_limit"));
+                        fat   = cur.getInt(cur.getColumnIndexOrThrow("fat_limit"));
+                    }
+                } finally {
+                    if (cur != null) cur.close();
                 }
 
-                // Only override if field is filled in
                 String s = editCalories.getText().toString().trim();
                 if (!s.isEmpty()) cal = Integer.parseInt(s);
 
@@ -89,11 +71,15 @@ public class SettingsActivity extends AppCompatActivity
                 s = editFats.getText().toString().trim();
                 if (!s.isEmpty()) fat = Integer.parseInt(s);
 
-                // Save to DB
                 db.updateSettings(mode, cal, prot, carbs, fat);
+
+                AppCompatDelegate.setDefaultNightMode(
+                        mode == 1 ? AppCompatDelegate.MODE_NIGHT_YES
+                                : AppCompatDelegate.MODE_NIGHT_NO
+                );
+
                 Toast.makeText(this, "Settings saved!", Toast.LENGTH_SHORT).show();
 
-                // Go back to main and refresh values
                 finish();
 
             } catch (NumberFormatException nfe) {
@@ -107,17 +93,20 @@ public class SettingsActivity extends AppCompatActivity
 
     private void loadSettings()
     {
-        Cursor cursor = db.getSettings();
-
-        if (cursor.moveToFirst())
-        {
-            switchDarkMode.setChecked(cursor.getInt(cursor.getColumnIndexOrThrow("dark_mode")) == 1);
-            editCalories.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("calorie_limit"))));
-            editProtein.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("protein_limit"))));
-            editCarbohydrates.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("carb_limit"))));
-            editFats.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("fat_limit"))));
+        Cursor cursor = null;
+        try {
+            cursor = db.getSettings();
+            if (cursor != null && cursor.moveToFirst())
+            {
+                boolean dark = cursor.getInt(cursor.getColumnIndexOrThrow("dark_mode")) == 1;
+                switchDarkMode.setChecked(dark);
+                editCalories.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("calorie_limit"))));
+                editProtein.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("protein_limit"))));
+                editCarbohydrates.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("carb_limit"))));
+                editFats.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("fat_limit"))));
+            }
+        } finally {
+            if (cursor != null) cursor.close();
         }
-
-        cursor.close();
     }
 }

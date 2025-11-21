@@ -1,0 +1,20 @@
+<resources>
+    <!-- Screen background becomes dark -->
+    <color name="munch_anti_flash_white">#121212</color>
+
+    <!-- Card background slightly brighter -->
+    <color name="munch_white">#1E1E1E</color>
+
+    <!-- Primary greens can stay bright or be tweaked a bit -->
+    <color name="munch_bangladesh_green">#00C26A</color>
+    <color name="munch_caribbean_green">#00E676</color>
+
+    <!-- Text colors become light so they are visible on dark bg -->
+    <color name="munch_dark_green">#E0F5EA</color>
+    <color name="munch_forest">#CDE9DA</color>
+    <color name="munch_stone">#B0B4B8</color>
+
+    <!-- Accents -->
+    <color name="munch_pistachio">#4CAF50</color>
+    <color name="munch_mountain_meadow">#1ABC9C</color>
+</resources>
