@@ -106,7 +106,7 @@
                     android:fontFamily="@font/outfit_medium"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Weight value (kept as EditText for compatibility) -->
+                <!-- Weight value -->
                 <EditText
                     android:id="@+id/weightText"
                     android:layout_width="wrap_content"
