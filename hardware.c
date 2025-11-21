@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <math.h>
+#include <string.h>
 #include "HX711.h"
 #include "BluetoothSerial.h"
 
@@ -41,9 +42,9 @@ hd44780_pinIO lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
 
 // ---------------- Bluetooth SPP ----------------
 BluetoothSerial serialBT;
-const char* BT_NAME = "ESP32-Scale";
-const bool  USE_PIN = true;          // set false to disable fixed PIN
-const char* PAIR_PIN = "1234";       // 4–16 ASCII digits
+const char* BT_NAME  = "ESP32_SCALE";  // 👈 matches your app better
+const bool  USE_PIN  = true;           // set false to disable fixed PIN
+const char* PAIR_PIN = "1234";         // 4–16 ASCII digits
 
 // ---------------- Units ----------------
 enum UnitMode { UNIT_G, UNIT_OZ, UNIT_LB, UNIT_KG };
@@ -85,7 +86,7 @@ static float userZero = 0.0f;  // grams to subtract from live reading
 
 // ---- Reading + display selector ----
 static float lastLive = 0.0f;
-static float ema = 0.0f;
+static float ema      = 0.0f;
 
 // One HX711 reading in grams using calibration factor (not used in fast path)
 static float readStableGramsOnce() {
@@ -184,7 +185,6 @@ void btSendWeight() {
   float shown = toDisplayUnits(g_disp);
 
   char buf[96];
-  // Backward-compatible grams + new display value and unit
   // Example: {"weight":4.23,"unit":"oz","weight_g":120.00}
   snprintf(buf, sizeof(buf),
            "{\"weight\":%.2f,\"unit\":\"%s\",\"weight_g\":%.2f}\n",
@@ -233,6 +233,20 @@ void setup() {
   Serial.begin(115200);
   pinMode(TARE_BTN, INPUT_PULLUP);
 
+  Serial.println();
+  Serial.println("Booting...");
+
+  // ---- NEW BT LOGIC FIRST (but in old style) ----
+  if (USE_PIN) {
+    // your core needs (pin, length)
+    serialBT.setPin(PAIR_PIN, strlen(PAIR_PIN));
+  }
+
+  Serial.println("Starting Bluetooth (slave / discoverable)...");
+  bool ok = serialBT.begin(BT_NAME, false);  // false = slave, discoverable
+
+  Serial.printf("BT start %s\n", ok ? "OK" : "FAIL");
+
   // LCD init
   delay(200);
   lcd.begin(16, 2);
@@ -247,25 +261,14 @@ void setup() {
   scale.tare(20);                       // hardware zero once at boot
   ema_valid = false;
 
-  // Bluetooth pairing PIN (legacy)
-  if (USE_PIN) {
-    esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_FIXED;
-    esp_bt_pin_code_t pin_code;
-    memset(pin_code, 0, sizeof(pin_code));
-    size_t n = strnlen(PAIR_PIN, 16);
-    for (size_t i = 0; i < n; i++) pin_code[i] = (uint8_t)PAIR_PIN[i];
-    esp_bt_gap_set_pin(pin_type, n, pin_code);
-  }
-
-  bool ok = serialBT.begin(BT_NAME);  // Classic Bluetooth SPP
-  Serial.printf("BT start %s\n", ok ? "OK" : "FAIL");
-
   lcd.clear();
   lcd.setCursor(0, 0); lcd.print("Weight:");
   lcd.setCursor(0, 1); lcd.print("BT: "); lcd.print(BT_NAME);
 
   // hello so the app knows we are alive
-  serialBT.println("{\"status\":\"ready\"}");
+  if (ok) {
+    serialBT.println("{\"status\":\"ready\"}");
+  }
 }
 
 void loop() {
