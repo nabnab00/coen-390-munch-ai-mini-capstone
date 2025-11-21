@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -14,6 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
+import com.example.munchai.backend.SessionManager;
 import com.example.munchai.backend.database.SettingsDatabaseHelper;
 import com.example.munchai.model.CircularProgressView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -81,6 +83,20 @@ public class MainActivity extends AuthedActivity {
         initializeViews();
         setupListeners();
         setCurrentDate();
+
+        Button logoutButton = findViewById(R.id.logout_button);
+        SessionManager sessionManager = new SessionManager(this);
+
+        logoutButton.setOnClickListener(v -> {
+            sessionManager.logout();
+
+            Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(MainActivity.this, StartActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finishAffinity();
+        });
     }
 
     private void initializeViews() {
