@@ -1,309 +1,286 @@
 package com.example.munchai.frontend;
 
-import com.example.munchai.R;
-
-import android.content.Intent;
-import android.app.Activity;
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
-import org.json.JSONObject;
+import com.example.munchai.R;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
+/**
+ * Weight page activity:
+ * - "Connect Bluetooth" button opens system Bluetooth settings.
+ * - When an SPP connection to the ESP32 exists: button shows "Connected" and is disabled.
+ * - Otherwise: button shows "Connect Bluetooth" and is enabled.
+ *
+ * Auto-connect behavior:
+ * - On resume, if not connected, tries to connect to a bonded device whose name starts with "ESP32".
+ *   (Change TARGET_DEVICE_NAME_PREFIX below if your device advertises a different name.)
+ */
 public class WeightScaleActivity extends AppCompatActivity {
 
-    private static final int REQ_BT_PERMS = 2001;
-    private static final String TARGET_NAME = "ESP32-Scale";
+    public static final String EXTRA_WEIGHT = "";
+    public static final String EXTRA_UNIT = "";
+    // ---- Customize this if needed ----
+    private static final String TARGET_DEVICE_NAME_PREFIX = "ESP32"; // e.g., "ESP32", "HC-05", etc.
     private static final UUID SPP_UUID =
-            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // Classic SPP
 
-    private TextView statusText;
-    private EditText macInput, weightText;
-    private Button connectBtn, tareBtn, resetBtn, saveBtn;
-    private Spinner unitSpinner;
-    public static final String EXTRA_WEIGHT = "com.example.munchai.WEIGHT";
-    public static final String EXTRA_UNIT = "com.example.munchai.UNIT";
+    private static final String TAG = "WeightScale";
+
+    private Button connectBtn;
+
     private BluetoothAdapter btAdapter;
-    private BluetoothSocket socket;
-    private OutputStream out;
-    private InputStream in;
+    @Nullable private BluetoothSocket socket;
+    @Nullable private BluetoothDevice connectedDevice;
 
-    private final ExecutorService exec = Executors.newCachedThreadPool();
-    private volatile boolean reading = false;
+    // Runtime permission requesters (Android 12+)
+    private final ActivityResultLauncher<String> permBtConnect =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                // We only request if we need it; UI will update afterward
+                updateConnectButton();
+            });
+
+    private final ActivityResultLauncher<String> permBtScan =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                // Not strictly used here since we connect via bonded devices; still nice to have
+                updateConnectButton();
+            });
+
+    // Listen for adapter state + ACL connects/disconnects to refresh button state
+    private final BroadcastReceiver btReceiver = new BroadcastReceiver() {
+        @Override public void onReceive(Context ctx, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                // A device connected — we might or might not be the one. Refresh UI.
+                updateConnectButton();
+            } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                // A device disconnected — if it's ours, clean up socket.
+                BluetoothDevice d = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (d != null && connectedDevice != null && d.getAddress().equals(connectedDevice.getAddress())) {
+                    closeSocketQuietly();
+                }
+                updateConnectButton();
+            } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                updateConnectButton();
+            }
+        }
+    };
 
     @Override
-    protected void onCreate(Bundle b) {
-        super.onCreate(b);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.weightpage);
 
-        statusText  = findViewById(R.id.statusText);
-        weightText  = findViewById(R.id.weightText);
-        macInput    = findViewById(R.id.macInput);
-        connectBtn  = findViewById(R.id.connectBtn);
-        tareBtn     = findViewById(R.id.tareBtn);
-        resetBtn    = findViewById(R.id.resetBtn);
-        saveBtn     = findViewById(R.id.weightsave);
-        unitSpinner = findViewById(R.id.unitSpinner);
-
-        setupSpinner();
+        connectBtn = findViewById(R.id.connectBtn);
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter == null) {
-            toast("Bluetooth not supported");
-            finish();
-            return;
+            toast("Bluetooth not supported on this device.");
         }
 
         connectBtn.setOnClickListener(v -> {
-            if (isSPlus() && !hasBtConnect()) {
-                requestBtPerms();
-            } else {
-                connectBluetooth();
-            }
+            // Open system Bluetooth settings so user pairs/connects to ESP32 there
+            Intent i = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
+            startActivity(i);
         });
 
-        saveBtn.setOnClickListener(v -> {
-            String currentWeight = weightText.getText().toString();
-            // Extract just the number, removing units like " g"
-            String numericWeight = currentWeight.replaceAll("[^0-9.]", "");
-
-            if (numericWeight.isEmpty() || Double.parseDouble(numericWeight) == 0) {
-                Toast.makeText(this, "No weight measured", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String selectedUnit = unitSpinner.getSelectedItem().toString();
-
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra(EXTRA_WEIGHT, numericWeight);
-            resultIntent.putExtra(EXTRA_UNIT, selectedUnit);
-            setResult(Activity.RESULT_OK, resultIntent);
-            finish();
-        });
-
-
-        tareBtn.setOnClickListener(v -> sendCmd("t\n"));
-        resetBtn.setOnClickListener(v -> sendCmd("r\n"));
-    }
-
-    private void setupSpinner() {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this,
-                R.array.units_array,
-                android.R.layout.simple_spinner_item
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        unitSpinner.setAdapter(adapter);
-
-        int saved = getSharedPreferences("scale_prefs", MODE_PRIVATE)
-                .getInt("unit_idx", 0);
-        unitSpinner.setSelection(saved);
-
-        unitSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(android.widget.AdapterView<?> parent,
-                                                 android.view.View view,
-                                                 int pos,
-                                                 long id) {
-                char cmd = idxToCmd(pos);
-                sendCmd(cmd + "\n");
-                saveUnitIndex(pos);
-            }
-
-            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-        });
-    }
-
-    private char idxToCmd(int i) {
-        switch (i) {
-            case 0: return 'G';
-            case 1: return 'O';
-            case 2: return 'L';
-            case 3: return 'K';
-        }
-        return 'G';
-    }
-
-    private void saveUnitIndex(int idx) {
-        getSharedPreferences("scale_prefs", MODE_PRIVATE)
-                .edit().putInt("unit_idx", idx).apply();
-    }
-
-    private void connectBluetooth() {
-        String mac = macInput.getText().toString().trim();
-        BluetoothDevice device = null;
-
-        try {
-            if (!mac.isEmpty()) {
-                device = safeGetRemote(mac);
-            } else {
-                Set<BluetoothDevice> bonded = safeGetBonded();
-                for (BluetoothDevice d : bonded) {
-                    if (TARGET_NAME.equals(d.getName())) {
-                        device = d;
-                        break;
-                    }
-                }
-                if (device == null) {
-                    status("Pair ESP32 first");
-                    return;
-                }
-            }
-
-            status("Connecting...");
-            final BluetoothDevice target = device;
-
-            exec.execute(() -> {
-                closeSocket();
-                try {
-                    BluetoothSocket s =
-                            target.createRfcommSocketToServiceRecord(SPP_UUID);
-                    s.connect();
-                    socket = s;
-                    out = socket.getOutputStream();
-                    in = socket.getInputStream();
-                    status("Connected");
-                    startReader();
-                } catch (SecurityException se) {
-                    status("Permission denied");
-                } catch (IOException e) {
-                    status("Failed");
-                }
-            });
-
-        } catch (Exception e) {
-            status("Error: " + e.getMessage());
-        }
-    }
-
-    private void startReader() {
-        if (reading) return;
-        reading = true;
-
-        exec.execute(() -> {
-            try {
-                BufferedReader br =
-                        new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-
-                String line;
-                while (reading && (line = br.readLine()) != null) {
-                    handleLine(line);
-                }
-            } catch (IOException e) {
-                status("Disconnected");
-            } finally {
-                reading = false;
-                closeSocket();
-            }
-        });
-    }
-
-    private void handleLine(String line) {
-        try {
-            JSONObject obj = new JSONObject(line);
-
-            double w = obj.optDouble("weight", Double.NaN);
-            String u = obj.optString("unit", "");
-
-            if (!Double.isNaN(w) && !u.isEmpty()) {
-                runOnUiThread(() ->
-                        weightText.setText(String.format("%.2f %s", w, u))
-                );
-                return;
-            }
-
-        } catch (Exception ignore) {}
-    }
-
-    private void sendCmd(String cmd) {
-        if (socket == null || out == null) {
-            toast("Not connected");
-            return;
-        }
-        exec.execute(() -> {
-            try {
-                out.write(cmd.getBytes(StandardCharsets.UTF_8));
-                out.flush();
-            } catch (Exception e) {
-                status("Send failed");
-            }
-        });
-    }
-
-    private boolean isSPlus() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
-    }
-
-    private boolean hasBtConnect() {
-        return ContextCompat.checkSelfPermission(
-                this, Manifest.permission.BLUETOOTH_CONNECT)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestBtPerms() {
-        if (isSPlus()) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{ Manifest.permission.BLUETOOTH_CONNECT },
-                    REQ_BT_PERMS
-            );
-        }
-    }
-
-    private BluetoothDevice safeGetRemote(String mac) throws SecurityException {
-        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no connect perm");
-        return btAdapter.getRemoteDevice(mac);
-    }
-
-    private Set<BluetoothDevice> safeGetBonded() throws SecurityException {
-        if (isSPlus() && !hasBtConnect()) throw new SecurityException("no connect perm");
-        return btAdapter.getBondedDevices();
-    }
-
-    private void status(String s) {
-        runOnUiThread(() -> statusText.setText(s));
-    }
-
-    private void toast(String s) {
-        runOnUiThread(() -> Toast.makeText(this, s, Toast.LENGTH_SHORT).show());
+        updateConnectButton();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        reading = false;
-        closeSocket();
-        exec.shutdownNow();
+    protected void onStart() {
+        super.onStart();
+        IntentFilter f = new IntentFilter();
+        f.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        f.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        f.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(btReceiver, f);
+        updateConnectButton();
     }
 
-    private void closeSocket() {
-        try { if (in != null)  in.close(); } catch (Exception ignore) {}
-        try { if (out != null) out.close(); } catch (Exception ignore) {}
+    @Override
+    protected void onStop() {
+        super.onStop();
+        try { unregisterReceiver(btReceiver); } catch (Exception ignore) {}
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // After user returns from Settings, attempt SPP connect if possible and not already connected
+        if (!isConnected()) {
+            tryAutoConnectToEsp32();
+        }
+        updateConnectButton();
+    }
+
+    // ---- Connection helpers ----
+
+    private boolean isConnected() {
+        try {
+            return socket != null && socket.isConnected();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean hasBtConnectPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true;
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean hasBtScanPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true;
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestMissingBtPermissionsIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!hasBtConnectPermission()) {
+                permBtConnect.launch(Manifest.permission.BLUETOOTH_CONNECT);
+            }
+            if (!hasBtScanPermission()) {
+                permBtScan.launch(Manifest.permission.BLUETOOTH_SCAN);
+            }
+        }
+    }
+
+    private void tryAutoConnectToEsp32() {
+        if (btAdapter == null) return;
+        if (!btAdapter.isEnabled()) return;
+
+        requestMissingBtPermissionsIfNeeded();
+
+        // We only look at bonded devices — user pairs in Settings first
+        Set<BluetoothDevice> bonded;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBtConnectPermission()) {
+            // Can't read bonded devices without permission on 12+
+            Log.w(TAG, "Missing BLUETOOTH_CONNECT permission; cannot auto-connect.");
+            return;
+        }
+
+        bonded = btAdapter.getBondedDevices();
+        if (bonded == null || bonded.isEmpty()) {
+            Log.i(TAG, "No bonded devices; user must pair in Settings.");
+            return;
+        }
+
+        // Pick the first bonded device whose name starts with the prefix
+        BluetoothDevice target = null;
+        for (BluetoothDevice d : bonded) {
+            String name = safeName(d);
+            if (name != null && name.startsWith(TARGET_DEVICE_NAME_PREFIX)) {
+                target = d;
+                break;
+            }
+        }
+        if (target == null) {
+            Log.i(TAG, "No bonded device matches prefix: " + TARGET_DEVICE_NAME_PREFIX);
+            return;
+        }
+
+        connectOnBackground(target);
+    }
+
+    @SuppressLint("MissingPermission")
+    private void connectOnBackground(BluetoothDevice device) {
+        if (isConnected()) return;
+
+        new Thread(() -> {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBtConnectPermission()) {
+                    Log.w(TAG, "Cannot connect: missing BLUETOOTH_CONNECT permission.");
+                    runOnUiThread(() -> updateConnectButton());
+                    return;
+                }
+                BluetoothSocket tmp = device.createRfcommSocketToServiceRecord(SPP_UUID);
+
+                // Cancel discovery (not scanning here, but just to be safe)
+                if (btAdapter != null && btAdapter.isDiscovering()) {
+                    btAdapter.cancelDiscovery();
+                }
+
+                tmp.connect(); // blocks
+                socket = tmp;
+                connectedDevice = device;
+                Log.i(TAG, "SPP connected to " + safeName(device) + " (" + device.getAddress() + ")");
+                runOnUiThread(() -> {
+                    toast("Connected to " + safeName(device));
+                    updateConnectButton();
+                });
+            } catch (IOException e) {
+                Log.e(TAG, "SPP connect failed: " + e.getMessage(), e);
+                closeSocketQuietly();
+                runOnUiThread(() -> {
+                    toast("Bluetooth connect failed. Pair in Settings then return.");
+                    updateConnectButton();
+                });
+            }
+        }, "bt-connect").start();
+    }
+
+    private void closeSocketQuietly() {
         try { if (socket != null) socket.close(); } catch (Exception ignore) {}
-        in = null; out = null; socket = null;
+        socket = null;
+        connectedDevice = null;
+    }
+
+    private String safeName(BluetoothDevice d) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasBtConnectPermission()) return "(unknown)";
+            return d.getName();
+        } catch (SecurityException se) {
+            return "(unknown)";
+        }
+    }
+
+    private void toast(String s) {
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+    }
+
+    // ---- UI state ----
+    private void updateConnectButton() {
+        boolean connected = isConnected();
+        if (connectBtn != null) {
+            connectBtn.setText(connected ? "Connected" : "Connect Bluetooth");
+            connectBtn.setEnabled(!connected);
+        }
+    }
+
+    // Optional: call this to explicitly disconnect from menu or similar
+    public void disconnectIfNeeded(View v) {
+        if (isConnected()) {
+            closeSocketQuietly();
+            updateConnectButton();
+            toast("Disconnected.");
+        }
     }
 }
