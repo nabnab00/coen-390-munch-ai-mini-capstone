@@ -113,6 +113,7 @@
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/inter_medium"
                     android:hint="?"
+                    android:imeOptions="actionDone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 

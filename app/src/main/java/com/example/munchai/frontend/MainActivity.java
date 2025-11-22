@@ -1,7 +1,6 @@
 package com.example.munchai.frontend;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -16,9 +15,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
 import com.example.munchai.backend.SessionManager;
-import com.example.munchai.backend.database.SettingsDatabaseHelper;
 import com.example.munchai.model.CircularProgressView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -33,7 +32,7 @@ public class MainActivity extends AuthedActivity {
     // Circular Rings
     private CircularProgressView ringCalories;   // big main ring only
 
-    // Macro progress bars 
+    // Macro progress bars
     private ProgressBar pbProtein;
     private ProgressBar pbCarbs;
     private ProgressBar pbFat;
@@ -161,33 +160,39 @@ public class MainActivity extends AuthedActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        loadSettingsAndTodayTotals();
+    }
 
-        // Load settings (goals) from DB
-        SettingsDatabaseHelper settingsDb = new SettingsDatabaseHelper(this);
-        Cursor settingsCursor = settingsDb.getSettings();
-
-        if (settingsCursor != null && settingsCursor.moveToFirst()) {
-            try {
-                goalCaloriesValue = settingsCursor.getInt(
-                        settingsCursor.getColumnIndexOrThrow("calorie_limit")
-                );
-                goalProteinValue = settingsCursor.getInt(
-                        settingsCursor.getColumnIndexOrThrow("protein_limit")
-                );
-                goalCarbsValue = settingsCursor.getInt(
-                        settingsCursor.getColumnIndexOrThrow("carb_limit")
-                );
-                goalFatValue = settingsCursor.getInt(
-                        settingsCursor.getColumnIndexOrThrow("fat_limit")
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            settingsCursor.close();
+    private void loadSettingsAndTodayTotals() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) {
+            updateUI(0, 0, 0, 0);
+            return;
         }
 
-        loadTodayTotals();
+        // CHANGED: Use path users/{uid}/settings/doc for settings
+        DocumentReference userSettingsRef = FirebaseFirestore.getInstance()
+                .collection("users").document(uid)
+                .collection("settings").document("doc");
+        userSettingsRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    Long calorieLimit = document.getLong("calorie_limit");
+                    Long proteinLimit = document.getLong("protein_limit");
+                    Long carbLimit = document.getLong("carb_limit");
+                    Long fatLimit = document.getLong("fat_limit");
+
+                    if (calorieLimit != null) goalCaloriesValue = calorieLimit.intValue();
+                    if (proteinLimit != null) goalProteinValue = proteinLimit.intValue();
+                    if (carbLimit != null) goalCarbsValue = carbLimit.intValue();
+                    if (fatLimit != null) goalFatValue = fatLimit.intValue();
+                }
+            }
+            loadTodayTotals();
+        });
     }
+
 
     /**
      * Temporary demo values so the UI doesn't look empty.
@@ -320,4 +325,3 @@ public class MainActivity extends AuthedActivity {
         return Math.min(100, (int) ((current * 100.0f) / goal));
     }
 }
-

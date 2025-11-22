@@ -1,41 +1,49 @@
 package com.example.munchai.frontend;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Switch;
 import android.widget.EditText;
-import android.widget.Button;
-import android.database.Cursor;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageButton;
-import android.content.Intent;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.database.SettingsDatabaseHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
-import android.content.Intent;
-import com.example.munchai.backend.SessionManager;
+import java.util.HashMap;
+import java.util.Map;
 
-public class SettingsActivity extends AppCompatActivity
-{
-    private SettingsDatabaseHelper db;
+public class SettingsActivity extends AppCompatActivity {
+    private FirebaseFirestore db;
     private Switch switchDarkMode;
     private EditText editCalories, editProtein, editCarbohydrates, editFats;
     private TextView saveSettings;
+    private String uid;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settingspage);
 
-        db = new SettingsDatabaseHelper(this);
+        db = FirebaseFirestore.getInstance();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            uid = currentUser.getUid();
+        } else {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         ImageButton backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> {
-            finish(); // closes SettingsActivity so you return to MainActivity
-        });
+        backButton.setOnClickListener(v -> finish());
 
         switchDarkMode = findViewById(R.id.switch_darkmode);
         editCalories = findViewById(R.id.settings_calories);
@@ -44,80 +52,70 @@ public class SettingsActivity extends AppCompatActivity
         editFats = findViewById(R.id.settings_fats);
         saveSettings = findViewById(R.id.settings_save);
 
-        // Prefill current settings
-        try {
-            Cursor c = db.getSettings();
-            if (c != null && c.moveToFirst()) {
-                switchDarkMode.setChecked(c.getInt(c.getColumnIndexOrThrow("dark_mode")) == 1);
-                editCalories.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("calorie_limit"))));
-                editProtein.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("protein_limit"))));
-                editCarbohydrates.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("carb_limit"))));
-                editFats.setText(String.valueOf(c.getInt(c.getColumnIndexOrThrow("fat_limit"))));
-                c.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         loadSettings();
 
-        saveSettings.setOnClickListener(v -> {
-            try {
-                int mode = switchDarkMode.isChecked() ? 1 : 0;
+        saveSettings.setOnClickListener(v -> saveSettingsToFirestore());
+    }
 
-                // Get existing DB values first
-                Cursor cur = db.getSettings();
-                int cal = 2000, prot = 50, carbs = 250, fat = 70;
-                if (cur != null && cur.moveToFirst()) {
-                    cal = cur.getInt(cur.getColumnIndexOrThrow("calorie_limit"));
-                    prot = cur.getInt(cur.getColumnIndexOrThrow("protein_limit"));
-                    carbs = cur.getInt(cur.getColumnIndexOrThrow("carb_limit"));
-                    fat = cur.getInt(cur.getColumnIndexOrThrow("fat_limit"));
-                    cur.close();
+    private void loadSettings() {
+        // CHANGED: Use path users/{uid}/settings/doc for settings
+        DocumentReference userSettingsRef = db.collection("users").document(uid)
+                .collection("settings").document("doc");
+        userSettingsRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    Boolean darkMode = document.getBoolean("dark_mode");
+                    Long calorieLimit = document.getLong("calorie_limit");
+                    Long proteinLimit = document.getLong("protein_limit");
+                    Long carbLimit = document.getLong("carb_limit");
+                    Long fatLimit = document.getLong("fat_limit");
+
+                    if (darkMode != null) switchDarkMode.setChecked(darkMode);
+                    if (calorieLimit != null) editCalories.setText(String.valueOf(calorieLimit));
+                    if (proteinLimit != null) editProtein.setText(String.valueOf(proteinLimit));
+                    if (carbLimit != null) editCarbohydrates.setText(String.valueOf(carbLimit));
+                    if (fatLimit != null) editFats.setText(String.valueOf(fatLimit));
                 }
-
-                // Only override if field is filled in
-                String s = editCalories.getText().toString().trim();
-                if (!s.isEmpty()) cal = Integer.parseInt(s);
-
-                s = editProtein.getText().toString().trim();
-                if (!s.isEmpty()) prot = Integer.parseInt(s);
-
-                s = editCarbohydrates.getText().toString().trim();
-                if (!s.isEmpty()) carbs = Integer.parseInt(s);
-
-                s = editFats.getText().toString().trim();
-                if (!s.isEmpty()) fat = Integer.parseInt(s);
-
-                // Save to DB
-                db.updateSettings(mode, cal, prot, carbs, fat);
-                Toast.makeText(this, "Settings saved!", Toast.LENGTH_SHORT).show();
-
-                // Go back to main and refresh values
-                finish();
-
-            } catch (NumberFormatException nfe) {
-                Toast.makeText(this, "Please enter valid numeric values", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(this, "Error saving settings", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(SettingsActivity.this, "Failed to load settings.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void loadSettings()
-    {
-        Cursor cursor = db.getSettings();
+    private void saveSettingsToFirestore() {
+        try {
+            Map<String, Object> settings = new HashMap<>();
+            settings.put("dark_mode", switchDarkMode.isChecked());
 
-        if (cursor.moveToFirst())
-        {
-            switchDarkMode.setChecked(cursor.getInt(cursor.getColumnIndexOrThrow("dark_mode")) == 1);
-            editCalories.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("calorie_limit"))));
-            editProtein.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("protein_limit"))));
-            editCarbohydrates.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("carb_limit"))));
-            editFats.setText(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow("fat_limit"))));
+            String calStr = editCalories.getText().toString().trim();
+            if (!calStr.isEmpty()) settings.put("calorie_limit", Integer.parseInt(calStr));
+
+            String protStr = editProtein.getText().toString().trim();
+            if (!protStr.isEmpty()) settings.put("protein_limit", Integer.parseInt(protStr));
+
+            String carbStr = editCarbohydrates.getText().toString().trim();
+            if (!carbStr.isEmpty()) settings.put("carb_limit", Integer.parseInt(carbStr));
+
+            String fatStr = editFats.getText().toString().trim();
+            if (!fatStr.isEmpty()) settings.put("fat_limit", Integer.parseInt(fatStr));
+
+            // CHANGED: Use path users/{uid}/settings/doc for settings
+            DocumentReference userSettingsRef = db.collection("users").document(uid)
+                    .collection("settings").document("doc");
+            userSettingsRef.set(settings, SetOptions.merge())
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(SettingsActivity.this, "Settings saved!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(SettingsActivity.this, "Error saving settings", Toast.LENGTH_SHORT).show();
+                        // Log the detailed error to help with debugging
+                        e.printStackTrace();
+                    });
+
+        } catch (NumberFormatException nfe) {
+            Toast.makeText(this, "Please enter valid numeric values", Toast.LENGTH_SHORT).show();
         }
-
-        cursor.close();
     }
 }
