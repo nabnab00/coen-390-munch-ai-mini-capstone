@@ -33,7 +33,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -52,4 +51,5 @@ dependencies {
     implementation ("com.google.firebase:firebase-storage")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")   // Glide is for handling image access and storage
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

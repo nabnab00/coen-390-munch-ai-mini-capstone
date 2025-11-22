@@ -6,7 +6,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -14,7 +13,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.SessionManager;
 import com.example.munchai.model.CircularProgressView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -57,6 +55,7 @@ public class MainActivity extends AuthedActivity {
     private ImageButton btnSettings;
     private Button btnLogFood;
     private Button btnHistory;
+    private Button btnProfile;
 
     // Goals (loaded from settings)
     private int goalCaloriesValue = 2000;
@@ -83,19 +82,6 @@ public class MainActivity extends AuthedActivity {
         setupListeners();
         setCurrentDate();
 
-        Button logoutButton = findViewById(R.id.logout_button);
-        SessionManager sessionManager = new SessionManager(this);
-
-        logoutButton.setOnClickListener(v -> {
-            sessionManager.logout();
-
-            Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
-
-            Intent intent = new Intent(MainActivity.this, StartActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finishAffinity();
-        });
     }
 
     private void initializeViews() {
@@ -127,6 +113,7 @@ public class MainActivity extends AuthedActivity {
         btnSettings = findViewById(R.id.to_settings);
         btnLogFood  = findViewById(R.id.to_foodlog);
         btnHistory  = findViewById(R.id.to_history);
+        btnProfile = findViewById(R.id.to_profile);
     }
 
     private void setupListeners() {
@@ -145,6 +132,12 @@ public class MainActivity extends AuthedActivity {
         // Food logs / history
         btnHistory.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
+            startActivity(intent);
+        });
+
+        // Profile Section
+        btnProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
         });
     }
