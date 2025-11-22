@@ -2,27 +2,27 @@ package com.example.munchai.frontend;
 
 import com.example.munchai.R;
 
-import android.content.Intent;
-import android.app.Activity;
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AlertDialog;
-import android.provider.Settings;
 
 import org.json.JSONObject;
 
@@ -32,12 +32,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.ArrayList;
-import java.util.List;
 
 public class WeightScaleActivity extends AppCompatActivity {
 
@@ -58,13 +58,8 @@ public class WeightScaleActivity extends AppCompatActivity {
     private OutputStream out;
     private InputStream in;
 
-    private ExecutorService exec = Executors.newSingleThreadExecutor();
+    private final ExecutorService exec = Executors.newCachedThreadPool();
     private volatile boolean reading = false;
-
-    private double currentWeight = 0.0;
-    private double tareOffset = 0.0;
-
-    private String selectedUnit = "g";
 
     @Override
     protected void onCreate(Bundle b) {
@@ -90,7 +85,7 @@ public class WeightScaleActivity extends AppCompatActivity {
         }
 
         connectBtn.setOnClickListener(v -> {
-            if (isSPlus() && !hasBtConnect()) {
+            if (isSPlus() && !hasBtPerms()) {
                 requestBtPerms();
             } else {
                 connectBluetooth();
@@ -107,6 +102,8 @@ public class WeightScaleActivity extends AppCompatActivity {
                 return;
             }
 
+            String selectedUnit = unitSpinner.getSelectedItem().toString();
+
             Intent resultIntent = new Intent();
             resultIntent.putExtra(EXTRA_WEIGHT, numericWeight);
             resultIntent.putExtra(EXTRA_UNIT, selectedUnit);
@@ -114,31 +111,33 @@ public class WeightScaleActivity extends AppCompatActivity {
             finish();
         });
 
-        tareBtn.setOnClickListener(v -> {
-            tareOffset = currentWeight;
-            updateWeightDisplay();
-        });
-
-        resetBtn.setOnClickListener(v -> {
-            tareOffset = 0.0;
-            currentWeight = 0.0;
-            updateWeightDisplay();
-        });
+        // Tare / reset send commands to ESP32 (same as before)
+        tareBtn.setOnClickListener(v -> sendCmd("t\n"));
+        resetBtn.setOnClickListener(v -> sendCmd("r\n"));
     }
 
     private void setupSpinner() {
-        String[] units = {"g", "oz", "lb"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, units);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.units_array,
+                android.R.layout.simple_spinner_item
+        );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         unitSpinner.setAdapter(adapter);
+
+        int saved = getSharedPreferences("scale_prefs", MODE_PRIVATE)
+                .getInt("unit_idx", 0);
+        unitSpinner.setSelection(saved);
 
         unitSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent,
-                                       android.view.View view, int position, long id) {
-                selectedUnit = units[position];
-                updateWeightDisplay();
+                                       android.view.View view,
+                                       int pos,
+                                       long id) {
+                char cmd = idxToCmd(pos);
+                sendCmd(cmd + "\n");
+                saveUnitIndex(pos);
             }
 
             @Override
@@ -146,45 +145,27 @@ public class WeightScaleActivity extends AppCompatActivity {
         });
     }
 
-    private boolean isSPlus() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
-    }
-
-    private boolean hasBtConnect() {
-        if (!isSPlus()) return true;
-        return ContextCompat.checkSelfPermission(this,
-                Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestBtPerms() {
-        if (!isSPlus()) return;
-        ActivityCompat.requestPermissions(
-                this,
-                new String[]{ Manifest.permission.BLUETOOTH_CONNECT },
-                REQ_BT_PERMS
-        );
-    }
-
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, String[] permissions, int[] grantResults) {
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == REQ_BT_PERMS) {
-            if (grantResults.length > 0 &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                connectBluetooth();
-            } else {
-                toast("Bluetooth permission denied");
-            }
+    private char idxToCmd(int i) {
+        switch (i) {
+            case 0: return 'G';
+            case 1: return 'O';
+            case 2: return 'L';
+            case 3: return 'K';
         }
+        return 'G';
     }
+
+    private void saveUnitIndex(int idx) {
+        getSharedPreferences("scale_prefs", MODE_PRIVATE)
+                .edit().putInt("unit_idx", idx).apply();
+    }
+
+    // ===== Bluetooth connection path =====
 
     private void connectBluetooth() {
         String mac = macInput.getText().toString().trim();
 
-        // If user typed a MAC address, keep supporting that path
+        // If user typed a MAC address, keep that path
         if (!mac.isEmpty()) {
             try {
                 BluetoothDevice device = safeGetRemote(mac);
@@ -195,7 +176,7 @@ public class WeightScaleActivity extends AppCompatActivity {
             return;
         }
 
-        // No MAC entered: show a picker with paired devices instead of forcing manual pairing
+        // No MAC entered: open paired-device picker
         showPairedDevicePicker();
     }
 
@@ -238,7 +219,7 @@ public class WeightScaleActivity extends AppCompatActivity {
 
             if (bonded == null || bonded.isEmpty()) {
                 status("No paired devices found. Please pair your ESP32 once in Bluetooth settings.");
-                // Open system Bluetooth settings so the user can pair easily
+                // Open system Bluetooth settings so user can pair easily
                 Intent intent = new Intent(Settings.ACTION_BLUETOOTH_SETTINGS);
                 startActivity(intent);
                 return;
@@ -253,7 +234,7 @@ public class WeightScaleActivity extends AppCompatActivity {
                     name = "Unknown device";
                 }
 
-                // If you want to show only ESP32 devices, you can filter here, e.g.:
+                // If you want to filter to ESP devices only, you could do:
                 // if (name == null || !name.contains("ESP")) continue;
 
                 devices.add(d);
@@ -281,25 +262,6 @@ public class WeightScaleActivity extends AppCompatActivity {
         }
     }
 
-    private BluetoothDevice safeGetRemote(String mac) {
-        try {
-            if (isSPlus() && !hasBtConnect()) {
-                throw new SecurityException("No BLUETOOTH_CONNECT permission");
-            }
-            return btAdapter.getRemoteDevice(mac);
-        } catch (IllegalArgumentException e) {
-            toast("Invalid MAC");
-            return null;
-        }
-    }
-
-    private Set<BluetoothDevice> safeGetBonded() {
-        if (isSPlus() && !hasBtConnect()) {
-            throw new SecurityException("No BLUETOOTH_CONNECT permission");
-        }
-        return btAdapter.getBondedDevices();
-    }
-
     private void startReader() {
         if (reading) return;
         reading = true;
@@ -318,6 +280,7 @@ public class WeightScaleActivity extends AppCompatActivity {
             } finally {
                 reading = false;
                 closeSocket();
+                // Re-enable the connect button when connection is lost
                 runOnUiThread(() -> {
                     connectBtn.setText("Connect Bluetooth");
                     connectBtn.setEnabled(true);
@@ -331,43 +294,103 @@ public class WeightScaleActivity extends AppCompatActivity {
             JSONObject obj = new JSONObject(line);
 
             double w = obj.optDouble("weight", Double.NaN);
-            String msg = obj.optString("msg", "");
+            String u = obj.optString("unit", "");
 
-            if (!Double.isNaN(w)) {
-                currentWeight = w;
-                updateWeightDisplay();
+            if (!Double.isNaN(w) && !u.isEmpty()) {
+                runOnUiThread(() ->
+                        weightText.setText(String.format("%.2f %s", w, u))
+                );
+                return;
             }
 
-            if (!msg.isEmpty()) {
-                status(msg);
+        } catch (Exception ignore) { }
+    }
+
+    private void sendCmd(String cmd) {
+        if (socket == null || out == null) {
+            toast("Not connected");
+            return;
+        }
+        exec.execute(() -> {
+            try {
+                out.write(cmd.getBytes(StandardCharsets.UTF_8));
+                out.flush();
+            } catch (Exception e) {
+                status("Send failed");
+            }
+        });
+    }
+
+    // ===== Permission helpers =====
+
+    private boolean isSPlus() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+    }
+
+    private boolean hasBtPerms() {
+        if (!isSPlus()) return true;
+
+        boolean connectOk = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+        ) == PackageManager.PERMISSION_GRANTED;
+
+        boolean scanOk = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_SCAN
+        ) == PackageManager.PERMISSION_GRANTED;
+
+        return connectOk && scanOk;
+    }
+
+    private void requestBtPerms() {
+        if (!isSPlus()) return;
+
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        Manifest.permission.BLUETOOTH_SCAN
+                },
+                REQ_BT_PERMS
+        );
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQ_BT_PERMS) {
+            boolean allGranted = true;
+            if (grantResults.length == 0) {
+                allGranted = false;
+            } else {
+                for (int res : grantResults) {
+                    if (res != PackageManager.PERMISSION_GRANTED) {
+                        allGranted = false;
+                        break;
+                    }
+                }
             }
 
-        } catch (Exception ignore) {
+            if (allGranted) {
+                connectBluetooth();
+            } else {
+                toast("Bluetooth permission denied");
+            }
         }
     }
 
-    private void updateWeightDisplay() {
-        double netWeight = currentWeight - tareOffset;
-        if (netWeight < 0) netWeight = 0;
+    private BluetoothDevice safeGetRemote(String mac) throws SecurityException {
+        if (isSPlus() && !hasBtPerms()) throw new SecurityException("Missing Bluetooth permissions");
+        return btAdapter.getRemoteDevice(mac);
+    }
 
-        String displayText;
-        switch (selectedUnit) {
-            case "oz":
-                double oz = netWeight * 0.035274;
-                displayText = String.format("%.2f oz", oz);
-                break;
-            case "lb":
-                double lb = netWeight * 0.00220462;
-                displayText = String.format("%.3f lb", lb);
-                break;
-            case "g":
-            default:
-                displayText = String.format("%.1f g", netWeight);
-                break;
-        }
-
-        String finalDisplayText = displayText;
-        runOnUiThread(() -> weightText.setText(finalDisplayText));
+    private Set<BluetoothDevice> safeGetBonded() throws SecurityException {
+        if (isSPlus() && !hasBtPerms()) throw new SecurityException("Missing Bluetooth permissions");
+        return btAdapter.getBondedDevices();
     }
 
     private void status(String s) {
@@ -375,7 +398,7 @@ public class WeightScaleActivity extends AppCompatActivity {
     }
 
     private void toast(String s) {
-        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+        runOnUiThread(() -> Toast.makeText(this, s, Toast.LENGTH_SHORT).show());
     }
 
     @Override
