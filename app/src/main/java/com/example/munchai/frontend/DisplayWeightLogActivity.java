@@ -75,7 +75,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
     private EditText personalWeightEditText;
     private TextView bmiValueTextView;
     private Button logWeightButton;
-    private ImageButton backButton;
+    private ImageButton backButton, logoutButton;
     private RecyclerView weightLogsRecyclerView; // Changed from ListView
     private LineChart weightChart; // Add LineChart variable
 
@@ -102,6 +102,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
 
         logWeightButton = findViewById(R.id.profile_save);
         backButton = findViewById(R.id.profile_back_button);
+        logoutButton = findViewById(R.id.logout_button);
         weightLogsRecyclerView = findViewById(R.id.weight_logs_list);
         weightChart = findViewById(R.id.weight_chart);
         weightLogList = new ArrayList<>();
@@ -136,8 +137,6 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         personalNameEditText.setOnEditorActionListener(editorActionListener);
         personalAgeEditText.setOnEditorActionListener(editorActionListener);
         personalHeightEditText.setOnEditorActionListener(editorActionListener);
-
-        Button logoutButton = findViewById(R.id.logout_button);
         SessionManager sessionManager = new SessionManager(this);
 
         backButton.setOnClickListener(v -> {
