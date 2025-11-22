@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,6 +73,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
     private EditText personalHeightEditText;
     private EditText personalWeightEditText;
     private Button logWeightButton;
+    private ImageButton backButton;
     private RecyclerView weightLogsRecyclerView; // Changed from ListView
     private LineChart weightChart; // Add LineChart variable
 
@@ -95,6 +97,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         personalHeightEditText = findViewById(R.id.personal_height_info);
         personalWeightEditText = findViewById(R.id.personal_weight);
         logWeightButton = findViewById(R.id.profile_save);
+        backButton = findViewById(R.id.profile_back_button);
         weightLogsRecyclerView = findViewById(R.id.weight_logs_list);
         weightChart = findViewById(R.id.weight_chart);
         weightLogList = new ArrayList<>();
@@ -133,6 +136,10 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         Button logoutButton = findViewById(R.id.logout_button);
         SessionManager sessionManager = new SessionManager(this);
 
+        backButton.setOnClickListener(v -> {
+            finish();
+        });
+
         logoutButton.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Logout")
@@ -153,12 +160,15 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
     private void loadUserProfile() {
         personalEmailTextView.setText(currentUser.getEmail());
         String userName = currentUser.getDisplayName();
+
+        /*
         if (userName != null && !userName.isEmpty()) {
             profileTitle.setText("Hello, " + userName);
             personalNameEditText.setText(userName);
         } else {
             profileTitle.setText("Hello, User");
         }
+        */
 
         // load age & height
         DocumentReference userDocRef = db.collection("users").document(currentUser.getUid());
