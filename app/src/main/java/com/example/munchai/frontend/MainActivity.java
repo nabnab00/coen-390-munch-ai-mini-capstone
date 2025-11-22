@@ -58,6 +58,7 @@ public class MainActivity extends AuthedActivity {
     private ImageButton btnSettings;
     private Button btnLogFood;
     private Button btnHistory;
+    private Button btnProfile;
 
     // Goals (loaded from settings)
     private int goalCaloriesValue = 2000;
@@ -128,6 +129,7 @@ public class MainActivity extends AuthedActivity {
         btnSettings = findViewById(R.id.to_settings);
         btnLogFood  = findViewById(R.id.to_foodlog);
         btnHistory  = findViewById(R.id.to_history);
+        btnProfile = findViewById(R.id.to_profile);
     }
 
     private void setupListeners() {
@@ -146,6 +148,12 @@ public class MainActivity extends AuthedActivity {
         // Food logs / history
         btnHistory.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
+            startActivity(intent);
+        });
+
+        // Profile Section
+        btnProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
         });
     }
