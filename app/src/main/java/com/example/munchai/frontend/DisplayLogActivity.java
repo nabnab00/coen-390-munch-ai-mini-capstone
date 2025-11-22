@@ -90,24 +90,42 @@ public class DisplayLogActivity extends AppCompatActivity {
     }
 
     private void deleteMeal(FoodLogRow row) {
-
         String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getUid();
         if (uid == null || row.documentId == null) {
             Toast.makeText(this, "Error: missing document ID", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Delete the Firestore document
         FirebaseFirestore.getInstance()
                 .collection("users").document(uid)
                 .collection("food_logs").document(row.documentId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Meal deleted", Toast.LENGTH_SHORT).show();
-                    finish(); // go back to HistoryActivity
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error deleting: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
-    }
+                    // Delete photo
+                    try {
+                        com.google.firebase.storage.StorageReference photoRef =
+                                com.google.firebase.storage.FirebaseStorage.getInstance()
+                                        .getReferenceFromUrl(row.imageUrl);
 
+                        photoRef.delete()
+                                .addOnSuccessListener(aVoid2 -> {
+                                    Toast.makeText(this, "Meal and photo deleted", Toast.LENGTH_SHORT).show();
+                                    finish(); // go back to HistoryActivity
+                                })
+                                .addOnFailureListener(e -> {
+                                    // Photo deletion failed
+                                    Toast.makeText(this, "Failed to delete photo: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    finish();
+                                });
+                    } catch (IllegalArgumentException e) {
+                        // URL invalid
+                        Toast.makeText(this, "Meal deleted but photo could not be deleted (invalid URL)", Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error deleting meal: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
 }
