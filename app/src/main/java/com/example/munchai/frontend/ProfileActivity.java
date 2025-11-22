@@ -86,15 +86,11 @@ public class ProfileActivity extends AppCompatActivity {
         weightChart = findViewById(R.id.weight_chart); // Initialize LineChart
         weightLogList = new ArrayList<>();
 
-        // Setup RecyclerView
         weightLogsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         weightLogAdapter = new WeightLogAdapter(this, weightLogList);
         weightLogsRecyclerView.setAdapter(weightLogAdapter);
 
-        // Setup Chart
         setupWeightChart();
-
-        // Attach ItemTouchHelper for swipe-to-delete
         setupSwipeToDelete();
 
         if (currentUser != null) {
@@ -129,15 +125,15 @@ public class ProfileActivity extends AppCompatActivity {
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
-        xAxis.setDrawAxisLine(false); // Hide the x-axis line itself
+        xAxis.setDrawAxisLine(false);
 
         // Configure Y-Axis
         YAxis leftAxis = weightChart.getAxisLeft();
-        leftAxis.setGranularity(10f); // Set Y-axis increments to 10 kg
-        leftAxis.setDrawGridLines(false); // Remove horizontal grid lines
-        leftAxis.setDrawAxisLine(false); // Hide the y-axis line itself
+        leftAxis.setGranularity(10f);
+        leftAxis.setDrawGridLines(false);
+        leftAxis.setDrawAxisLine(false);
 
-        weightChart.getAxisRight().setEnabled(false); // Disable the right Y-axis
+        weightChart.getAxisRight().setEnabled(false);
     }
 
     private void updateWeightChart() {
@@ -147,7 +143,6 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // Sort the list by date to ensure the chart is drawn correctly
         Collections.sort(weightLogList, (log1, log2) -> log1.getDate().compareTo(log2.getDate()));
 
         ArrayList<Entry> entries = new ArrayList<>();
@@ -175,7 +170,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         LineData lineData = new LineData(dataSet);
         weightChart.setData(lineData);
-        weightChart.invalidate(); // Refresh the chart
+        weightChart.invalidate();
     }
 
 
@@ -186,43 +181,34 @@ public class ProfileActivity extends AppCompatActivity {
 
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false; // We are not moving items up/down
+                return false;
             }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                // Ensure position is valid before proceeding
                 if (position == RecyclerView.NO_POSITION) {
                     return;
                 }
                 WeightLog logToDelete = weightLogList.get(position);
 
-                // Remove from the list and notify adapter
                 weightLogList.remove(position);
                 weightLogAdapter.notifyItemRemoved(position);
-                updateWeightChart(); // Update chart after deletion
-
-                // Delete from Firestore
+                updateWeightChart();
                 deleteWeightLogFromFirestore(logToDelete, position);
             }
 
             @Override
             public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-
-                // This is the corrected line
                 View itemView = viewHolder.itemView;
 
-                if (dX < 0) { // Swiping to the left
-                    // Calculate position of delete icon
+                if (dX < 0) {
                     int iconMargin = (itemView.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
                     int iconTop = itemView.getTop() + iconMargin;
                     int iconBottom = iconTop + deleteIcon.getIntrinsicHeight();
                     int iconLeft = itemView.getRight() - iconMargin - deleteIcon.getIntrinsicWidth();
                     int iconRight = itemView.getRight() - iconMargin;
-
-                    // Draw the delete icon
                     deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
                     deleteIcon.draw(c);
                 }
@@ -244,24 +230,20 @@ public class ProfileActivity extends AppCompatActivity {
                         DocumentReference docRef = queryDocumentSnapshots.getDocuments().get(0).getReference();
                         docRef.delete()
                                 .addOnSuccessListener(aVoid -> {
-                                    // Show Snackbar with Undo option
                                     Snackbar.make(weightLogsRecyclerView, "Log deleted", Snackbar.LENGTH_LONG)
                                             .setAction("UNDO", view -> {
-                                                // Undo was clicked, re-add the log
                                                 weightLogList.add(position, logToDelete);
                                                 weightLogAdapter.notifyItemInserted(position);
-                                                updateWeightChart(); // Update chart after undo
-                                                // Re-add to Firestore as well
+                                                updateWeightChart();
                                                 db.collection("users").document(currentUser.getUid())
                                                         .collection("personal_weight_logs").add(logToDelete);
                                             }).show();
                                 })
                                 .addOnFailureListener(e -> {
                                     Toast.makeText(ProfileActivity.this, "Failed to delete log.", Toast.LENGTH_SHORT).show();
-                                    // Restore UI if delete fails
                                     weightLogList.add(position, logToDelete);
                                     weightLogAdapter.notifyItemInserted(position);
-                                    updateWeightChart(); // Restore chart as well
+                                    updateWeightChart();
                                 });
                     }
                 })
@@ -297,7 +279,6 @@ public class ProfileActivity extends AppCompatActivity {
                 .document(currentUser.getUid())
                 .collection("personal_weight_logs");
 
-        // Get the start and end of the current day
         Calendar cal = Calendar.getInstance();
         cal.setTime(currentDate);
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -309,7 +290,6 @@ public class ProfileActivity extends AppCompatActivity {
         cal.add(Calendar.DAY_OF_MONTH, 1);
         Date endDate = cal.getTime();
 
-        // Query for logs from the current day
         weightLogsCollection
                 .whereGreaterThanOrEqualTo("date", startDate)
                 .whereLessThan("date", endDate)
@@ -356,7 +336,7 @@ public class ProfileActivity extends AppCompatActivity {
         db.collection("users")
                 .document(currentUser.getUid())
                 .collection("personal_weight_logs")
-                .orderBy("date", Query.Direction.DESCENDING) // Order by date
+                .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     weightLogList.clear();
@@ -365,7 +345,7 @@ public class ProfileActivity extends AppCompatActivity {
                         weightLogList.add(log);
                     }
                     weightLogAdapter.notifyDataSetChanged();
-                    updateWeightChart(); // Update the chart with the fetched data
+                    updateWeightChart();
                 })
                 .addOnFailureListener(e -> {
                     Log.w(TAG, "Error getting documents: ", e);
