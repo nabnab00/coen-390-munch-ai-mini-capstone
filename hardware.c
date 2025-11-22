@@ -35,8 +35,7 @@ const char* PAIR_PIN = "1234";
 enum UnitMode { UNIT_G, UNIT_OZ, UNIT_LB, UNIT_KG };
 static UnitMode unitMode = UNIT_G;
 
-static inline const char* unitStr(UnitMode u)
-{
+static inline const char* unitStr(UnitMode u) {
   switch (u) {
     case UNIT_G: return "g";
     case UNIT_OZ: return "oz";
@@ -46,8 +45,7 @@ static inline const char* unitStr(UnitMode u)
   return "g";
 }
 
-static inline float toDisplayUnits(float grams)
-{
+static inline float toDisplayUnits(float grams) {
   switch (unitMode) {
     case UNIT_G: return grams;
     case UNIT_OZ: return grams * 0.03527396195f;
@@ -57,7 +55,7 @@ static inline float toDisplayUnits(float grams)
   return grams;
 }
 
-// ---------------- Freeze control (strict 3 s) ----------------
+// ---------------- Freeze control ----------------
 enum FreezeState { IDLE, MEASURING, FROZEN };
 static FreezeState fstate = IDLE;
 
@@ -74,9 +72,13 @@ static float userZero = 0.0f;
 
 static float lastLive = 0.0f;
 
-// Fast HX711 reader
-float readStableGrams()
-{
+// ---------------- Overload Control ----------------
+const float MAX_CAPACITY_G = 5000.0f;
+const float OVERLOAD_HYST = 200.0f;   // recover under 4800 g
+bool isOverloaded = false;
+
+// ---------------- HX711 Reader ----------------
+float readStableGrams() {
   const int N = 3;
   long rawSum = 0;
 
@@ -103,11 +105,29 @@ float readStableGrams()
   return emaFast;
 }
 
-float getDisplayWeightGrams()
-{
+// ---------------- Weight Logic ----------------
+float getDisplayWeightGrams() {
   lastLive = readStableGrams();
   float adj = lastLive - userZero;
 
+  // ---------- Overload detection ----------
+  if (!isOverloaded) {
+    if (adj > MAX_CAPACITY_G) {
+      isOverloaded = true;
+      fstate = IDLE;
+      ema_valid = false;
+    }
+  } else {
+    if (adj < (MAX_CAPACITY_G - OVERLOAD_HYST)) {
+      isOverloaded = false;
+      fstate = IDLE;
+      ema_valid = false;
+    }
+  }
+
+  if (isOverloaded) return adj;
+
+  // ---------- Freeze logic ----------
   switch (fstate) {
     case IDLE:
       if (adj >= ARM_THRESHOLD) {
@@ -145,57 +165,56 @@ float getDisplayWeightGrams()
   return adj;
 }
 
-// Bluetooth sending
-void btSendWeight()
-{
+// ---------------- Bluetooth Send ----------------
+void btSendWeight() {
   float g_disp = getDisplayWeightGrams();
-  if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0;
-  float shown = toDisplayUnits(g_disp);
 
   char buf[96];
-  snprintf(buf, sizeof(buf),
-           "{\"weight\":%.2f,\"unit\":\"%s\",\"weight_g\":%.2f}\n",
-           shown, unitStr(unitMode), g_disp);
+
+  if (isOverloaded) {
+    snprintf(buf, sizeof(buf),
+             "{\"error\":\"overload\",\"weight_g\":%.2f}\n",
+             g_disp);
+  } else {
+    if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0;
+    float shown = toDisplayUnits(g_disp);
+
+    snprintf(buf, sizeof(buf),
+             "{\"weight\":%.2f,\"unit\":\"%s\",\"weight_g\":%.2f}\n",
+             shown, unitStr(unitMode), g_disp);
+  }
+
   serialBT.print(buf);
 }
 
-// Command handler
-void handleCmd(char c)
-{
+// ---------------- Handle Commands ----------------
+void handleCmd(char c) {
   if (c == 't' || c == 'T') {
     float disp_g = getDisplayWeightGrams();
     userZero += disp_g;
     fstate = IDLE;
     ema_valid = false;
     serialBT.println("tared");
-
-  } else if (c == 'r' || c == 'R') {
+  }
+  else if (c == 'r' || c == 'R') {
     userZero = 0.0f;
     fstate = IDLE;
     ema_valid = false;
     scale.tare(20);
     serialBT.println("reset");
-
-  } else if (c == 'g' || c == 'G') {
-    unitMode = UNIT_G;
-  } else if (c == 'o' || c == 'O') {
-    unitMode = UNIT_OZ;
-  } else if (c == 'l' || c == 'L') {
-    unitMode = UNIT_LB;
-  } else if (c == 'k' || c == 'K') {
-    unitMode = UNIT_KG;
   }
+  else if (c == 'g' || c == 'G') unitMode = UNIT_G;
+  else if (c == 'o' || c == 'O') unitMode = UNIT_OZ;
+  else if (c == 'l' || c == 'L') unitMode = UNIT_LB;
+  else if (c == 'k' || c == 'K') unitMode = UNIT_KG;
 }
 
-// ---------------- Setup ----------------
-void setup()
-{
+// ---------------- SETUP ----------------
+void setup() {
   Serial.begin(115200);
   pinMode(TARE_BTN, INPUT_PULLUP);
 
-  if (USE_PIN) {
-    serialBT.setPin(PAIR_PIN, strlen(PAIR_PIN));
-  }
+  if (USE_PIN) serialBT.setPin(PAIR_PIN, strlen(PAIR_PIN));
   serialBT.begin(BT_NAME, false);
 
   // OLED init
@@ -224,17 +243,14 @@ void setup()
 }
 
 // ---------------- LOOP ----------------
-void loop()
-{
+void loop() {
   static unsigned long lastTx = 0;
   static unsigned long lastOLED = 0;
 
-  while (Serial.available())
-    handleCmd((char)Serial.read());
+  while (Serial.available()) handleCmd((char)Serial.read());
+  while (serialBT.available()) handleCmd((char)serialBT.read());
 
-  while (serialBT.available())
-    handleCmd((char)serialBT.read());
-
+  // Tare button
   if (digitalRead(TARE_BTN) == LOW) {
     float disp_g = getDisplayWeightGrams();
     userZero += disp_g;
@@ -249,26 +265,33 @@ void loop()
     while (digitalRead(TARE_BTN) == LOW) {}
   }
 
+  // Transmit
   if (millis() - lastTx >= 100) {
     lastTx = millis();
     btSendWeight();
   }
 
+  // OLED update
   if (millis() - lastOLED >= 200) {
     lastOLED = millis();
 
     float g_disp = getDisplayWeightGrams();
-    if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0;
-    float shown = toDisplayUnits(g_disp);
 
     display.clearDisplay();
     display.setTextSize(1);
     display.setCursor(0, 0);
-    display.println("Weight:");
 
-    display.setTextSize(2);
-    display.setCursor(0, 20);
-    display.printf("%.2f %s", shown, unitStr(unitMode));
+    if (isOverloaded) {
+      display.println("Error");
+    } else {
+      if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0;
+      float shown = toDisplayUnits(g_disp);
+
+      display.println("Weight:");
+      display.setTextSize(2);
+      display.setCursor(0, 20);
+      display.printf("%.2f %s", shown, unitStr(unitMode));
+    }
 
     display.display();
   }
