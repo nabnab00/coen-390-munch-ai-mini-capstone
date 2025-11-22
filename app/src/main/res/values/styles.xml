@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-<style name="DetailLabel" parent="Widget.AppCompat.TextView">
-<item name="android:layout_width">match_parent</item>
-<item name="android:layout_height">wrap_content</item>
-<item name="android:layout_marginTop">16dp</item>
-<item name="android:fontFamily">@font/inter_medium</item>
-<item name="android:textColor">@color/brown_primary</item>
-<item name="android:textSize">18sp</item>
-<item name="android:textStyle">bold</item>
-</style>
+    <!-- Label above each value (subtle, secondary text) -->
+    <style name="DetailLabel" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:fontFamily">@font/outfit_semibold</item>
+        <item name="android:textColor">@color/munch_stone</item>
+        <item name="android:textSize">13sp</item>
+    </style>
 
-<style name="DetailValue" parent="Widget.AppCompat.TextView">
-<item name="android:layout_width">match_parent</item>
-<item name="android:layout_height">wrap_content</item>
-<item name="android:fontFamily">@font/inter_medium</item>
-<item name="android:textColor">@color/brown_primary</item>
-<item name="android:textSize">16sp</item>
-</style>
+    <!-- Actual value (primary text) -->
+    <style name="DetailValue" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/outfit_medium</item>
+        <item name="android:textColor">@color/munch_forest</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 
 </resources>
+
