@@ -160,16 +160,10 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
     private void loadUserProfile() {
         personalEmailTextView.setText(currentUser.getEmail());
         String userName = currentUser.getDisplayName();
-
-        /*
         if (userName != null && !userName.isEmpty()) {
-            profileTitle.setText("Hello, " + userName);
             personalNameEditText.setText(userName);
-        } else {
-            profileTitle.setText("Hello, User");
         }
-        */
-
+        
         // load age & height
         DocumentReference userDocRef = db.collection("users").document(currentUser.getUid());
         userDocRef.get().addOnSuccessListener(documentSnapshot -> {
