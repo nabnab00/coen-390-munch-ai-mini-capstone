@@ -49,6 +49,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -178,6 +179,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
                 if (documentSnapshot.contains("height")) {
                     personalHeightEditText.setText(String.valueOf(documentSnapshot.get("height")));
                 }
+                calculateAndDisplayBmi();
             }
         }).addOnFailureListener(e -> Log.e(TAG, "Error loading user profile from Firestore", e));
     }
@@ -213,6 +215,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         if (!userData.isEmpty()) {
             db.collection("users").document(currentUser.getUid())
                     .set(userData, SetOptions.merge())
+                    .addOnSuccessListener(aVoid -> calculateAndDisplayBmi())
                     .addOnFailureListener(e -> {
                         Toast.makeText(DisplayWeightLogActivity.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "Error saving user profile to Firestore", e);
@@ -448,8 +451,38 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
                         }
                         weightLogAdapter.notifyDataSetChanged();
                         updateWeightChart();
+                        calculateAndDisplayBmi();
                     })
                     .addOnFailureListener(e -> Log.e(TAG, "Error fetching weight logs", e));
         }
     }
+
+    private void calculateAndDisplayBmi() {
+        String heightStr = personalHeightEditText.getText().toString().trim();
+        if (heightStr.isEmpty() || weightLogList == null || weightLogList.isEmpty()) {
+            TextView bmiValueTextView = findViewById(R.id.bmi_value);
+            bmiValueTextView.setText("-");
+            return;
+        }
+
+        try {
+            double heightInCm = Double.parseDouble(heightStr);
+            if (heightInCm <= 0) {
+                return; // Height must be positive
+            }
+            double heightInM = heightInCm / 100.0;
+            double latestWeight = weightLogList.get(0).getWeight(); // List is sorted descending
+
+            double bmi = latestWeight / (heightInM * heightInM);
+            DecimalFormat df = new DecimalFormat("#.#");
+
+            TextView bmiValueTextView = findViewById(R.id.bmi_value);
+            bmiValueTextView.setText(df.format(bmi));
+
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Cannot parse height or weight for BMI calculation.", e);
+        }
+    }
+
 }
+
