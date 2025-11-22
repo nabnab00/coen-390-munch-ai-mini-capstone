@@ -64,6 +64,7 @@
                 android:layout_marginStart="30dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="30dp"
+                app:cardBackgroundColor="@color/munch_anti_flash_white"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -211,6 +212,35 @@
 
             </androidx.cardview.widget.CardView>
 
+            <androidx.cardview.widget.CardView
+                android:id="@+id/ai_feedback"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="120dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="120dp"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/munch_pistachio"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/personal_info_card">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:textColor="@color/munch_pine"
+                    android:padding="16dp"
+                    android:text="AI Feedback"
+                    android:textSize="16sp" />
+
+            </androidx.cardview.widget.CardView>
+
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/weight_chart"
                 android:layout_width="0dp"
@@ -221,7 +251,7 @@
                 android:layout_marginBottom="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/personal_info_card" />
+                app:layout_constraintTop_toBottomOf="@+id/ai_feedback" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/log_weight_card"
@@ -232,6 +262,7 @@
                 android:layout_marginEnd="30dp"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/munch_anti_flash_white"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/weight_chart">
@@ -282,6 +313,7 @@
                 android:layout_marginBottom="20dp"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="8dp"
+                app:cardBackgroundColor="@color/munch_anti_flash_white"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
