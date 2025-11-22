@@ -6,7 +6,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -14,7 +13,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.munchai.R;
-import com.example.munchai.backend.SessionManager;
 import com.example.munchai.model.CircularProgressView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -139,7 +137,7 @@ public class MainActivity extends AuthedActivity {
 
         // Profile Section
         btnProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, DisplayWeightLogActivity.class);
+            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
             startActivity(intent);
         });
     }

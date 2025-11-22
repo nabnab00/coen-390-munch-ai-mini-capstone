@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -59,7 +58,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class DisplayWeightLogActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileActivity";
 
@@ -86,7 +85,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.historyweightpage);
+        setContentView(R.layout.profilepage);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -152,7 +151,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
                     .setPositiveButton("Yes", (dialog, which) -> {
                         sessionManager.logout();
                         Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(DisplayWeightLogActivity.this, StartActivity.class);
+                        Intent intent = new Intent(ProfileActivity.this, StartActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finishAffinity();
@@ -163,7 +162,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
 
         feedbackButton = findViewById(R.id.to_ai_feedback_button);
         feedbackButton.setOnClickListener(v -> {
-            Intent intent = new Intent(DisplayWeightLogActivity.this, FeedbackActivity.class);
+            Intent intent = new Intent(ProfileActivity.this, FeedbackActivity.class);
             startActivity(intent);
         });
     }
@@ -208,7 +207,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         currentUser.updateProfile(profileUpdates)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(DisplayWeightLogActivity.this, "Profile updated!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileActivity.this, "Profile updated!", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -222,7 +221,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
                     .set(userData, SetOptions.merge())
                     .addOnSuccessListener(aVoid -> calculateAndDisplayBmi())
                     .addOnFailureListener(e -> {
-                        Toast.makeText(DisplayWeightLogActivity.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileActivity.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
                         Log.e(TAG, "Error saving user profile to Firestore", e);
                     });
         }
@@ -292,7 +291,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
 
     private void setupSwipeToDelete() {
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            private final Drawable deleteIcon = ContextCompat.getDrawable(DisplayWeightLogActivity.this, android.R.drawable.ic_menu_delete);
+            private final Drawable deleteIcon = ContextCompat.getDrawable(ProfileActivity.this, android.R.drawable.ic_menu_delete);
             private final ColorDrawable background = new ColorDrawable(Color.RED);
 
             @Override
@@ -413,30 +412,30 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
                         DocumentReference docRef = queryDocumentSnapshots.getDocuments().get(0).getReference();
                         docRef.update("weight", weightValue)
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(DisplayWeightLogActivity.this, "Weight updated successfully!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ProfileActivity.this, "Weight updated successfully!", Toast.LENGTH_SHORT).show();
                                     personalWeightEditText.setText(""); // Clear the input field
                                     fetchWeightLogs(); // Refresh the list and chart
                                 })
                                 .addOnFailureListener(e -> {
-                                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to update weight.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ProfileActivity.this, "Failed to update weight.", Toast.LENGTH_SHORT).show();
                                     Log.w(TAG, "Error updating document", e);
                                 });
                     } else {
                         // no logs today
                         weightLogsCollection.add(newLog)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(DisplayWeightLogActivity.this, "Weight logged successfully!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ProfileActivity.this, "Weight logged successfully!", Toast.LENGTH_SHORT).show();
                                     personalWeightEditText.setText(""); // Clear the input field
                                     fetchWeightLogs(); // Refresh the list and chart to show the new log
                                 })
                                 .addOnFailureListener(e -> {
-                                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to log weight.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ProfileActivity.this, "Failed to log weight.", Toast.LENGTH_SHORT).show();
                                     Log.w(TAG, "Error adding document", e);
                                 });
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to check for existing log.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProfileActivity.this, "Failed to check for existing log.", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "Error getting documents", e);
                 });
     }
