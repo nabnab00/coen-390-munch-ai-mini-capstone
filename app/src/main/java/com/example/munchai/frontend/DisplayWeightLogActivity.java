@@ -73,6 +73,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
     private EditText personalAgeEditText;
     private EditText personalHeightEditText;
     private EditText personalWeightEditText;
+    private TextView bmiValueTextView;
     private Button logWeightButton;
     private ImageButton backButton;
     private RecyclerView weightLogsRecyclerView; // Changed from ListView
@@ -97,6 +98,8 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         personalAgeEditText = findViewById(R.id.personal_age);
         personalHeightEditText = findViewById(R.id.personal_height_info);
         personalWeightEditText = findViewById(R.id.personal_weight);
+        bmiValueTextView = findViewById(R.id.bmi_value);
+
         logWeightButton = findViewById(R.id.profile_save);
         backButton = findViewById(R.id.profile_back_button);
         weightLogsRecyclerView = findViewById(R.id.weight_logs_list);
@@ -459,8 +462,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
 
     private void calculateAndDisplayBmi() {
         String heightStr = personalHeightEditText.getText().toString().trim();
-        if (heightStr.isEmpty() || weightLogList == null || weightLogList.isEmpty()) {
-            TextView bmiValueTextView = findViewById(R.id.bmi_value);
+        if (weightLogList.isEmpty() || heightStr.isEmpty()) {
             bmiValueTextView.setText("-");
             return;
         }
@@ -468,19 +470,34 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         try {
             double heightInCm = Double.parseDouble(heightStr);
             if (heightInCm <= 0) {
-                return; // Height must be positive
+                bmiValueTextView.setText("-");
+                return;
             }
             double heightInM = heightInCm / 100.0;
-            double latestWeight = weightLogList.get(0).getWeight(); // List is sorted descending
+            double latestWeight = weightLogList.get(0).getWeight(); // Assuming list is sorted descending by date
 
             double bmi = latestWeight / (heightInM * heightInM);
-            DecimalFormat df = new DecimalFormat("#.#");
 
-            TextView bmiValueTextView = findViewById(R.id.bmi_value);
-            bmiValueTextView.setText(df.format(bmi));
+            String classification;
+            if (bmi < 18.5) {
+                classification = "Underweight";
+            } else if (bmi < 25) {
+                classification = "Normal Weight";
+            } else if (bmi < 30) {
+                classification = "Overweight";
+            } else if (bmi < 35) {
+                classification = "Obese class I";
+            } else if (bmi < 40) {
+                classification = "Obese class II";
+            } else {
+                classification = "Obese class III";
+            }
+            DecimalFormat df = new DecimalFormat("#.#");
+            bmiValueTextView.setText(df.format(bmi) + " (" + classification + ")");
 
         } catch (NumberFormatException e) {
-            Log.e(TAG, "Cannot parse height or weight for BMI calculation.", e);
+            bmiValueTextView.setText("-");
+            Log.e(TAG, "Could not parse height for BMI calculation", e);
         }
     }
 
