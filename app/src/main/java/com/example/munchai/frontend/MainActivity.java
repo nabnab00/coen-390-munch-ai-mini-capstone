@@ -84,19 +84,6 @@ public class MainActivity extends AuthedActivity {
         setupListeners();
         setCurrentDate();
 
-        Button logoutButton = findViewById(R.id.logout_button);
-        SessionManager sessionManager = new SessionManager(this);
-
-        logoutButton.setOnClickListener(v -> {
-            sessionManager.logout();
-
-            Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
-
-            Intent intent = new Intent(MainActivity.this, StartActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finishAffinity();
-        });
     }
 
     private void initializeViews() {
