@@ -129,7 +129,7 @@ public class HistoryActivity extends AppCompatActivity {
                             Double fatG     = d.getDouble("fat_g");
                             Double proteinG = d.getDouble("protein_g");
                             Double carbG    = d.getDouble("carb_g");
-                            String imageUrl = safe(d.getString("image_url"));
+                            String imageUrl = safe(d.getString("imageUrl"));
 
 
                             rows.add(new FoodLogRow(

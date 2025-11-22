@@ -1,49 +1,36 @@
-// ===== ESP32 HX711 Scale with LCD1602 + Classic BT SPP (always streaming) =====
-// Requires: ESP32 Arduino core, Bogde HX711, hd44780 library.
-
 #include <Arduino.h>
 #include <math.h>
+#include <string.h>
+#include <Wire.h>
 #include "HX711.h"
 #include "BluetoothSerial.h"
-
-// Fixed-PIN pairing for some core versions:
-#include "esp_bt_main.h"
-#include "esp_bt_device.h"
-#include "esp_gap_bt_api.h"
 
 // ---------------- HX711 ----------------
 #define DOUT 16
 #define SCK  23
 HX711 scale;
-
-// Adjust this to your load cell:
 float CALIBRATION_FACTOR = 365.0f;
 
-// Noise handling
-const int   SAMPLE_COUNT = 30;
-const float DEAD_BAND    = 0.3f;   // clamp tiny noise to 0 g
-static bool ema_valid    = false;
+const float DEAD_BAND = 0.3f;
+static bool ema_valid = false;
 
-// ---------------- LCD1602 (HD44780) ----------------
-#include <hd44780.h>
-#include <hd44780ioClass/hd44780_pinIO.h>
-// RS, E, D4, D5, D6, D7  (LCD RW pin must be tied to GND)
-const int LCD_RS = 22;
-const int LCD_E  = 21;
-const int LCD_D4 = 19;
-const int LCD_D5 = 18;
-const int LCD_D6 = 17;
-const int LCD_D7 = 4;
-hd44780_pinIO lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+// ---------------- OLED (SSD1306) ----------------
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // ---------------- Tare Button ----------------
-#define TARE_BTN 15   // do not hold LOW at reset
+#define TARE_BTN 15
 
 // ---------------- Bluetooth SPP ----------------
 BluetoothSerial serialBT;
-const char* BT_NAME = "ESP32-Scale";
-const bool  USE_PIN = true;          // set false to disable fixed PIN
-const char* PAIR_PIN = "1234";       // 4–16 ASCII digits
+const char* BT_NAME = "ESP32_SCALE";
+const bool USE_PIN = true;
+const char* PAIR_PIN = "1234";
 
 // ---------------- Units ----------------
 enum UnitMode { UNIT_G, UNIT_OZ, UNIT_LB, UNIT_KG };
@@ -58,6 +45,7 @@ static inline const char* unitStr(UnitMode u) {
   }
   return "g";
 }
+
 static inline float toDisplayUnits(float grams) {
   switch (unitMode) {
     case UNIT_G:  return grams;
@@ -68,251 +56,284 @@ static inline float toDisplayUnits(float grams) {
   return grams;
 }
 
-// ---------------- Freeze control (strict 3 s) ----------------
+// ---------------- Freeze control ----------------
 enum FreezeState { IDLE, MEASURING, FROZEN };
 static FreezeState fstate = IDLE;
+
 static uint32_t measureStartMs = 0;
-static float frozenValue = 0.0f;     // in grams (post-tare)
+static float frozenValue = 0.0f;
 
-const uint32_t FREEZE_AFTER_MS = 3000; // strict 3 seconds
-const float    ARM_THRESHOLD    = 1.0f; // start timing when >= this (g)
-const float    NEAR_ZERO        = 0.6f; // consider near zero when below
-const uint32_t ZERO_HOLD_MS     = 800;  // auto-unlock hold near zero
-static uint32_t zeroSinceMs     = 0;
+const uint32_t FREEZE_AFTER_MS = 3000;
+const float ARM_THRESHOLD = 1.0f;
+const float NEAR_ZERO = 0.6f;
+const uint32_t ZERO_HOLD_MS = 800;
 
-// ---- Virtual tare in grams (do NOT change HX711 offset except at startup) ----
-static float userZero = 0.0f;  // grams to subtract from live reading
+static uint32_t zeroSinceMs = 0;
+static float userZero = 0.0f;
 
-// ---- Reading + display selector ----
 static float lastLive = 0.0f;
-static float ema = 0.0f;
 
-// One HX711 reading in grams using calibration factor (not used in fast path)
-static float readStableGramsOnce() {
-  return scale.get_units(1);
+// ---------------- Overload Control ----------------
+const float MAX_CAPACITY_G = 5000.0f;
+const float OVERLOAD_HYST = 200.0f;
+bool isOverloaded = false;
+
+// ---------------- Helpers ----------------
+static uint16_t textWidthAtSize(const char* s, uint8_t size, int16_t y) {
+  int16_t x1, y1; uint16_t w, h;
+  display.setTextSize(size);
+  display.getTextBounds(s, 0, y, &x1, &y1, &w, &h);
+  return w;
 }
 
-static float median7(float v[7]) {
-  for (int i = 0; i < 6; i++) {
-    int m = i;
-    for (int j = i + 1; j < 7; j++) if (v[j] < v[m]) m = j;
-    float t = v[i]; v[i] = v[m]; v[m] = t;
+// Draw number (size tries 3→2) + units (size 2) on one centered line.
+// If still too wide, reduce decimals 2→1→0 until it fits.
+static void drawNumberUnitsFit(float value, const char* units, int16_t y) {
+  const uint8_t UNIT_SIZE = 2;
+  uint8_t numSize = 3;          // start big
+  uint8_t decimals = 2;         // start with 2 decimals
+  const uint8_t GAP_INIT = 4;
+
+  char numbuf[24];
+  char unitbuf[8];
+  strncpy(unitbuf, units, sizeof(unitbuf)-1);
+  unitbuf[sizeof(unitbuf)-1] = '\0';
+
+  uint8_t gap = GAP_INIT;
+
+  while (true) {
+    // format number with current decimals
+    if (decimals == 2)      snprintf(numbuf, sizeof(numbuf), "%.2f", value);
+    else if (decimals == 1) snprintf(numbuf, sizeof(numbuf), "%.1f", value);
+    else                    snprintf(numbuf, sizeof(numbuf), "%.0f", value);
+
+    // measure
+    uint16_t wNum  = textWidthAtSize(numbuf,  numSize,  y);
+    uint16_t wUnit = textWidthAtSize(unitbuf, UNIT_SIZE, y);
+    uint16_t total = wNum + gap + wUnit;
+
+    if (total <= SCREEN_WIDTH) {
+      // heights for baseline align (default font 8px high)
+      uint8_t H_NUM  = 8 * numSize;
+      uint8_t H_UNIT = 8 * UNIT_SIZE;
+      int16_t x = (SCREEN_WIDTH - (int)total) / 2;
+      if (x < 0) x = 0;
+
+      // draw number
+      display.setTextSize(numSize);
+      display.setCursor(x, y);
+      display.print(numbuf);
+
+      // draw units bottom-aligned to the number
+      display.setTextSize(UNIT_SIZE);
+      display.setCursor(x + wNum + gap, y + (H_NUM - H_UNIT));
+      display.print(unitbuf);
+      return;
+    }
+
+    // too wide -> shrink strategy:
+    if (numSize > 2) {
+      numSize = 2;      // first, reduce number size
+      continue;
+    }
+    if (decimals > 0) {
+      decimals--;       // then drop decimals
+      continue;
+    }
+    if (gap > 1) {
+      gap--;            // tighten gap as last resort
+      continue;
+    }
+
+    // If still too wide (extreme numbers), truncate leftmost char of number.
+    size_t len = strlen(numbuf);
+    if (len > 1) {
+      memmove(numbuf, numbuf + 1, len); // crude fallback
+      continue;
+    }
+
+    // Final fallback: just print units alone
+    display.setTextSize(UNIT_SIZE);
+    int16_t wOnly = textWidthAtSize(unitbuf, UNIT_SIZE, y);
+    int16_t xOnly = (SCREEN_WIDTH - (int)wOnly) / 2;
+    display.setCursor(xOnly, y);
+    display.print(unitbuf);
+    return;
   }
-  return v[3];
 }
 
-// Fast, watchdog-safe reader in grams
+// ---------------- HX711 Reader ----------------
 float readStableGrams() {
-  // average 3 raw reads (minimal latency) — watchdog-safe wait
   const int N = 3;
   long rawSum = 0;
   for (int i = 0; i < N; i++) {
-    while (!scale.is_ready()) {
-      delay(1); // yield so BT/USB stays responsive
-    }
+    while (!scale.is_ready()) { delay(1); }
     rawSum += scale.read();
   }
-  float raw = rawSum / (float)N;
 
-  // convert using your calibration
+  float raw = rawSum / (float)N;
   float g = (raw - scale.get_offset()) / CALIBRATION_FACTOR;
 
-  // faster EMA
   static float emaFast = 0.0f;
   if (!ema_valid) { emaFast = g; ema_valid = true; }
   emaFast = 0.30f * emaFast + 0.70f * g;
 
-  // clamp tiny/negative
   if (fabsf(emaFast) < DEAD_BAND) return 0.0f;
   if (emaFast < 0) return 0.0f;
   return emaFast;
 }
 
-// Decide what to show/transmit with virtual tare + strict 3s freeze
+// ---------------- Weight Logic ----------------
 float getDisplayWeightGrams() {
-  // live raw grams
   lastLive = readStableGrams();
-
-  // apply virtual tare offset
   float adj = lastLive - userZero;
 
-  // ---- state machine on adjusted value ----
+  // Overload detection
+  if (!isOverloaded) {
+    if (adj > MAX_CAPACITY_G) { isOverloaded = true; fstate = IDLE; ema_valid = false; }
+  } else {
+    if (adj < (MAX_CAPACITY_G - OVERLOAD_HYST)) { isOverloaded = false; fstate = IDLE; ema_valid = false; }
+  }
+  if (isOverloaded) return adj;
+
+  // Freeze logic
   switch (fstate) {
     case IDLE:
       if (adj >= ARM_THRESHOLD) {
-        fstate = MEASURING;
-        measureStartMs = millis();
-        zeroSinceMs = 0;
+        fstate = MEASURING; measureStartMs = millis(); zeroSinceMs = 0;
       } else {
-        if (adj < NEAR_ZERO) {
-          if (zeroSinceMs == 0) zeroSinceMs = millis();
-        } else {
-          zeroSinceMs = 0;
-        }
+        if (adj < NEAR_ZERO) { if (zeroSinceMs == 0) zeroSinceMs = millis(); }
+        else zeroSinceMs = 0;
       }
       return adj;
 
     case MEASURING:
-      if (millis() - measureStartMs >= FREEZE_AFTER_MS) {
-        frozenValue = adj;    // freeze adjusted value at exactly 3 s
-        fstate = FROZEN;
-        return frozenValue;
-      }
+      if (millis() - measureStartMs >= FREEZE_AFTER_MS) { frozenValue = adj; fstate = FROZEN; return frozenValue; }
       return adj;
 
     case FROZEN:
-      // stay frozen; auto-unlock if near zero long enough
       if (adj < NEAR_ZERO) {
         if (zeroSinceMs == 0) zeroSinceMs = millis();
-        if (millis() - zeroSinceMs >= ZERO_HOLD_MS) {
-          fstate = IDLE;
-          ema_valid = false;  // re-arm filter for next placement
-          zeroSinceMs = 0;
-          return adj;
-        }
-      } else {
-        zeroSinceMs = 0;
-      }
+        if (millis() - zeroSinceMs >= ZERO_HOLD_MS) { fstate = IDLE; ema_valid = false; zeroSinceMs = 0; return adj; }
+      } else zeroSinceMs = 0;
       return frozenValue;
   }
-  return adj; // fallback
+  return adj;
 }
 
+// ---------------- Bluetooth Send ----------------
 void btSendWeight() {
-  float g_disp = getDisplayWeightGrams();           // grams after tare + freeze
-  if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0; // additional clamp
-  float shown = toDisplayUnits(g_disp);
-
+  float g_disp = getDisplayWeightGrams();
   char buf[96];
-  // Backward-compatible grams + new display value and unit
-  // Example: {"weight":4.23,"unit":"oz","weight_g":120.00}
-  snprintf(buf, sizeof(buf),
-           "{\"weight\":%.2f,\"unit\":\"%s\",\"weight_g\":%.2f}\n",
-           shown, unitStr(unitMode), g_disp);
+
+  if (isOverloaded) {
+    snprintf(buf, sizeof(buf), "{\"error\":\"overload\",\"weight_g\":%.2f}\n", g_disp);
+  } else {
+    if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0;
+    float shown = toDisplayUnits(g_disp);
+    snprintf(buf, sizeof(buf), "{\"weight\":%.2f,\"unit\":\"%s\",\"weight_g\":%.2f}\n",
+             shown, unitStr(unitMode), g_disp);
+  }
   serialBT.print(buf);
 }
 
-// Unified command handler for USB Serial + Bluetooth
+// ---------------- Handle Commands ----------------
 void handleCmd(char c) {
   if (c == 't' || c == 'T') {
-    float disp_g = getDisplayWeightGrams(); // current adjusted+freeze-aware grams
-    userZero += disp_g;                     // virtual tare to zero current display
-    fstate = IDLE;                          // restart 3 s cycle
-    ema_valid = false;                      // re-arm filter
+    float disp_g = getDisplayWeightGrams();
+    userZero += disp_g; fstate = IDLE; ema_valid = false;
     serialBT.println("tared");
-    Serial.println("tared");
-  } else if (c == 'r' || c == 'R') {
-    userZero = 0.0f;                        // clear virtual tare
-    fstate = IDLE;                          // exit frozen state
-    ema_valid = false;                      // re-arm filter
-    scale.tare(20);                         // optional: re-zero hardware baseline
+  }
+  else if (c == 'r' || c == 'R') {
+    userZero = 0.0f; fstate = IDLE; ema_valid = false;
+    scale.tare(20);
     serialBT.println("reset");
-    Serial.println("reset");
-  } else if (c == 'g' || c == 'G') {
-    unitMode = UNIT_G;
-    serialBT.println("unit:g");
-    Serial.println("unit:g");
-  } else if (c == 'o' || c == 'O') {
-    unitMode = UNIT_OZ;
-    serialBT.println("unit:oz");
-    Serial.println("unit:oz");
-  } else if (c == 'l' || c == 'L') {
-    unitMode = UNIT_LB;
-    serialBT.println("unit:lb");
-    Serial.println("unit:lb");
   }
-  else if (c == 'k' || c == 'K') {
-    unitMode = UNIT_KG;
-    serialBT.println("unit:kg");
-    Serial.println("unit:kg");
-  }
+  else if (c == 'g' || c == 'G') unitMode = UNIT_G;
+  else if (c == 'o' || c == 'O') unitMode = UNIT_OZ;
+  else if (c == 'l' || c == 'L') unitMode = UNIT_LB;
+  else if (c == 'k' || c == 'K') unitMode = UNIT_KG;
 }
 
-// ---------------- Setup / Loop ----------------
+// ---------------- SETUP ----------------
 void setup() {
   Serial.begin(115200);
   pinMode(TARE_BTN, INPUT_PULLUP);
 
-  // LCD init
-  delay(200);
-  lcd.begin(16, 2);
-  lcd.clear();
-  lcd.setCursor(0, 0); lcd.print("ESP32 Scale");
-  lcd.setCursor(0, 1); lcd.print("Init...");
+  if (USE_PIN) serialBT.setPin(PAIR_PIN, (uint8_t)strlen(PAIR_PIN));  // ESP32 core 3.x API
+  serialBT.begin(BT_NAME, false);
+
+  // OLED init
+  Wire.begin(21, 22);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("ESP32 Scale Init...");
+  display.display();
 
   // HX711 init
   scale.begin(DOUT, SCK);
   delay(200);
-  scale.set_scale(CALIBRATION_FACTOR);  // set your factor
-  scale.tare(20);                       // hardware zero once at boot
+  scale.set_scale(CALIBRATION_FACTOR);
+  scale.tare(20);
   ema_valid = false;
 
-  // Bluetooth pairing PIN (legacy)
-  if (USE_PIN) {
-    esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_FIXED;
-    esp_bt_pin_code_t pin_code;
-    memset(pin_code, 0, sizeof(pin_code));
-    size_t n = strnlen(PAIR_PIN, 16);
-    for (size_t i = 0; i < n; i++) pin_code[i] = (uint8_t)PAIR_PIN[i];
-    esp_bt_gap_set_pin(pin_type, n, pin_code);
-  }
+  display.clearDisplay();
+  display.display();
 
-  bool ok = serialBT.begin(BT_NAME);  // Classic Bluetooth SPP
-  Serial.printf("BT start %s\n", ok ? "OK" : "FAIL");
-
-  lcd.clear();
-  lcd.setCursor(0, 0); lcd.print("Weight:");
-  lcd.setCursor(0, 1); lcd.print("BT: "); lcd.print(BT_NAME);
-
-  // hello so the app knows we are alive
   serialBT.println("{\"status\":\"ready\"}");
 }
 
+// ---------------- LOOP ----------------
 void loop() {
-  static unsigned long lastLCD = 0;
-  static unsigned long lastTx  = 0;
+  static unsigned long lastTx = 0;
+  static unsigned long lastOLED = 0;
 
-  // Process USB Serial commands first
-  while (Serial.available()) {
-    char c = (char)Serial.read();
-    handleCmd(c);
-  }
+  while (Serial.available()) handleCmd((char)Serial.read());
+  while (serialBT.available()) handleCmd((char)serialBT.read());
 
-  // Process Bluetooth commands
-  while (serialBT.available()) {
-    char c = (char)serialBT.read();
-    handleCmd(c);
-  }
-
-  // Local tare button -> VIRTUAL TARE
+  // Tare button
   if (digitalRead(TARE_BTN) == LOW) {
-    float disp_g = getDisplayWeightGrams(); // current adjusted+freeze-aware grams
-    userZero += disp_g;                     // make display drop to 0
-    fstate = IDLE;                          // restart 3 s cycle
-    ema_valid = false;                      // re-arm filter
-    lcd.setCursor(0, 1); lcd.print("Tared           ");
+    float disp_g = getDisplayWeightGrams();
+    userZero += disp_g; fstate = IDLE; ema_valid = false;
+
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(30, 24);
+    display.print("Tared");
+    display.display();
+
     delay(300);
-    while (digitalRead(TARE_BTN) == LOW) { /* wait for release */ }
+    while (digitalRead(TARE_BTN) == LOW) {}
   }
 
-  // Always transmit weight every 100 ms
+  // Transmit
   if (millis() - lastTx >= 100) {
     lastTx = millis();
     btSendWeight();
   }
 
-  // LCD update every 200 ms
-  if (millis() - lastLCD >= 200) {
-    lastLCD = millis();
+  // OLED update
+  if (millis() - lastOLED >= 200) {
+    lastOLED = millis();
+
     float g_disp = getDisplayWeightGrams();
-    if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0;
-    float shown = toDisplayUnits(g_disp);
+    display.clearDisplay();
 
-    char line[17];
-    // e.g., "  12.34 oz" fits 16 chars
-    snprintf(line, sizeof(line), "%8.2f %s", shown, unitStr(unitMode));
+    if (isOverloaded) {
+      display.setTextSize(2);
+      display.setCursor(16, 24);
+      display.print("OVERLOAD");
+    } else {
+      if (g_disp > -0.5f && g_disp < 0.5f) g_disp = 0;
+      float shown = toDisplayUnits(g_disp);
 
-    lcd.setCursor(0, 0); lcd.print("Weight:        ");
-    lcd.setCursor(8, 0); lcd.print(line);
+      // One line, auto-fit (shrinks number first, then decimals) to avoid wrapping
+      drawNumberUnitsFit(shown, unitStr(unitMode), 20);
+    }
+
+    display.display();
   }
 }
