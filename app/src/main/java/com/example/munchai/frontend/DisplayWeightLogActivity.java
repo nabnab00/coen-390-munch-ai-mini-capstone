@@ -354,35 +354,83 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
                 });
     }
 
-    // You need to implement these methods based on your existing logic
     private void logWeight() {
         // Your implementation for logging weight
         String weightStr = personalWeightEditText.getText().toString().trim();
+
         if (TextUtils.isEmpty(weightStr)) {
-            Toast.makeText(this, "Please enter a weight.", Toast.LENGTH_SHORT).show();
+            personalWeightEditText.setError("Weight cannot be empty.");
             return;
         }
 
-        double weight = Double.parseDouble(weightStr);
-        Date date = Calendar.getInstance().getTime();
-
-        // Corrected the order of arguments in the constructor
-        WeightLog newLog = new WeightLog(date, weight);
-
-        if (currentUser != null) {
-            db.collection("users").document(currentUser.getUid())
-                    .collection("personal_weight_logs")
-                    .add(newLog)
-                    .addOnSuccessListener(documentReference -> {
-                        Toast.makeText(this, "Weight logged successfully!", Toast.LENGTH_SHORT).show();
-                        personalWeightEditText.setText(""); // Clear input
-                        fetchWeightLogs(); // Refresh the list and chart
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to log weight.", Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "Error adding weight log", e);
-                    });
+        double weightValue;
+        try {
+            weightValue = Double.parseDouble(weightStr);
+        } catch (NumberFormatException e) {
+            personalWeightEditText.setError("Invalid number.");
+            return;
         }
+
+        if (currentUser == null) {
+            Toast.makeText(this, "Error: You must be logged in to log weight.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Date currentDate = new Date();
+        WeightLog newLog = new WeightLog(currentDate, weightValue);
+
+        CollectionReference weightLogsCollection = db.collection("users")
+                .document(currentUser.getUid())
+                .collection("personal_weight_logs");
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(currentDate);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date startDate = cal.getTime();
+
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        Date endDate = cal.getTime();
+
+        weightLogsCollection
+                .whereGreaterThanOrEqualTo("date", startDate)
+                .whereLessThan("date", endDate)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+
+                        // if log the same day aready exists
+                        DocumentReference docRef = queryDocumentSnapshots.getDocuments().get(0).getReference();
+                        docRef.update("weight", weightValue)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Weight updated successfully!", Toast.LENGTH_SHORT).show();
+                                    personalWeightEditText.setText(""); // Clear the input field
+                                    fetchWeightLogs(); // Refresh the list and chart
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to update weight.", Toast.LENGTH_SHORT).show();
+                                    Log.w(TAG, "Error updating document", e);
+                                });
+                    } else {
+                        // no logs today
+                        weightLogsCollection.add(newLog)
+                                .addOnSuccessListener(documentReference -> {
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Weight logged successfully!", Toast.LENGTH_SHORT).show();
+                                    personalWeightEditText.setText(""); // Clear the input field
+                                    fetchWeightLogs(); // Refresh the list and chart to show the new log
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to log weight.", Toast.LENGTH_SHORT).show();
+                                    Log.w(TAG, "Error adding document", e);
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to check for existing log.", Toast.LENGTH_SHORT).show();
+                    Log.w(TAG, "Error getting documents", e);
+                });
     }
 
     private void fetchWeightLogs() {
