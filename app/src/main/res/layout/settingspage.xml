@@ -110,6 +110,7 @@
                     android:background="@android:color/transparent"
                     android:hint="e.g. 2000"
                     android:inputType="number"
+                    android:imeOptions="actionDone"
                     android:minHeight="48dp"
                     android:textColor="@color/brown_onBackground" />
 
@@ -130,6 +131,7 @@
                     android:background="@android:color/transparent"
                     android:hint="e.g. 100"
                     android:inputType="number"
+                    android:imeOptions="actionDone"
                     android:minHeight="48dp"
                     android:textColor="@color/brown_onBackground" />
 
@@ -150,6 +152,7 @@
                     android:background="@android:color/transparent"
                     android:hint="e.g. 250"
                     android:inputType="number"
+                    android:imeOptions="actionDone"
                     android:minHeight="48dp"
                     android:textColor="@color/brown_onBackground" />
 
@@ -169,6 +172,7 @@
                     android:background="@android:color/transparent"
                     android:hint="e.g. 70"
                     android:inputType="number"
+                    android:imeOptions="actionDone"
                     android:minHeight="48dp"
                     android:textColor="@color/brown_onBackground" />
 
