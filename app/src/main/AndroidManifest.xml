@@ -42,7 +42,7 @@
         <activity android:name=".frontend.MealActivity" />
         <activity android:name=".frontend.DisplayLogActivity" />
         <activity android:name=".frontend.WeightScaleActivity"/>
-        <activity android:name=".frontend.ProfileActivity"/>
+        <activity android:name=".frontend.DisplayWeightLogActivity"/>
 
         <meta-data
             android:name="preloaded_fonts"

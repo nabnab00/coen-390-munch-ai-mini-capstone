@@ -31,8 +31,6 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -41,19 +39,15 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.WriteBatch;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
-public class ProfileActivity extends AppCompatActivity {
+public class DisplayWeightLogActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileActivity";
 
@@ -73,7 +67,7 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.profilepage);
+        setContentView(R.layout.historyweightpage);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -176,7 +170,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void setupSwipeToDelete() {
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            private final Drawable deleteIcon = ContextCompat.getDrawable(ProfileActivity.this, android.R.drawable.ic_menu_delete);
+            private final Drawable deleteIcon = ContextCompat.getDrawable(DisplayWeightLogActivity.this, android.R.drawable.ic_menu_delete);
             private final ColorDrawable background = new ColorDrawable(Color.RED);
 
             @Override
@@ -240,7 +234,7 @@ public class ProfileActivity extends AppCompatActivity {
                                             }).show();
                                 })
                                 .addOnFailureListener(e -> {
-                                    Toast.makeText(ProfileActivity.this, "Failed to delete log.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to delete log.", Toast.LENGTH_SHORT).show();
                                     weightLogList.add(position, logToDelete);
                                     weightLogAdapter.notifyItemInserted(position);
                                     updateWeightChart();
@@ -301,30 +295,30 @@ public class ProfileActivity extends AppCompatActivity {
                         DocumentReference docRef = queryDocumentSnapshots.getDocuments().get(0).getReference();
                         docRef.update("weight", weightValue)
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(ProfileActivity.this, "Weight updated successfully!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Weight updated successfully!", Toast.LENGTH_SHORT).show();
                                     personalWeightEditText.setText(""); // Clear the input field
                                     fetchWeightLogs(); // Refresh the list and chart
                                 })
                                 .addOnFailureListener(e -> {
-                                    Toast.makeText(ProfileActivity.this, "Failed to update weight.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to update weight.", Toast.LENGTH_SHORT).show();
                                     Log.w(TAG, "Error updating document", e);
                                 });
                     } else {
                         // no logs today
                         weightLogsCollection.add(newLog)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(ProfileActivity.this, "Weight logged successfully!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Weight logged successfully!", Toast.LENGTH_SHORT).show();
                                     personalWeightEditText.setText(""); // Clear the input field
                                     fetchWeightLogs(); // Refresh the list and chart to show the new log
                                 })
                                 .addOnFailureListener(e -> {
-                                    Toast.makeText(ProfileActivity.this, "Failed to log weight.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to log weight.", Toast.LENGTH_SHORT).show();
                                     Log.w(TAG, "Error adding document", e);
                                 });
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(ProfileActivity.this, "Failed to check for existing log.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to check for existing log.", Toast.LENGTH_SHORT).show();
                     Log.w(TAG, "Error getting documents", e);
                 });
     }
@@ -349,7 +343,7 @@ public class ProfileActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     Log.w(TAG, "Error getting documents: ", e);
-                    Toast.makeText(ProfileActivity.this, "Failed to load weight logs.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DisplayWeightLogActivity.this, "Failed to load weight logs.", Toast.LENGTH_SHORT).show();
                 });
     }
 }

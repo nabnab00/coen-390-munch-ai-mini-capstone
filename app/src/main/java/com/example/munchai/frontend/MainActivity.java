@@ -153,7 +153,7 @@ public class MainActivity extends AuthedActivity {
 
         // Profile Section
         btnProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+            Intent intent = new Intent(MainActivity.this, DisplayWeightLogActivity.class);
             startActivity(intent);
         });
     }
