@@ -213,7 +213,7 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/ai_feedback"
+                android:id="@+id/to_ai_feedback"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="120dp"
@@ -228,6 +228,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/personal_info_card">
 
             <TextView
+                    android:id="@+id/to_ai_feedback_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -251,7 +252,7 @@
                 android:layout_marginBottom="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ai_feedback" />
+                app:layout_constraintTop_toBottomOf="@+id/to_ai_feedback" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/log_weight_card"

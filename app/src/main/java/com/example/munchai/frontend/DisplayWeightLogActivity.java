@@ -74,6 +74,7 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
     private EditText personalHeightEditText;
     private EditText personalWeightEditText;
     private TextView bmiValueTextView;
+    private TextView feedbackButton;
     private Button logWeightButton;
     private ImageButton backButton, logoutButton;
     private RecyclerView weightLogsRecyclerView; // Changed from ListView
@@ -159,16 +160,19 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
                     .setNegativeButton("No", null)
                     .show();
         });
+
+        feedbackButton = findViewById(R.id.to_ai_feedback_button);
+        feedbackButton.setOnClickListener(v -> {
+            Intent intent = new Intent(DisplayWeightLogActivity.this, FeedbackActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void loadUserProfile() {
         personalEmailTextView.setText(currentUser.getEmail());
         String userName = currentUser.getDisplayName();
         if (userName != null && !userName.isEmpty()) {
-            profileTitle.setText("Hello, " + userName);
             personalNameEditText.setText(userName);
-        } else {
-            profileTitle.setText("Hello, User");
         }
 
         // load age & height
@@ -204,7 +208,6 @@ public class DisplayWeightLogActivity extends AppCompatActivity {
         currentUser.updateProfile(profileUpdates)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        profileTitle.setText("Hello, " + name);
                         Toast.makeText(DisplayWeightLogActivity.this, "Profile updated!", Toast.LENGTH_SHORT).show();
                     }
                 });
