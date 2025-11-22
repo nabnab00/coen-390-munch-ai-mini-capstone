@@ -2,10 +2,12 @@ package com.example.munchai.frontend;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,6 +21,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,10 +49,48 @@ public class HistoryActivity extends AppCompatActivity {
         ImageButton backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> finish());
 
+        Button clearLogsButton = findViewById(R.id.clear_logs_button);
+        clearLogsButton.setOnClickListener(v -> showClearLogsConfirmationDialog());
+
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FoodLogAdapter();
         rv.setAdapter(adapter);
     }
+
+    private void showClearLogsConfirmationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Clear Food Log")
+                .setMessage("Are you sure you want to delete all your food logs? This action cannot be undone.")
+                .setPositiveButton("Clear", (dialog, which) -> clearAllLogs())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void clearAllLogs() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) {
+            Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users").document(uid).collection("food_logs")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        WriteBatch batch = db.batch();
+                        for (DocumentSnapshot document : task.getResult()) {
+                            batch.delete(document.getReference());
+                        }
+                        batch.commit()
+                                .addOnSuccessListener(aVoid -> Toast.makeText(HistoryActivity.this, "Food log cleared", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e -> Toast.makeText(HistoryActivity.this, "Error clearing log: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    } else {
+                        Toast.makeText(this, "Error getting logs: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
 
     @Override
     protected void onStart() {
