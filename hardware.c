@@ -1,8 +1,12 @@
-// ===== ESP32 HX711 Scale with LCD1602 + Classic BT SPP (always streaming) =====
-// Requires: ESP32 Arduino core, Bogde HX711, hd44780 library.
+// ===== ESP32 HX711 Scale with SSD1306 OLED (replaces LCD1602) + Classic BT SPP (always streaming) =====
+// Behavior: identical to original LCD1602 sketch except for display hardware.
+// Requires: ESP32 Arduino core, Bogde HX711, Adafruit SSD1306 & Adafruit GFX, BluetoothSerial
 
 #include <Arduino.h>
 #include <math.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 #include "HX711.h"
 #include "BluetoothSerial.h"
 
@@ -24,17 +28,16 @@ const int   SAMPLE_COUNT = 30;
 const float DEAD_BAND    = 0.3f;   // clamp tiny noise to 0 g
 static bool ema_valid    = false;
 
-// ---------------- LCD1602 (HD44780) ----------------
-#include <hd44780.h>
-#include <hd44780ioClass/hd44780_pinIO.h>
-// RS, E, D4, D5, D6, D7  (LCD RW pin must be tied to GND)
-const int LCD_RS = 22;
-const int LCD_E  = 21;
-const int LCD_D4 = 19;
-const int LCD_D5 = 18;
-const int LCD_D6 = 17;
-const int LCD_D7 = 4;
-hd44780_pinIO lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);
+// ---------------- OLED (SSD1306 I2C 0.96" 128x64) ----------------
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+const uint8_t OLED_I2C_ADDR = 0x3C; // typical for GK-OLED-0.96
+
+// I2C pins for ESP32 (confirmed)
+const int I2C_SDA = 21;
+const int I2C_SCL = 22;
 
 // ---------------- Tare Button ----------------
 #define TARE_BTN 15   // do not hold LOW at reset
@@ -233,21 +236,30 @@ void setup() {
   Serial.begin(115200);
   pinMode(TARE_BTN, INPUT_PULLUP);
 
-  // LCD init
-  delay(200);
-  lcd.begin(16, 2);
-  lcd.clear();
-  lcd.setCursor(0, 0); lcd.print("ESP32 Scale");
-  lcd.setCursor(0, 1); lcd.print("Init...");
+  // OLED init (mimic original LCD "ESP32 Scale" / "Init..." message)
+  Wire.begin(I2C_SDA, I2C_SCL);
+  delay(50);
+  if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDR)) {
+    Serial.println("SSD1306 allocation failed");
+    // continue - behavior otherwise same (if display not present, serial output still works)
+  } else {
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("ESP32 Scale");
+    display.println("Init...");
+    display.display();
+  }
 
-  // HX711 init
+  // HX711 init (identical order to your original)
   scale.begin(DOUT, SCK);
   delay(200);
   scale.set_scale(CALIBRATION_FACTOR);  // set your factor
   scale.tare(20);                       // hardware zero once at boot
   ema_valid = false;
 
-  // Bluetooth pairing PIN (legacy)
+  // Bluetooth pairing PIN (legacy) - identical to original
   if (USE_PIN) {
     esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_FIXED;
     esp_bt_pin_code_t pin_code;
@@ -260,9 +272,26 @@ void setup() {
   bool ok = serialBT.begin(BT_NAME);  // Classic Bluetooth SPP
   Serial.printf("BT start %s\n", ok ? "OK" : "FAIL");
 
-  lcd.clear();
-  lcd.setCursor(0, 0); lcd.print("Weight:");
-  lcd.setCursor(0, 1); lcd.print("BT: "); lcd.print(BT_NAME);
+  // Show main UI on OLED (mimic LCD layout)
+  if (display.width() > 0) {
+    display.clearDisplay();
+    // Top label like LCD row 0
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.print("Weight:");
+
+    // Second row (large weight) placeholder
+    display.setTextSize(2);
+    display.setCursor(0, 12);
+    display.print("0.00 g");
+
+    // Small BT row at bottom (mimics LCD row 1 layout that displayed BT)
+    display.setTextSize(1);
+    display.setCursor(0, 52);
+    display.print("BT: ");
+    display.print(BT_NAME);
+    display.display();
+  }
 
   // hello so the app knows we are alive
   serialBT.println("{\"status\":\"ready\"}");
@@ -290,7 +319,19 @@ void loop() {
     userZero += disp_g;                     // make display drop to 0
     fstate = IDLE;                          // restart 3 s cycle
     ema_valid = false;                      // re-arm filter
-    lcd.setCursor(0, 1); lcd.print("Tared           ");
+
+    // show temporary message on OLED (mimics lcd.setCursor(0,1); lcd.print("Tared"))
+    if (display.width() > 0) {
+      display.clearDisplay();
+      display.setTextSize(1);
+      display.setCursor(0, 0);
+      display.print("Weight:");
+      display.setTextSize(2);
+      display.setCursor(0, 12);
+      display.print("Tared");
+      display.display();
+    }
+
     delay(300);
     while (digitalRead(TARE_BTN) == LOW) { /* wait for release */ }
   }
@@ -301,7 +342,7 @@ void loop() {
     btSendWeight();
   }
 
-  // LCD update every 200 ms
+  // OLED update every 200 ms (matches original LCD update cadence)
   if (millis() - lastLCD >= 200) {
     lastLCD = millis();
     float g_disp = getDisplayWeightGrams();
@@ -309,10 +350,29 @@ void loop() {
     float shown = toDisplayUnits(g_disp);
 
     char line[17];
-    // e.g., "  12.34 oz" fits 16 chars
+    // e.g., "  12.34 oz" fits 16 chars (same formatting as original LCD)
     snprintf(line, sizeof(line), "%8.2f %s", shown, unitStr(unitMode));
 
-    lcd.setCursor(0, 0); lcd.print("Weight:        ");
-    lcd.setCursor(8, 0); lcd.print(line);
+    if (display.width() > 0) {
+      display.clearDisplay();
+
+      // Top label (like LCD row 0)
+      display.setTextSize(1);
+      display.setCursor(0, 0);
+      display.print("Weight:");
+
+      // Weight big (mimic the LCD row 1 formatting)
+      display.setTextSize(2);
+      display.setCursor(0, 12);
+      display.print(line);
+
+      // Bottom small BT info (mimic LCD second row BT text presence)
+      display.setTextSize(1);
+      display.setCursor(0, 52);
+      display.print("BT: ");
+      display.print(BT_NAME);
+
+      display.display();
+    }
   }
 }
