@@ -33,12 +33,72 @@
             android:letterSpacing="0.02"
             android:layout_marginBottom="32dp" />
 
+        <!-- Full Name -->
+        <EditText
+            android:id="@+id/register_fullname"
+            android:layout_width="280dp"
+            android:layout_height="56dp"
+            android:hint="Full Name"
+            android:inputType="textPersonName"
+            android:background="@drawable/bg_input_field"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/munch_dark_green"
+            android:textColorHint="@color/munch_stone"
+            android:fontFamily="@font/outfit_medium"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Age -->
+        <EditText
+            android:id="@+id/register_age"
+            android:layout_width="280dp"
+            android:layout_height="56dp"
+            android:hint="Age"
+            android:inputType="number"
+            android:background="@drawable/bg_input_field"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/munch_dark_green"
+            android:textColorHint="@color/munch_stone"
+            android:fontFamily="@font/outfit_medium"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Height -->
+        <EditText
+            android:id="@+id/register_height"
+            android:layout_width="280dp"
+            android:layout_height="56dp"
+            android:hint="Height (cm)"
+            android:inputType="numberDecimal"
+            android:background="@drawable/bg_input_field"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/munch_dark_green"
+            android:textColorHint="@color/munch_stone"
+            android:fontFamily="@font/outfit_medium"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Weight -->
+        <EditText
+            android:id="@+id/register_weight"
+            android:layout_width="280dp"
+            android:layout_height="56dp"
+            android:hint="Weight (kg)"
+            android:inputType="numberDecimal"
+            android:background="@drawable/bg_input_field"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/munch_dark_green"
+            android:textColorHint="@color/munch_stone"
+            android:fontFamily="@font/outfit_medium"
+            android:layout_marginBottom="16dp"/>
+
         <!-- Email -->
         <EditText
             android:id="@+id/register_username"
             android:layout_width="280dp"
             android:layout_height="56dp"
-            android:hint="Email"
+            android:hint="Email*"
             android:inputType="textEmailAddress"
             android:background="@drawable/bg_input_field"
             android:paddingStart="16dp"
@@ -53,7 +113,7 @@
             android:id="@+id/register_password"
             android:layout_width="280dp"
             android:layout_height="56dp"
-            android:hint="Password"
+            android:hint="Password*"
             android:inputType="textPassword"
             android:background="@drawable/bg_input_field"
             android:paddingStart="16dp"
@@ -68,7 +128,7 @@
             android:id="@+id/register_confirmpassword"
             android:layout_width="280dp"
             android:layout_height="56dp"
-            android:hint="Confirm Password"
+            android:hint="Confirm Password*"
             android:inputType="textPassword"
             android:background="@drawable/bg_input_field"
             android:paddingStart="16dp"
@@ -105,5 +165,3 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
