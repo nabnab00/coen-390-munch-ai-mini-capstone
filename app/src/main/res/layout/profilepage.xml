@@ -118,14 +118,15 @@
                         android:layout_marginTop="5dp"
                         android:background="@android:color/transparent"
                         android:ems="4"
-                        android:gravity="end"
-                        android:inputType="text"
                         android:fontFamily="@font/outfit_semibold"
-                        android:textSize="14sp"
+                        android:gravity="end"
                         android:imeOptions="actionDone"
+                        android:inputType="text"
+                        android:textSize="14sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/name_label"
-                        app:layout_constraintTop_toBottomOf="@+id/personal_email" />
+                        app:layout_constraintTop_toBottomOf="@+id/personal_email"
+                        tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
                     <TextView
                         android:id="@+id/age_label"
@@ -145,14 +146,15 @@
                         android:layout_marginTop="5dp"
                         android:background="@android:color/transparent"
                         android:ems="4"
-                        android:gravity="end"
-                        android:inputType="number"
                         android:fontFamily="@font/outfit_semibold"
-                        android:textSize="14sp"
+                        android:gravity="end"
                         android:imeOptions="actionDone"
+                        android:inputType="number"
+                        android:textSize="14sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/age_label"
-                        app:layout_constraintTop_toBottomOf="@+id/personal_name" />
+                        app:layout_constraintTop_toBottomOf="@+id/personal_name"
+                        tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
                     <TextView
                         android:id="@+id/height_label"
@@ -172,14 +174,15 @@
                         android:layout_marginTop="5dp"
                         android:background="@android:color/transparent"
                         android:ems="4"
-                        android:gravity="end"
-                        android:inputType="numberDecimal"
                         android:fontFamily="@font/outfit_semibold"
-                        android:textSize="14sp"
+                        android:gravity="end"
                         android:imeOptions="actionDone"
+                        android:inputType="numberDecimal"
+                        android:textSize="14sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/height_label"
-                        app:layout_constraintTop_toBottomOf="@+id/personal_age" />
+                        app:layout_constraintTop_toBottomOf="@+id/personal_age"
+                        tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
                     <TextView
                         android:id="@+id/bmi_label"
@@ -278,15 +281,15 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="16dp"
-                        android:hint="Weight"
-                        android:inputType="numberDecimal"
                         android:fontFamily="@font/outfit_semibold"
+                        android:hint="Weight"
+                        android:imeOptions="actionDone"
+                        android:inputType="numberDecimal"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@id/profile_save"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        android:imeOptions="actionDone"
-                        />
+                        tools:ignore="TouchTargetSizeCheck" />
 
                     <Button
                         android:id="@+id/profile_save"
