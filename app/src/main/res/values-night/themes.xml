@@ -1,11 +1,11 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
 
     <!-- DARK THEME -->
     <style name="Base.Theme.MunchAI" parent="Theme.Material3.Dark.NoActionBar">
 
-        <!-- Primary brand (a bit brighter in dark) -->
-        <item name="colorPrimary">@color/munch_caribbean_green</item>
-        <item name="colorOnPrimary">@color/munch_rich_black</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
         <item name="colorPrimaryContainer">@color/munch_forest</item>
         <item name="colorOnPrimaryContainer">@color/munch_anti_flash_white</item>
 
@@ -15,23 +15,25 @@
         <item name="colorSecondaryContainer">@color/munch_pine</item>
         <item name="colorOnSecondaryContainer">@color/munch_anti_flash_white</item>
 
-        <!-- Backgrounds & surfaces -->
-        <item name="android:colorBackground">@color/munch_dark_green</item>
-        <item name="colorOnBackground">@color/munch_anti_flash_white</item>
+        <item name="colorOnBackground">@color/colorOnBackground</item>
 
-        <item name="colorSurface">@color/munch_pine</item>
-        <item name="colorOnSurface">@color/munch_anti_flash_white</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
 
-        <!-- Status / nav bars -->
-        <item name="android:statusBarColor">@color/munch_rich_black</item>
-        <item name="android:navigationBarColor">@color/munch_rich_black</item>
+        <!-- System bars / window -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/colorBackground</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
 
-        <!-- Default background in dark mode -->
-        <item name="android:windowBackground">@color/munch_dark_green</item>
+        <!-- Make sure icons/text in system bars expect dark background -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
     </style>
 
     <!-- App theme alias -->
     <style name="Theme.MunchAI" parent="Base.Theme.MunchAI" />
 
 </resources>
+
 
