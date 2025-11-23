@@ -337,40 +337,22 @@
 
             </androidx.cardview.widget.CardView>
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/profile_card"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/weight_logs_list"
                 android:layout_width="0dp"
-                android:layout_height="300dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="30dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="30dp"
                 android:layout_marginBottom="20dp"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@color/munch_anti_flash_white"
+                android:nestedScrollingEnabled="false"
+                android:padding="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/log_weight_card"
-                app:layout_constraintVertical_bias="0.0">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/weight_logs_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="263dp"
-                    android:padding="8dp" />
-
-            </androidx.cardview.widget.CardView>
-
-            <!-- Transparent Spacer for Scrolling -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                app:layout_constraintTop_toBottomOf="@id/profile_card"
-                android:background="@android:color/transparent" />
-
-
+                app:layout_constraintVertical_bias="0.0" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

@@ -436,6 +436,16 @@ public class MealActivity extends AppCompatActivity
     private void enableForm(boolean enabled) {
         nameEt.setEnabled(enabled);
         weightEt.setEnabled(enabled);
+        caloriesEt.setEnabled(enabled);
+        fatEt.setEnabled(enabled);
+        proteinEt.setEnabled(enabled);
+        carbsEt.setEnabled(enabled);
+        sodiumEt.setEnabled(enabled);
+        vitaminAEt.setEnabled(enabled);
+        vitaminBEt.setEnabled(enabled);
+        vitaminCEt.setEnabled(enabled);
+        ironEt.setEnabled(enabled);
+
         if (unitSp != null) unitSp.setEnabled(enabled);
         mealSp.setEnabled(enabled);
         dateTv.setEnabled(enabled);
