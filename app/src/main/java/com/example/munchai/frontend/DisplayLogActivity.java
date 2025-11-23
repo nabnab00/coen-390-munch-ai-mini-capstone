@@ -110,7 +110,7 @@ public class DisplayLogActivity extends AppCompatActivity {
 
                         photoRef.delete()
                                 .addOnSuccessListener(aVoid2 -> {
-                                    Toast.makeText(this, "Meal and photo deleted", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Meal correctly deleted", Toast.LENGTH_SHORT).show();
                                     finish(); // go back to HistoryActivity
                                 })
                                 .addOnFailureListener(e -> {
