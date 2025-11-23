@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FDFDFD"
     android:fontFamily="@font/outfit_semibold"
     tools:context=".frontend.MealActivity">
 
@@ -69,7 +68,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:cardBackgroundColor="@color/munch_anti_flash_white"
+        app:cardBackgroundColor="@color/munch_white"
         app:cardCornerRadius="28dp"
         app:cardElevation="6dp"
         app:cardUseCompatPadding="true"

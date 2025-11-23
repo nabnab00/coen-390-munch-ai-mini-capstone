@@ -51,7 +51,6 @@
 
     <!-- Background overlays -->
     <color name="overlay_light">#1A2CC395</color>
-
     <color name="delete_red">#DCA2A2</color>
 
 </resources>

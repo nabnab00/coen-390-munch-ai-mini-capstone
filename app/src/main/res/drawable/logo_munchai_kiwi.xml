@@ -5,7 +5,6 @@
     android:viewportWidth="140"
     android:viewportHeight="140">
 
-    <!-- ==== RING FROM OLD LOGO ==== -->
 
     <!-- Outer Circle - Primary Green -->
     <path
@@ -17,9 +16,9 @@
         android:fillColor="#0B5544"
         android:pathData="M70,70m-58,0a58,58 0,1 1,116 0a58,58 0,1 1,-116 0" />
 
-    <!-- Inner Circle - Light background -->
+    <!-- Inner Circle - background -->
     <path
-        android:fillColor="#F1F7F5"
+        android:fillColor="@color/colorBackground"
         android:pathData="M70,70m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0" />
 
     <!-- ==== SCALED & CENTERED KIWI INSIDE RING ==== -->>
