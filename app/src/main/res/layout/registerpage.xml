@@ -38,7 +38,7 @@
             android:id="@+id/register_fullname"
             android:layout_width="280dp"
             android:layout_height="56dp"
-            android:hint="Full Name"
+            android:hint="Name"
             android:inputType="textPersonName"
             android:background="@drawable/bg_input_field"
             android:paddingStart="16dp"

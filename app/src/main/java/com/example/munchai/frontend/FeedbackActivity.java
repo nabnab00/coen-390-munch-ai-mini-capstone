@@ -89,7 +89,7 @@ public class FeedbackActivity extends AppCompatActivity {
             promptBuilder.append("Hello ").append(name != null ? name : "User").append("!\n\n");
             promptBuilder.append("Here is your current profile:\n");
             promptBuilder.append("- Age: ").append(userDoc.contains("age") ? userDoc.getLong("age") : "Not set").append("\n");
-            promptBuilder.append("- Height: ").append(userDoc.contains("height") ? userDoc.getLong("height") : "Not set").append("\n");
+            promptBuilder.append("- Height (cm): ").append(userDoc.contains("height") ? userDoc.getLong("height") : "Not set").append("\n");
             promptBuilder.append("- BMI: ").append(calculateBmi(userDoc)).append("\n\n");
 
             // Fetch user goal and macros from settings
