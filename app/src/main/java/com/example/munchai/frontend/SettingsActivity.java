@@ -10,6 +10,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageButton;
+import android.widget.RadioGroup;
+import android.widget.RadioButton;
+
 
 import com.example.munchai.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,6 +29,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private Switch switchDarkMode;
+    private RadioGroup goalRadioGroup;
     private EditText editCalories, editProtein, editCarbohydrates, editFats;
     private TextView saveSettings;
     private String uid;
@@ -58,6 +62,7 @@ public class SettingsActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> finish());
 
         switchDarkMode      = findViewById(R.id.switch_darkmode);
+        goalRadioGroup      = findViewById(R.id.goal_radiogroup);
         editCalories        = findViewById(R.id.settings_calories);
         editProtein         = findViewById(R.id.settings_protein);
         editCarbohydrates   = findViewById(R.id.settings_carbohydrates);
@@ -82,6 +87,7 @@ public class SettingsActivity extends AppCompatActivity {
                 DocumentSnapshot document = task.getResult();
                 if (document != null && document.exists()) {
                     Boolean darkMode = document.getBoolean("dark_mode");
+                    String userGoal = document.getString("user_goal");
                     Long calorieLimit = document.getLong("calorie_limit");
                     Long proteinLimit = document.getLong("protein_limit");
                     Long carbLimit = document.getLong("carb_limit");
@@ -90,6 +96,17 @@ public class SettingsActivity extends AppCompatActivity {
                     if (darkMode != null) {
                         switchDarkMode.setChecked(darkMode);
                     }
+
+                    if (userGoal != null) {
+                        if ("bulk".equals(userGoal)) {
+                            goalRadioGroup.check(R.id.radio_bulk);
+                        } else if ("maintain".equals(userGoal)) {
+                            goalRadioGroup.check(R.id.radio_maintain);
+                        } else if ("cut".equals(userGoal)) {
+                            goalRadioGroup.check(R.id.radio_cut);
+                        }
+                    }
+
                     if (calorieLimit != null) {
                         editCalories.setText(String.valueOf(calorieLimit));
                     }
@@ -116,6 +133,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             Map<String, Object> settings = new HashMap<>();
             settings.put("dark_mode", darkMode);
+
+            int selectedGoalId = goalRadioGroup.getCheckedRadioButtonId();
+            if (selectedGoalId != -1) {
+                RadioButton selectedRadioButton = findViewById(selectedGoalId);
+                String goal = selectedRadioButton.getText().toString().toLowerCase();
+                settings.put("user_goal", goal);
+            }
 
             String calStr = editCalories.getText().toString().trim();
             if (!calStr.isEmpty()) settings.put("calorie_limit", Integer.parseInt(calStr));
@@ -144,7 +168,6 @@ public class SettingsActivity extends AppCompatActivity {
                         );
 
                         Toast.makeText(SettingsActivity.this, "Settings saved!", Toast.LENGTH_SHORT).show();
-                        finish();
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(SettingsActivity.this,
@@ -158,4 +181,3 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 }
-

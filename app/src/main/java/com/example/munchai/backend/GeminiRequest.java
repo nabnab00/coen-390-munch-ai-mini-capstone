@@ -56,14 +56,15 @@ public class GeminiRequest {
         String base64 = encodeToBase64Jpeg(resized, 85);
 
         //prompt
-        String prompt = "You are analyzing a meal/food image. The total weight of the food is " + weight + " " + unit +
+        String prompt = "You are analyzing a image. If the photo is not food, return an empty JSON object other than weight." +
+                "The total weight of the food is " + weight + " " + unit +
                 ". Carefully analyze the image and the weight. " +
                 "Return a JSON object with these lowercase keys: " +
                 "name, calories, total_fat_g, protein_g, total_carbohydrate_g, sodium_mg, vitamin_a_percent, vitamin_b_percent, vitamin_c_percent, iron_percent " +
                 "The nutrition values you provide should correspond to the total weight of the food. " +
                 "If a value is missing, use null. " +
-                "Do not include any text or markdown, output only the JSON object." +
-                "If the photo is not food, return an empty JSON object.";
+                "Do not include any text or markdown, output only the JSON object."
+                ;
 
         //JSON build
         ObjectNode inlineData = MAPPER.createObjectNode();

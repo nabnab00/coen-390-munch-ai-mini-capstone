@@ -54,7 +54,8 @@
         <activity android:name=".frontend.MainActivity" />
         <activity android:name=".frontend.SettingsActivity" />
         <activity android:name=".frontend.HistoryActivity" />
-        <activity android:name=".frontend.MealActivity" />
+        <activity android:name=".frontend.MealActivity"
+                  android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".frontend.DisplayLogActivity" />
         <activity android:name=".frontend.WeightScaleActivity"/>
         <activity android:name=".frontend.ProfileActivity"/>
