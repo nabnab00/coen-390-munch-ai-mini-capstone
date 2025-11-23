@@ -18,6 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseFirestore db;
     private EditText emailEt, passwordEt, confirmEt;
-    private EditText fullNameEt, ageEt, heightEt;
+    private EditText fullNameEt, ageEt, heightEt, weightEt;
     private ProfileValidation validator;
 
     @Override
@@ -39,6 +40,7 @@ public class RegisterActivity extends AppCompatActivity {
         fullNameEt = findViewById(R.id.register_fullname);
         ageEt = findViewById(R.id.register_age);
         heightEt = findViewById(R.id.register_height);
+        weightEt = findViewById(R.id.register_weight); // Initialize weightEt
         emailEt = findViewById(R.id.register_username);
         passwordEt = findViewById(R.id.register_password);
         confirmEt = findViewById(R.id.register_confirmpassword);
@@ -56,12 +58,13 @@ public class RegisterActivity extends AppCompatActivity {
         String fullName = fullNameEt.getText().toString().trim();
         String age = ageEt.getText().toString().trim();
         String height = heightEt.getText().toString().trim();
+        String weight = weightEt.getText().toString().trim(); // Get weight string
         String email = emailEt.getText().toString().trim();
         String pwd = passwordEt.getText().toString();
         String cfm = confirmEt.getText().toString();
 
         // Info validation
-        if (fullName.isEmpty() || age.isEmpty() || height.isEmpty()) {
+        if (fullName.isEmpty() || age.isEmpty() || height.isEmpty() || weight.isEmpty()) { // Added weight validation
             Toast.makeText(this, "Please fill all fields.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -73,15 +76,17 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Convert age and height to numbers
+        // Convert age, height and weight to numbers
         int ageVal;
         double heightVal;
+        double weightVal;
 
         try {
             ageVal = Integer.parseInt(age);
             heightVal = Double.parseDouble(height);
+            weightVal = Double.parseDouble(weight); // Parse weight
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Age and height must be numbers.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Age, height, and weight must be numbers.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -117,9 +122,25 @@ public class RegisterActivity extends AppCompatActivity {
             profile.put("createdAt", System.currentTimeMillis());
 
             doc.set(profile).addOnCompleteListener(aVoid -> {
-                Toast.makeText(this, "Account created!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-                finish();
+                // Now, log the initial weight in the subcollection
+                Map<String, Object> weightLog = new HashMap<>();
+                weightLog.put("weight", weightVal);
+                weightLog.put("date", new Date()); // Use server timestamp for consistency
+
+                doc.collection("personal_weight_logs").add(weightLog)
+                        .addOnSuccessListener(documentReference -> {
+                            Toast.makeText(this, "Account created!", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                            finish();
+                        })
+                        .addOnFailureListener(e -> {
+                            // Profile was saved, but weight log failed.
+                            Toast.makeText(this, "Account created, but failed to log initial weight: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                            finish();
+                        });
+
             }).addOnFailureListener(e ->
                     Toast.makeText(this, "Saved auth but failed profile: " + e.getMessage(),
                             Toast.LENGTH_LONG).show());
