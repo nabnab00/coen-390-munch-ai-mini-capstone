@@ -37,4 +37,7 @@
     <string name="app_logo_desc">munchAI Logo - Food Bowl with AI</string>
 
     <string name="back">Back</string>
+
+    <string name="profile_title">Profile</string>
+
 </resources>

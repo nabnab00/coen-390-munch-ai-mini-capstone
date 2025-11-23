@@ -1,3 +1,4 @@
+// == START OF FILE: ProfileActivity.java ==
 package com.example.munchai.frontend;
 
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.RadioButton;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -53,10 +55,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -78,6 +79,7 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageButton backButton, logoutButton;
     private RecyclerView weightLogsRecyclerView; // Changed from ListView
     private LineChart weightChart; // Add LineChart variable
+    private RadioButton unitKgRadio, unitLbRadio;
 
     private WeightLogAdapter weightLogAdapter;
     private ArrayList<WeightLog> weightLogList;
@@ -107,14 +109,24 @@ public class ProfileActivity extends AppCompatActivity {
         weightChart = findViewById(R.id.weight_chart);
         weightLogList = new ArrayList<>();
 
+        // Unit toggles (from profilepage.xml)
+        unitKgRadio = findViewById(R.id.unit_kg);
+        unitLbRadio = findViewById(R.id.unit_lb);
+        if (!unitKgRadio.isChecked() && !unitLbRadio.isChecked()) {
+            unitKgRadio.setChecked(true);
+        }
+
         weightLogsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        weightLogAdapter = new WeightLogAdapter(this, weightLogList);
+
+        weightLogAdapter = new WeightLogAdapter(ProfileActivity.this, weightLogList);
         weightLogsRecyclerView.setAdapter(weightLogAdapter);
 
-        setupWeightChart();
+        profileTitle.setText(R.string.profile_title);
+
         setupSwipeToDelete();
 
         if (currentUser != null) {
+            personalEmailTextView.setText(currentUser.getEmail());
             loadUserProfile(); // Load user name, age, and height
             fetchWeightLogs();
         } else {
@@ -130,25 +142,23 @@ public class ProfileActivity extends AppCompatActivity {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 saveUserProfile();
                 v.clearFocus(); // Remove focus from the EditText
+                return true;
             }
-            return false; // Return false to allow default handling (e.g., closing keyboard)
+            return false;
         };
 
         personalNameEditText.setOnEditorActionListener(editorActionListener);
         personalAgeEditText.setOnEditorActionListener(editorActionListener);
         personalHeightEditText.setOnEditorActionListener(editorActionListener);
-        SessionManager sessionManager = new SessionManager(this);
 
-        backButton.setOnClickListener(v -> {
-
-                        finish();
-        });
+        backButton.setOnClickListener(v -> finish());
 
         logoutButton.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
-                    .setTitle("Logout")
+                    .setTitle("Log out")
                     .setMessage("Are you sure you want to log out?")
                     .setPositiveButton("Yes", (dialog, which) -> {
+                        SessionManager sessionManager = new SessionManager(this);
                         sessionManager.logout();
                         Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(ProfileActivity.this, StartActivity.class);
@@ -167,201 +177,84 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void loadUserProfile() {
-        personalEmailTextView.setText(currentUser.getEmail());
-        String userName = currentUser.getDisplayName();
-        if (userName != null && !userName.isEmpty()) {
-            personalNameEditText.setText(userName);
-        }
-
-        // load age & height
-        DocumentReference userDocRef = db.collection("users").document(currentUser.getUid());
-        userDocRef.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                if (documentSnapshot.contains("age")) {
-                    personalAgeEditText.setText(String.valueOf(documentSnapshot.getLong("age")));
-                }
-                if (documentSnapshot.contains("height")) {
-                    personalHeightEditText.setText(String.valueOf(documentSnapshot.get("height")));
-                }
-                calculateAndDisplayBmi();
-            }
-        }).addOnFailureListener(e -> Log.e(TAG, "Error loading user profile from Firestore", e));
-    }
-
     private void saveUserProfile() {
+        if (currentUser == null) return;
+
         String name = personalNameEditText.getText().toString().trim();
         String ageStr = personalAgeEditText.getText().toString().trim();
         String heightStr = personalHeightEditText.getText().toString().trim();
 
-        if (TextUtils.isEmpty(name)) {
-            personalNameEditText.setError("Name cannot be empty");
-            personalNameEditText.requestFocus();
-            return;
+        if (TextUtils.isEmpty(name) && TextUtils.isEmpty(ageStr) && TextUtils.isEmpty(heightStr)) {
+            return; // nothing to save
         }
 
-        // save names into fire auth for & purposes
-        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                .setDisplayName(name)
-                .build();
-        currentUser.updateProfile(profileUpdates)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(ProfileActivity.this, "Profile updated!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        try {
+            Integer age = TextUtils.isEmpty(ageStr) ? null : Integer.parseInt(ageStr);
+            Double height = TextUtils.isEmpty(heightStr) ? null : Double.parseDouble(heightStr);
 
-        // age & height should be in firestore
-        Map<String, Object> userData = new HashMap<>();
-        if (!ageStr.isEmpty()) userData.put("age", Integer.parseInt(ageStr));
-        if (!heightStr.isEmpty()) userData.put("height", Double.parseDouble(heightStr));
+            UserProfileChangeRequest.Builder profileUpdatesBuilder = new UserProfileChangeRequest.Builder();
+            if (!TextUtils.isEmpty(name)) {
+                profileUpdatesBuilder.setDisplayName(name);
+            }
 
-        if (!userData.isEmpty()) {
-            db.collection("users").document(currentUser.getUid())
-                    .set(userData, SetOptions.merge())
-                    .addOnSuccessListener(aVoid -> calculateAndDisplayBmi())
+            currentUser.updateProfile(profileUpdatesBuilder.build())
+                    .addOnSuccessListener(aVoid -> {
+                        // Save extra fields to Firestore
+                        DocumentReference docRef = db.collection("users").document(currentUser.getUid());
+                        // We store height in cm as typed
+                        java.util.Map<String, Object> map = new java.util.HashMap<>();
+                        if (!TextUtils.isEmpty(name)) map.put("name", name);
+                        if (age != null) map.put("age", age);
+                        if (height != null) map.put("height_cm", height);
+
+                        docRef.set(map, SetOptions.merge())
+                                .addOnSuccessListener(v -> {
+                                    Toast.makeText(ProfileActivity.this, "Profile updated.", Toast.LENGTH_SHORT).show();
+                                    calculateAndDisplayBmi();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(ProfileActivity.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
+                                    Log.w(TAG, "Profile save error", e);
+                                });
+                    })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(ProfileActivity.this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "Error saving user profile to Firestore", e);
+                        Toast.makeText(ProfileActivity.this, "Failed to update auth profile.", Toast.LENGTH_SHORT).show();
+                        Log.w(TAG, "Auth profile save error", e);
                     });
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid age/height.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void setupWeightChart() {
-        weightChart.getDescription().setEnabled(false);
-        weightChart.setDrawGridBackground(false);
-        weightChart.setNoDataText("No weight data logged yet.");
-        weightChart.getLegend().setEnabled(false);
-
-        weightChart.setTouchEnabled(false);
-        weightChart.setDragEnabled(false);
-        weightChart.setScaleEnabled(false);
-
-        XAxis xAxis = weightChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setGranularity(1f);
-        xAxis.setDrawGridLines(false);
-        xAxis.setDrawAxisLine(false);
-        xAxis.setYOffset(5f);
-
-        YAxis leftAxis = weightChart.getAxisLeft();
-        leftAxis.setGranularity(10f);
-        leftAxis.setDrawGridLines(false);
-        leftAxis.setDrawAxisLine(false);
-        leftAxis.setXOffset(20f);
-
-        weightChart.getAxisRight().setEnabled(false);
-    }
-
-    private void updateWeightChart() {
-        if (weightLogList == null || weightLogList.isEmpty()) {
-            weightChart.clear();
-            weightChart.invalidate();
-            return;
-        }
-
-        ArrayList<WeightLog> chartList = new ArrayList<>(weightLogList);
-        Collections.reverse(chartList);
-
-        ArrayList<Entry> entries = new ArrayList<>();
-        ArrayList<String> xLabels = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd", Locale.getDefault());
-
-        for (int i = 0; i < chartList.size(); i++) {
-            WeightLog log = chartList.get(i);
-            entries.add(new Entry(i, (float) log.getWeight()));
-            xLabels.add(sdf.format(log.getDate()));
-        }
-
-        weightChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xLabels));
-
-        LineDataSet dataSet = new LineDataSet(entries, "Weight (kg)");
-        dataSet.setColor(ContextCompat.getColor(this, R.color.munch_bangladesh_green));
-        dataSet.setDrawValues(false);
-        dataSet.setCircleColor(ContextCompat.getColor(this, R.color.munch_bangladesh_green));
-        dataSet.setLineWidth(4f);
-        dataSet.setCircleRadius(4f);
-        dataSet.setDrawCircleHole(false);
-
-        LineData lineData = new LineData(dataSet);
-        weightChart.setData(lineData);
-        weightChart.invalidate();
-    }
-
-
-    private void setupSwipeToDelete() {
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            private final Drawable deleteIcon = ContextCompat.getDrawable(ProfileActivity.this, android.R.drawable.ic_menu_delete);
-            private final ColorDrawable background = new ColorDrawable(Color.RED);
-
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
-                if (position == RecyclerView.NO_POSITION) return;
-
-                WeightLog logToDelete = weightLogList.get(position);
-                weightLogList.remove(position);
-                weightLogAdapter.notifyItemRemoved(position);
-                updateWeightChart();
-                deleteWeightLogFromFirestore(logToDelete, position);
-            }
-
-            @Override
-            public float getSwipeThreshold(@NonNull RecyclerView.ViewHolder viewHolder) {
-                return 0.7f;
-            }
-
-            @Override
-            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-                View itemView = viewHolder.itemView;
-
-                if (dX < 0) {
-                    int iconMargin = (itemView.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
-                    int iconTop = itemView.getTop() + iconMargin;
-                    int iconBottom = iconTop + deleteIcon.getIntrinsicHeight();
-                    int iconLeft = itemView.getRight() - iconMargin - deleteIcon.getIntrinsicWidth();
-                    int iconRight = itemView.getRight() - iconMargin;
-                    deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
-                    deleteIcon.draw(c);
-                }
-            }
-        }).attachToRecyclerView(weightLogsRecyclerView);
-    }
-
-    private void deleteWeightLogFromFirestore(WeightLog logToDelete, int position) {
+    private void loadUserProfile() {
         if (currentUser == null) return;
 
-        db.collection("users")
-                .document(currentUser.getUid())
-                .collection("personal_weight_logs")
-                .whereEqualTo("date", logToDelete.getDate())
-                .limit(1)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        DocumentReference docRef = queryDocumentSnapshots.getDocuments().get(0).getReference();
-                        docRef.delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Snackbar.make(weightLogsRecyclerView, "Log deleted", Snackbar.LENGTH_LONG)
-                                            .setAction("UNDO", view -> {
-                                                weightLogList.add(position, logToDelete);
-                                                weightLogAdapter.notifyItemInserted(position);
-                                                updateWeightChart();
-                                                db.collection("users").document(currentUser.getUid())
-                                                        .collection("personal_weight_logs").add(logToDelete);
-                                            }).show();
-                                });
+        DocumentReference docRef = db.collection("users").document(currentUser.getUid());
+        docRef.get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        String name = snapshot.getString("name");
+                        Long age = snapshot.getLong("age");
+                        Double heightCm = snapshot.getDouble("height_cm");
+
+                        if (!TextUtils.isEmpty(name)) personalNameEditText.setText(name);
+                        if (age != null) personalAgeEditText.setText(String.valueOf(age));
+                        if (heightCm != null) personalHeightEditText.setText(String.valueOf(heightCm));
                     }
-                });
+                })
+                .addOnFailureListener(e -> Log.w(TAG, "loadUserProfile: ", e));
     }
 
-    private void logWeight() {
+    /** Returns input weight normalized to kilograms, based on the selected unit. */
+    private double toKg(double input) {
+        if (unitLbRadio != null && unitLbRadio.isChecked()) {
+            return input * 0.45359237;
+        }
+        return input;
+    }
+
+    void logWeight() {
         // Your implementation for logging weight
         String weightStr = personalWeightEditText.getText().toString().trim();
 
@@ -378,13 +271,16 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
+        // Normalize to kilograms regardless of selected unit
+        double weightKg = toKg(weightValue);
+
         if (currentUser == null) {
             Toast.makeText(this, "Error: You must be logged in to log weight.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         Date currentDate = new Date();
-        WeightLog newLog = new WeightLog(currentDate, weightValue);
+        WeightLog newLog = new WeightLog(currentDate, weightKg);
 
         CollectionReference weightLogsCollection = db.collection("users")
                 .document(currentUser.getUid())
@@ -408,25 +304,26 @@ public class ProfileActivity extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
 
-                        // if log the same day aready exists
+                        // if log the same day already exists
                         DocumentReference docRef = queryDocumentSnapshots.getDocuments().get(0).getReference();
-                        docRef.update("weight", weightValue)
+                        docRef.update("weight", weightKg)
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(ProfileActivity.this, "Weight updated successfully!", Toast.LENGTH_SHORT).show();
-                                    personalWeightEditText.setText(""); // Clear the input field
-                                    fetchWeightLogs(); // Refresh the list and chart
+                                    Toast.makeText(ProfileActivity.this, "Today's weight updated.", Toast.LENGTH_SHORT).show();
+                                    fetchWeightLogs();
+                                    calculateAndDisplayBmi();
+                                    personalWeightEditText.getText().clear();
                                 })
                                 .addOnFailureListener(e -> {
                                     Toast.makeText(ProfileActivity.this, "Failed to update weight.", Toast.LENGTH_SHORT).show();
                                     Log.w(TAG, "Error updating document", e);
                                 });
                     } else {
-                        // no logs today
                         weightLogsCollection.add(newLog)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(ProfileActivity.this, "Weight logged successfully!", Toast.LENGTH_SHORT).show();
-                                    personalWeightEditText.setText(""); // Clear the input field
-                                    fetchWeightLogs(); // Refresh the list and chart to show the new log
+                                    Toast.makeText(ProfileActivity.this, "Weight logged.", Toast.LENGTH_SHORT).show();
+                                    fetchWeightLogs();
+                                    calculateAndDisplayBmi();
+                                    personalWeightEditText.getText().clear();
                                 })
                                 .addOnFailureListener(e -> {
                                     Toast.makeText(ProfileActivity.this, "Failed to log weight.", Toast.LENGTH_SHORT).show();
@@ -457,8 +354,129 @@ public class ProfileActivity extends AppCompatActivity {
                         updateWeightChart();
                         calculateAndDisplayBmi();
                     })
-                    .addOnFailureListener(e -> Log.e(TAG, "Error fetching weight logs", e));
+                    .addOnFailureListener(e -> Log.w(TAG, "fetchWeightLogs: ", e));
         }
+    }
+
+    private void updateWeightChart() {
+        if (weightChart == null) return;
+
+        ArrayList<Entry> entries = new ArrayList<>();
+        ArrayList<String> labels = new ArrayList<>();
+
+        // Sort by date ascending for chart
+        ArrayList<WeightLog> sorted = new ArrayList<>(weightLogList);
+        Collections.sort(sorted, new Comparator<WeightLog>() {
+            @Override
+            public int compare(WeightLog o1, WeightLog o2) {
+                return o1.getDate().compareTo(o2.getDate());
+            }
+        });
+
+        SimpleDateFormat df = new SimpleDateFormat("MMM d", Locale.getDefault());
+        for (int i = 0; i < sorted.size(); i++) {
+            WeightLog log = sorted.get(i);
+            entries.add(new Entry(i, (float) log.getWeight())); // weight already in kg
+            labels.add(df.format(log.getDate()));
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Weight (kg)");
+        dataSet.setColor(ContextCompat.getColor(this, R.color.munch_bangladesh_green));
+        dataSet.setDrawValues(false);
+        dataSet.setCircleColor(ContextCompat.getColor(this, R.color.munch_bangladesh_green));
+        dataSet.setLineWidth(4f);
+        dataSet.setCircleRadius(4f);
+        dataSet.setDrawCircleHole(false);
+
+        LineData lineData = new LineData(dataSet);
+        weightChart.setData(lineData);
+
+        XAxis xAxis = weightChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(Math.max(2, labels.size() / 2));
+
+        YAxis leftAxis = weightChart.getAxisLeft();
+        leftAxis.setGranularity(1f);
+        weightChart.getAxisRight().setEnabled(false);
+
+        weightChart.getDescription().setEnabled(false);
+        weightChart.getLegend().setEnabled(true);
+
+        weightChart.invalidate();
+    }
+
+    private void setupSwipeToDelete() {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            private final Drawable deleteIcon
+                    = ContextCompat.getDrawable(ProfileActivity.this, R.drawable.ic_delete);
+            private final ColorDrawable background = new ColorDrawable(Color.RED);
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int pos = viewHolder.getAdapterPosition();
+                if (pos < 0 || pos >= weightLogList.size() || currentUser == null) return;
+
+                WeightLog log = weightLogList.get(pos);
+                // Delete by date match (and weight) to be safe
+                db.collection("users").document(currentUser.getUid())
+                        .collection("personal_weight_logs")
+                        .whereEqualTo("date", log.getDate())
+                        .get()
+                        .addOnSuccessListener(snap -> {
+                            if (!snap.isEmpty()) {
+                                snap.getDocuments().get(0).getReference().delete()
+                                        .addOnSuccessListener(v -> {
+                                            weightLogList.remove(pos);
+                                            weightLogAdapter.notifyItemRemoved(pos);
+                                            calculateAndDisplayBmi();
+                                            Snackbar.make(weightLogsRecyclerView, "Deleted weight log", Snackbar.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e -> Log.w(TAG, "delete weight log failed", e));
+                            } else {
+                                weightLogAdapter.notifyItemChanged(pos);
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.w(TAG, "query for delete failed", e);
+                            weightLogAdapter.notifyItemChanged(pos);
+                        });
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY,
+                                    int actionState, boolean isCurrentlyActive) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                View itemView = viewHolder.itemView;
+                int backgroundCornerOffset = 20;
+
+                int iconMargin = (itemView.getHeight() - deleteIcon.getIntrinsicHeight()) / 2;
+                int iconTop = itemView.getTop() + iconMargin;
+                int iconBottom = iconTop + deleteIcon.getIntrinsicHeight();
+
+                if (dX < 0) { // Swiping left
+                    int iconLeft = itemView.getRight() - iconMargin - deleteIcon.getIntrinsicWidth();
+                    int iconRight = itemView.getRight() - iconMargin;
+                    deleteIcon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+
+                    background.setBounds(itemView.getRight() + ((int) dX) - backgroundCornerOffset,
+                            itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                } else {
+                    background.setBounds(0, 0, 0, 0);
+                }
+
+                background.draw(c);
+                deleteIcon.draw(c);
+            }
+        }).attachToRecyclerView(weightLogsRecyclerView);
     }
 
     private void calculateAndDisplayBmi() {
@@ -475,20 +493,20 @@ public class ProfileActivity extends AppCompatActivity {
                 return;
             }
             double heightInM = heightInCm / 100.0;
-            double latestWeight = weightLogList.get(0).getWeight(); // Assuming list is sorted descending by date
+            double latestWeight = weightLogList.get(0).getWeight(); // Stored as kg
 
             double bmi = latestWeight / (heightInM * heightInM);
 
             String classification;
             if (bmi < 18.5) {
                 classification = "Underweight";
-            } else if (bmi < 25) {
-                classification = "Normal Weight";
-            } else if (bmi < 30) {
+            } else if (bmi < 25.0) {
+                classification = "Normal";
+            } else if (bmi < 30.0) {
                 classification = "Overweight";
-            } else if (bmi < 35) {
+            } else if (bmi < 35.0) {
                 classification = "Obese class I";
-            } else if (bmi < 40) {
+            } else if (bmi < 40.0) {
                 classification = "Obese class II";
             } else {
                 classification = "Obese class III";
@@ -501,5 +519,5 @@ public class ProfileActivity extends AppCompatActivity {
             Log.e(TAG, "Could not parse height for BMI calculation", e);
         }
     }
-
 }
+// == END OF FILE: ProfileActivity.java ==
