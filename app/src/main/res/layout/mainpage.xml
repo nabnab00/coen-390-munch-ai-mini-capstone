@@ -498,45 +498,22 @@
         android:paddingEnd="24dp"
         android:paddingTop="12dp"
         android:paddingBottom="24dp"
-        android:layout_marginTop = "50dp"
+        android:layout_marginTop="50dp"
         android:background="@android:color/transparent">
-
-        <!-- Primary action: Add Food -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/to_foodlog"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:paddingStart="20dp"
-            android:paddingEnd="22dp"
-            android:text="Add"
-            android:textAllCaps="false"
-            android:textColor="@color/munch_white"
-            android:textSize="13sp"
-            android:fontFamily="@font/outfit_semibold"
-            android:background="@drawable/bg_add_food_button"
-            app:cornerRadius="16dp"
-            app:icon="@drawable/ic_add_circle"
-            app:iconSize="25dp"
-            app:iconPadding="12dp"
-            app:iconGravity="textStart" />
-
 
         <!-- Secondary action: Food Log -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/to_history"
             android:layout_width="0dp"
-            android:layout_height="63dp"
+            android:layout_height="54dp"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
             android:text="Logs"
             android:textAllCaps="false"
             android:textColor="@color/munch_bangladesh_green"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:fontFamily="@font/outfit_semibold"
             app:backgroundTint="@color/munch_white"
             app:strokeColor="@color/munch_bangladesh_green"
@@ -548,11 +525,33 @@
             app:iconPadding="12dp"
             app:iconGravity="textStart" />
 
+        <!-- Primary action: Add Food -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/to_foodlog"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="22dp"
+            android:text="Add"
+            android:textAllCaps="false"
+            android:textColor="@color/munch_white"
+            android:textSize="14sp"
+            android:fontFamily="@font/outfit_semibold"
+            android:background="@drawable/bg_add_food_button"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_add_circle"
+            app:iconSize="24dp"
+            app:iconPadding="12dp"
+            app:iconGravity="textStart" />
+
         <!-- Tertiary action: Profile -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/to_profile"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="54dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:paddingStart="20dp"
@@ -560,17 +559,18 @@
             android:text="Profile"
             android:textAllCaps="false"
             android:textColor="@color/munch_bangladesh_green"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:fontFamily="@font/outfit_semibold"
             app:backgroundTint="@color/munch_white"
             app:strokeColor="@color/munch_bangladesh_green"
             app:strokeWidth="2dp"
             app:cornerRadius="16dp"
             app:iconTint="@null"
-            app:iconSize="30dp"
+            app:iconSize="24dp"
             app:iconPadding="12dp"
             app:iconGravity="textStart" />
 
     </LinearLayout>
+
 
 </RelativeLayout>
