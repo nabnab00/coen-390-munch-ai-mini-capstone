@@ -276,62 +276,64 @@
                     android:layout_height="164dp"
                     android:padding="16dp">
 
+                    <!-- All three inside the same ConstraintLayout parent as before -->
+                    <!-- Weight (left, expands) -->
                     <EditText
                         android:id="@+id/personal_weight"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="16dp"
-                        android:fontFamily="@font/outfit_semibold"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="12dp"
                         android:hint="Weight"
-                        android:imeOptions="actionDone"
                         android:inputType="numberDecimal"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/profile_save"
+                        android:imeOptions="actionDone"
+                        android:fontFamily="@font/outfit_semibold"
                         app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/unit_group"
                         app:layout_constraintTop_toTopOf="parent"
-                        tools:ignore="TouchTargetSizeCheck" />
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintHorizontal_weight="1" />
 
+                    <!-- Unit toggle (center, wraps content) -->
                     <RadioGroup
                         android:id="@+id/unit_group"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/personal_weight">
+                        android:orientation="vertical"
+                        android:layout_marginEnd="12dp"
+                        app:layout_constraintStart_toEndOf="@id/personal_weight"
+                        app:layout_constraintEnd_toStartOf="@id/profile_save"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent">
 
                         <com.google.android.material.radiobutton.MaterialRadioButton
                             android:id="@+id/unit_kg"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/outfit_semibold"
                             android:text="kg"
-                            android:textSize="14sp"
-                            app:useMaterialThemeColors="true" />
+                            android:fontFamily="@font/outfit_semibold"
+                            />
 
                         <com.google.android.material.radiobutton.MaterialRadioButton
                             android:id="@+id/unit_lb"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:fontFamily="@font/outfit_semibold"
                             android:text="lbs"
-                            android:textSize="14sp"
-                            app:useMaterialThemeColors="true" />
+                            android:fontFamily="@font/outfit_semibold"
+                            android:layout_marginTop="4dp"/>
                     </RadioGroup>
 
+                    <!-- Log button (right) -->
                     <Button
                         android:id="@+id/profile_save"
-                        style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/outfit_semibold"
+                        android:layout_marginEnd="16dp"
                         android:text="Log"
-                        app:layout_constraintBottom_toBottomOf="@id/personal_weight"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/personal_weight"
-                        app:layout_constraintTop_toTopOf="@id/personal_weight" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
