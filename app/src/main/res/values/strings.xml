@@ -32,6 +32,58 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="register_button">Register</string>
     <string name="already_have_account">Already have an account? Login</string>
+    <string name="consent_form_text">
+    Welcome to Munch AI!\n\n
+    Munch AI is a mobile application designed to help users track meals, nutrition, and personal health data. Before using the app, please read this consent form carefully. By using Munch AI, you agree to these terms.\n\n
+
+    1. Purpose of the App\n
+    Munch AI allows users to:\n
+    - Track meals, calories, macronutrients, and other dietary information.\n
+    - Maintain personal profiles including age, height, weight, and dietary preferences.\n
+    - Access personalized nutrition guidance based on the information provided.\n
+    Note: The app is intended for informational purposes and is not a substitute for professional medical advice, diagnosis, or treatment.\n\n
+
+    2. Collection and Use of Personal Data\n
+    To provide the app’s features, Munch AI collects:\n
+    - Account information: email, password, full name.\n
+    - Health and nutrition data: age, height, weight, meals logged.\n
+    - Usage data: interactions with app features.\n
+    Your data will be used to:\n
+    - Personalize nutrition tracking and recommendations.\n
+    - Save your progress and history in the cloud.\n
+    - Improve app functionality and user experience.\n
+    Data Privacy: Your information is stored securely and will not be shared with third parties without your consent, except as required by law.\n\n
+
+    3. Consent to Data Collection\n
+    By registering and using Munch AI, you consent to the collection, storage, and processing of your personal and health information for the purposes outlined above. You may request to delete your data at any time by contacting support@munchai.com.\n\n
+
+    4. Use of AI Features\n
+    By using Munch AI, you acknowledge and accept that:\n
+    - The app utilizes artificial intelligence to provide nutrition tracking insights and recommendations.\n
+    - The AI-generated suggestions are based on the information you provide and are intended for general guidance only.\n
+    - AI recommendations are not a replacement for professional medical, dietary, or nutritional advice.\n
+    - You consent to the processing of your data by AI algorithms within the app to generate personalized insights.\n\n
+
+    5. User Responsibilities\n
+    Users agree to:\n
+    - Provide accurate and up-to-date personal information.\n
+    - Use the app responsibly and not attempt to circumvent its features.\n
+    - Understand that nutrition suggestions are informational only and should not replace professional guidance.\n\n
+
+    6. Limitations and Disclaimers\n
+    - Munch AI does not provide medical or professional nutrition advice.\n
+    - The app is not liable for any health outcomes resulting from using the app.\n
+    - Users should consult a licensed healthcare professional for personal health decisions.\n\n
+
+    7. Agreement and Acknowledgment\n
+    By checking the box \"I agree to the Terms and Conditions\" and using Munch AI:\n
+    - You confirm that you have read and understood this consent form.\n
+    - You acknowledge that Munch AI is a tool to support nutrition tracking and is not a substitute for professional medical advice.\n
+    - You consent to the collection, storage, and processing of your personal and health data as described above.\n
+    - You accept that Munch AI uses artificial intelligence to provide nutrition insights and recommendations, and you understand that AI-generated suggestions are for informational purposes only.\n\n
+
+    Thank you for using Munch AI! Your health and privacy are our priority.
+    </string>
 
     <string name="app_name">munchAI</string>
     <string name="app_logo_desc">munchAI Logo - Food Bowl with AI</string>
