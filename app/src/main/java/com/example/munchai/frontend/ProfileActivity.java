@@ -123,6 +123,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         profileTitle.setText(R.string.profile_title);
 
+        setupWeightChart();
         setupSwipeToDelete();
 
         if (currentUser != null) {
@@ -358,27 +359,53 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    private void setupWeightChart() {
+        weightChart.getDescription().setEnabled(false);
+        weightChart.setDrawGridBackground(false);
+        weightChart.setNoDataText("No weight data logged yet.");
+        weightChart.getLegend().setEnabled(false);
+
+        weightChart.setTouchEnabled(false);
+        weightChart.setDragEnabled(false);
+        weightChart.setScaleEnabled(false);
+
+        XAxis xAxis = weightChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+        xAxis.setDrawAxisLine(false);
+        xAxis.setYOffset(5f);
+
+        YAxis leftAxis = weightChart.getAxisLeft();
+        leftAxis.setGranularity(10f);
+        leftAxis.setDrawGridLines(false);
+        leftAxis.setDrawAxisLine(false);
+        leftAxis.setXOffset(20f);
+
+        weightChart.getAxisRight().setEnabled(false);
+    }
+
     private void updateWeightChart() {
-        if (weightChart == null) return;
+        if (weightLogList == null || weightLogList.isEmpty()) {
+            weightChart.clear();
+            weightChart.invalidate();
+            return;
+        }
+
+        ArrayList<WeightLog> chartList = new ArrayList<>(weightLogList);
+        Collections.reverse(chartList);
 
         ArrayList<Entry> entries = new ArrayList<>();
-        ArrayList<String> labels = new ArrayList<>();
+        ArrayList<String> xLabels = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd", Locale.getDefault());
 
-        // Sort by date ascending for chart
-        ArrayList<WeightLog> sorted = new ArrayList<>(weightLogList);
-        Collections.sort(sorted, new Comparator<WeightLog>() {
-            @Override
-            public int compare(WeightLog o1, WeightLog o2) {
-                return o1.getDate().compareTo(o2.getDate());
-            }
-        });
-
-        SimpleDateFormat df = new SimpleDateFormat("MMM d", Locale.getDefault());
-        for (int i = 0; i < sorted.size(); i++) {
-            WeightLog log = sorted.get(i);
-            entries.add(new Entry(i, (float) log.getWeight())); // weight already in kg
-            labels.add(df.format(log.getDate()));
+        for (int i = 0; i < chartList.size(); i++) {
+            WeightLog log = chartList.get(i);
+            entries.add(new Entry(i, (float) log.getWeight()));
+            xLabels.add(sdf.format(log.getDate()));
         }
+
+        weightChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xLabels));
 
         LineDataSet dataSet = new LineDataSet(entries, "Weight (kg)");
         dataSet.setColor(ContextCompat.getColor(this, R.color.munch_bangladesh_green));
@@ -390,20 +417,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         LineData lineData = new LineData(dataSet);
         weightChart.setData(lineData);
-
-        XAxis xAxis = weightChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-        xAxis.setGranularity(1f);
-        xAxis.setLabelCount(Math.max(2, labels.size() / 2));
-
-        YAxis leftAxis = weightChart.getAxisLeft();
-        leftAxis.setGranularity(1f);
-        weightChart.getAxisRight().setEnabled(false);
-
-        weightChart.getDescription().setEnabled(false);
-        weightChart.getLegend().setEnabled(true);
-
         weightChart.invalidate();
     }
 
