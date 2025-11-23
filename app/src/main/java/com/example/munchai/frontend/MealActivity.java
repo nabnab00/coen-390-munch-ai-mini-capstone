@@ -3,12 +3,15 @@ package com.example.munchai.frontend;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 
 import android.view.View;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -51,6 +54,8 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import androidx.core.content.ContextCompat;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class MealActivity extends AppCompatActivity
 {
     private EditText nameEt;
@@ -70,6 +75,12 @@ public class MealActivity extends AppCompatActivity
     private final SimpleDateFormat isoUtc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
     private ActivityResultLauncher<String> requestCameraPermissionLauncher;
 
+    // Button state + anti-spam guards
+    private volatile boolean isSaving = false;
+    private String saveBtnOriginalText = null;
+    private final AtomicBoolean saveClickGuard = new AtomicBoolean(false);
+    private long lastSaveClickAt = 0L;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +91,7 @@ public class MealActivity extends AppCompatActivity
         retakeBtn = findViewById(R.id.retake_button);
         weightAgainBtn = findViewById(R.id.weight_again_button);
 
-        //-----------------------------------------------------------------------------------------------------MACROS
+        // Fields
         nameEt = findViewById(R.id.input_food_name);
         weightEt = findViewById(R.id.input_weight);
         caloriesEt = findViewById(R.id.input_calories);
@@ -97,8 +108,9 @@ public class MealActivity extends AppCompatActivity
         saveBtn = findViewById(R.id.save_button);
         cancelBtn = findViewById(R.id.cancel_button);
 
+        if (saveBtn != null) saveBtnOriginalText = saveBtn.getText().toString();
 
-        enableForm(false);
+        enableForm(false); // locked until we have picture/AI or manual entry
 
         if (unitSp != null) {
             ArrayAdapter<CharSequence> unitAd = ArrayAdapter.createFromResource(
@@ -112,25 +124,47 @@ public class MealActivity extends AppCompatActivity
         mealAd.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         if (mealSp != null) mealSp.setAdapter(mealAd);
 
-
         Calendar now = Calendar.getInstance();
         selYear = now.get(Calendar.YEAR);
         selMonth = now.get(Calendar.MONTH);
         selDay = now.get(Calendar.DAY_OF_MONTH);
 
-        if(dateTv != null) {
+        if (dateTv != null) {
             dateTv.setText(String.format(Locale.getDefault(), "%02d/%02d/%04d", selDay, selMonth + 1, selYear));
             dateTv.setOnClickListener(v -> showDatePicker());
         }
 
-        if(saveBtn != null) saveBtn.setOnClickListener(v -> saveLog());
-        if(cancelBtn != null) cancelBtn.setOnClickListener(v -> finish());
+        // Debounced + guarded click
+        if (saveBtn != null) {
+            saveBtn.setOnClickListener(v -> {
+                long nowMs = SystemClock.elapsedRealtime();
+                if (nowMs - lastSaveClickAt < 900) return; // debounce
+                lastSaveClickAt = nowMs;
+
+                if (!saveClickGuard.compareAndSet(false, true)) return; // already saving
+
+                // Final eligibility check before saving
+                if (!areRequiredFieldsValid()) {
+                    // keep disabled with reason
+                    setSaveButtonDisabledWithReason(requiredFieldsReason());
+                    saveClickGuard.set(false);
+                    return;
+                }
+
+                setSaveButtonLoading();
+                saveBtn.setClickable(false);
+                enableForm(false);
+                saveLog();
+            });
+            saveBtn.setOnTouchListener((v, e) -> !v.isEnabled());
+        }
+
+        if (cancelBtn != null) cancelBtn.setOnClickListener(v -> finish());
 
         weightAgainBtn.setOnClickListener(v -> {
             Intent intent = new Intent(this, WeightScaleActivity.class);
             weightScaleLauncher.launch(intent);
         });
-
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -185,25 +219,30 @@ public class MealActivity extends AppCompatActivity
                         String unitStr = result.getData().getStringExtra(WeightScaleActivity.EXTRA_UNIT);
 
                         if (weightStr != null && !weightStr.isEmpty() && currentPhotoUri != null) {
-                            // We have the weight and the photo URI, now call Gemini
                             Toast.makeText(this, "Analyzing image...", Toast.LENGTH_LONG).show();
+                            setSaveButtonDisabledWithReason("Analyzing…");
+                            enableForm(false);
                             callGeminiApi(currentPhotoUri, weightStr, unitStr);
-
-                            // Show the taken photo in the preview
                             photoIv.setImageURI(currentPhotoUri);
                         }
                     } else {
                         Toast.makeText(this, "Weight measurement was cancelled.", Toast.LENGTH_SHORT).show();
                         retakeBtn.setVisibility(View.VISIBLE);
+                        setSaveButtonDisabledWithReason("Retake photo to continue");
                     }
                 }
         );
+
+        // NEW: initial disabled state reason (since only name/weight might be present)
+        setSaveButtonDisabledWithReason("Enter calories, fat, protein, carbs");
+        attachEligibilityWatchers(); // live-enable when required fields are valid
+        enableForm(true); // allow manual entry if user wants
     }
+
+    // ---------- Camera helpers ----------
     private void startCameraWithPermissionCheck() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
             openCamera();
         } else {
             requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
@@ -216,6 +255,7 @@ public class MealActivity extends AppCompatActivity
         }
     }
 
+    // ---------- AI call ----------
     private void callGeminiApi(Uri photoUri, String weight, String unit) {
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -223,21 +263,144 @@ public class MealActivity extends AppCompatActivity
         executor.execute(() -> {
             try {
                 NutritionFacts facts = GeminiRequest.fetchNutritionFactsFromUri(this, photoUri, weight, unit);
-                handler.post(() -> populateFormWithNutritionData(facts, weight));
+                handler.post(() -> {
+                    if (isFactsMeaningful(facts)) {
+                        populateFormWithNutritionData(facts, weight);
+                        enableForm(true);
+                        updateSaveButtonEligibility(); // reevaluate after AI fills fields
+                        Toast.makeText(this, "Nutrition data loaded!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        showAiNullPictureError();
+                    }
+                });
             } catch (IOException e) {
                 e.printStackTrace();
                 handler.post(() -> {
                     Toast.makeText(MealActivity.this, "Failed to get nutrition data: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    enableForm(true); // Allow manual entry
+                    enableForm(true);
+                    updateSaveButtonEligibility();
                 });
             }
         });
     }
 
+    private boolean isFactsMeaningful(NutritionFacts facts) {
+        if (facts == null) return false;
+        if (facts.name == null) return false;
+        String n = facts.name.trim().toLowerCase(Locale.ROOT);
+        return !(n.isEmpty() || n.equals("unknown") || n.equals("null") || n.equals("undefined"));
+    }
+
+    private void showAiNullPictureError() {
+        setSaveButtonDisabledWithReason("Retake photo or enter manually");
+        enableForm(true); // allow manual entry
+        Toast.makeText(this,
+                "I couldn't identify the meal from the photo. Retake the picture or enter details manually.",
+                Toast.LENGTH_LONG).show();
+        if (retakeBtn != null) retakeBtn.setVisibility(View.VISIBLE);
+        updateSaveButtonEligibility();
+    }
+
+    // ---------- Save button helpers ----------
+    private void setSaveButtonEnabledNormal() {
+        if (saveBtn == null) return;
+        isSaving = false;
+        saveBtn.setEnabled(true);
+        saveBtn.setClickable(true);
+        saveBtn.setAlpha(1f);
+        if (saveBtnOriginalText != null) saveBtn.setText(saveBtnOriginalText);
+        saveClickGuard.set(false);
+    }
+
+    private void setSaveButtonDisabledWithReason(String label) {
+        if (saveBtn == null) return;
+        isSaving = false;
+        saveBtn.setEnabled(false);
+        saveBtn.setClickable(false);
+        saveBtn.setAlpha(0.5f);
+        saveBtn.setText(label);
+        // don’t reset saveClickGuard here if we’re mid-save; this is used mainly outside save flow
+    }
+
+    private void setSaveButtonLoading() {
+        if (saveBtn == null) return;
+        isSaving = true;
+        saveBtn.setEnabled(false);
+        saveBtn.setClickable(false);
+        saveBtn.setAlpha(0.5f);
+        saveBtn.setText("Saving…");
+    }
+
+    // ---------- Eligibility (NEW) ----------
+    private void attachEligibilityWatchers() {
+        TextWatcher watcher = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(Editable s) { updateSaveButtonEligibility(); }
+        };
+        nameEt.addTextChangedListener(watcher);
+        weightEt.addTextChangedListener(watcher);
+        caloriesEt.addTextChangedListener(watcher);
+        fatEt.addTextChangedListener(watcher);
+        proteinEt.addTextChangedListener(watcher);
+        carbsEt.addTextChangedListener(watcher);
+    }
+
+    private void updateSaveButtonEligibility() {
+        if (isSaving) return; // don’t change state while saving
+
+        if (!areRequiredFieldsValid()) {
+            setSaveButtonDisabledWithReason(requiredFieldsReason());
+        } else {
+            setSaveButtonEnabledNormal();
+        }
+    }
+
+    private boolean areRequiredFieldsValid() {
+        // Required: name (non-empty), weight (>0), calories/fat/protein/carbs (>=0)
+        String name = safeStr(nameEt);
+        String w = safeStr(weightEt);
+        String c = safeStr(caloriesEt);
+        String f = safeStr(fatEt);
+        String p = safeStr(proteinEt);
+        String cb = safeStr(carbsEt);
+
+        if (TextUtils.isEmpty(name)) return false;
+        double weight;
+        try { weight = Double.parseDouble(w); if (weight <= 0) return false; }
+        catch (Exception e) { return false; }
+
+        Double calories = parseNonNegative(c);
+        Double fat = parseNonNegative(f);
+        Double protein = parseNonNegative(p);
+        Double carbs = parseNonNegative(cb);
+
+        return calories != null && fat != null && protein != null && carbs != null;
+    }
+
+    private String requiredFieldsReason() {
+        // Show a concise reason; you can make this more granular if you want per-field hints
+        return "Enter calories, fat, protein, carbs";
+    }
+
+    private static String safeStr(EditText et) {
+        return et.getText() == null ? "" : et.getText().toString().trim();
+    }
+
+    private static Double parseNonNegative(String s) {
+        if (TextUtils.isEmpty(s)) return null;
+        try {
+            double v = Double.parseDouble(s);
+            return v >= 0 ? v : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // ---------- Populate ----------
     private void populateFormWithNutritionData(NutritionFacts facts, String weight) {
         if (facts == null) return;
 
-        //------------------------------------------------------------------------------------------------------------------------------PARSE OBJECTS
         nameEt.setText(facts.name);
         weightEt.setText(weight);
         caloriesEt.setText(facts.calories != null ? String.valueOf(facts.calories) : "");
@@ -249,11 +412,9 @@ public class MealActivity extends AppCompatActivity
         vitaminBEt.setText(facts.vitaminBPercent != null ? String.valueOf(facts.vitaminBPercent) : "");
         vitaminCEt.setText(facts.vitaminCPercent != null ? String.valueOf(facts.vitaminCPercent) : "");
         ironEt.setText(facts.ironPercent != null ? String.valueOf(facts.ironPercent) : "");
-
-        enableForm(true); //-----------------------------------------------------------------------------------------------------Form enabler (might remove in the future)
-        Toast.makeText(this, "Nutrition data loaded!", Toast.LENGTH_SHORT).show();
     }
 
+    // ---------- Date ----------
     private void showDatePicker() {
         Calendar cal = Calendar.getInstance();
         cal.set(selYear, selMonth, selDay);
@@ -278,17 +439,41 @@ public class MealActivity extends AppCompatActivity
         if (unitSp != null) unitSp.setEnabled(enabled);
         mealSp.setEnabled(enabled);
         dateTv.setEnabled(enabled);
-        saveBtn.setEnabled(enabled);
+
+        if (saveBtn != null) {
+            saveBtn.setEnabled(enabled && !isSaving);
+            saveBtn.setClickable(enabled && !isSaving);
+            saveBtn.setAlpha((enabled && !isSaving) ? 1f : 0.5f);
+            if (enabled && !isSaving && saveBtnOriginalText != null && areRequiredFieldsValid()) {
+                saveBtn.setText(saveBtnOriginalText);
+            } else if (enabled && !isSaving && !areRequiredFieldsValid()) {
+                saveBtn.setText(requiredFieldsReason());
+            }
+        }
     }
 
+    // ---------- Save ----------
     private void saveLog() {
+        // UI already locked in onClick; validate anyway for safety
         if (!session.isLoggedIn()) {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
+            setSaveButtonEnabledNormal();
+            enableForm(true);
             finish();
             return;
         }
         if (!photoMgr.hasPhoto()) {
             Toast.makeText(this, "Please take a photo first", Toast.LENGTH_SHORT).show();
+            setSaveButtonDisabledWithReason("Retake photo to continue");
+            enableForm(true);
+            return;
+        }
+
+        // Required fields are validated by areRequiredFieldsValid()
+        if (!areRequiredFieldsValid()) {
+            Toast.makeText(this, requiredFieldsReason(), Toast.LENGTH_SHORT).show();
+            setSaveButtonDisabledWithReason(requiredFieldsReason());
+            enableForm(true);
             return;
         }
 
@@ -297,105 +482,32 @@ public class MealActivity extends AppCompatActivity
         String unit = (unitSp != null && unitSp.getSelectedItem() != null)
                 ? (String) unitSp.getSelectedItem() : "";
         String meal = (String) mealSp.getSelectedItem();
-        String calStr = caloriesEt.getText() != null ? caloriesEt.getText().toString().trim() : "";
-        String fatStr = fatEt.getText() != null ? fatEt.getText().toString().trim() : "";
-        String proStr = proteinEt.getText() != null ? proteinEt.getText().toString().trim() : "";
-        String carbStr = carbsEt.getText() != null ? carbsEt.getText().toString().trim() : "";
+        String calStr = caloriesEt.getText().toString().trim();
+        String fatStr = fatEt.getText().toString().trim();
+        String proStr = proteinEt.getText().toString().trim();
+        String carbStr = carbsEt.getText().toString().trim();
 
-        double calories, fat, protein, carbs, weight;
-
-        if (TextUtils.isEmpty(name)) {
-            Toast.makeText(this, "Enter food name", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-        if (TextUtils.isEmpty(weightStr)) {
-            Toast.makeText(this, "Enter food weight", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            weight = Double.parseDouble(weightStr);
-            if (weight <= 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Weight must be a positive number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-        if (TextUtils.isEmpty(calStr)) {
-            Toast.makeText(this, "Enter food calories", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            calories = Double.parseDouble(calStr);
-            if (calories < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Calories must be a non-negative number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-        if (TextUtils.isEmpty(fatStr)) {
-            Toast.makeText(this, "Enter food fat", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            fat = Double.parseDouble(fatStr);
-            if (fat < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Fat must be a non-negative number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-        if (TextUtils.isEmpty(proStr)) {
-            Toast.makeText(this, "Enter food protein", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            protein = Double.parseDouble(proStr);
-            if (protein < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Protein must be a non-negative number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (TextUtils.isEmpty(carbStr)) {
-            Toast.makeText(this, "Enter food carbs", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            carbs = Double.parseDouble(carbStr);
-            if (carbs < 0) throw new NumberFormatException();
-        } catch (NumberFormatException nfe) {
-            Toast.makeText(this, "Carbs must be a non-negative number", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        double weight = Double.parseDouble(weightStr);
+        double calories = Double.parseDouble(calStr);
+        double fat = Double.parseDouble(fatStr);
+        double protein = Double.parseDouble(proStr);
+        double carbs = Double.parseDouble(carbStr);
 
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) {
             Toast.makeText(this, "User not logged in, please sign in first.", Toast.LENGTH_SHORT).show();
+            setSaveButtonEnabledNormal();
+            enableForm(true);
             return;
         }
 
         Date now = new Date();
         isoUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-        Calendar localMidnight = Calendar.getInstance();
-        localMidnight.set(selYear, selMonth, selDay, 0, 0, 0);
-        localMidnight.set(Calendar.MILLISECOND, 0);
         String loggedAtIso = isoUtc.format(now);
 
         FirebaseFirestore fs = FirebaseFirestore.getInstance();
 
-        //pre-create doc to get an ID
+        // pre-create doc to get an ID
         DocumentReference docRef = fs.collection("users").document(uid).collection("food_logs").document();
         String logId = docRef.getId();
 
@@ -411,11 +523,13 @@ public class MealActivity extends AppCompatActivity
         base.put("protein_g", protein);
         base.put("carb_g", carbs);
 
-        // save base doc (works offline)
         docRef.set(base, SetOptions.merge())
                 .addOnSuccessListener(v -> uploadPhoto(uid, logId, docRef))
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Save failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Save failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    setSaveButtonEnabledNormal();
+                    enableForm(true);
+                });
     }
 
     private void uploadPhoto(String uid, String logId, DocumentReference docRef) {
@@ -442,7 +556,8 @@ public class MealActivity extends AppCompatActivity
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Save failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    navigateHome();
+                    setSaveButtonEnabledNormal();
+                    enableForm(true);
                 });
     }
 
