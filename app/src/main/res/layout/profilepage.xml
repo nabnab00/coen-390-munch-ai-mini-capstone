@@ -230,7 +230,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/personal_info_card">
 
-            <TextView
+                <TextView
                     android:id="@+id/to_ai_feedback_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -273,7 +273,7 @@
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="164dp"
                     android:padding="16dp">
 
                     <EditText
@@ -291,13 +291,43 @@
                         app:layout_constraintTop_toTopOf="parent"
                         tools:ignore="TouchTargetSizeCheck" />
 
+                    <RadioGroup
+                        android:id="@+id/unit_group"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/personal_weight">
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/unit_kg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/outfit_semibold"
+                            android:text="kg"
+                            android:textSize="14sp"
+                            app:useMaterialThemeColors="true" />
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/unit_lb"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:fontFamily="@font/outfit_semibold"
+                            android:text="lbs"
+                            android:textSize="14sp"
+                            app:useMaterialThemeColors="true" />
+                    </RadioGroup>
+
                     <Button
                         android:id="@+id/profile_save"
                         style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Log"
                         android:fontFamily="@font/outfit_semibold"
+                        android:text="Log"
                         app:layout_constraintBottom_toBottomOf="@id/personal_weight"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@id/personal_weight"
