@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screen background becomes dark -->
+    <color name="munch_anti_flash_white">#121212</color>
+
+    <!-- Card background slightly brighter -->
+    <color name="munch_white">#1E1E1E</color>
+
+    <!-- Primary greens -->
+    <color name="munch_bangladesh_green">#00C26A</color>
+    <color name="munch_caribbean_green">#00E676</color>
+
+    <!-- Text colors become light so they are visible on dark bg -->
+    <color name="munch_dark_green">#E0F5EA</color>
+    <color name="munch_forest">#CDE9DA</color>
+    <color name="munch_stone">#B0B4B8</color>
+
+    <!-- Accents -->
+    <color name="munch_pistachio">#4CAF50</color>
+    <color name="munch_mountain_meadow">#1ABC9C</color>
+
+    <!-- ===== OTHER COLORS YOU ALREADY HAD  ===== -->
+
+    <!-- THEME COLORS – NIGHT (browns used elsewhere) -->
+    <color name="brown_primary">#D7B7A5</color>
+    <color name="brown_onPrimary">#20110C</color>
+    <color name="brown_secondary">#B48C78</color>
+    <color name="brown_background">#1D1310</color>
+    <color name="brown_onBackground">#F5E9E0</color>
+
+    <!-- Base neutrals -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="chocolate">#362B25</color>
+    <color name="cookiedough">#8E6A4E</color>
+
+    <!-- Secondary greens -->
+    <color name="munch_rich_black">#000000</color>
+    <color name="munch_pine">#062821</color>
+    <color name="munch_basil">#07342A</color>
+    <color name="munch_frog">#15A886</color>
+    <color name="munch_mint">#2D8D72</color>
+
+    <!-- Neutrals tuned for dark mode -->
+    <!-- (munch_stone, munch_pistachio already defined above) -->
+
+    <!-- Semantic aliases so theme attrs work -->
+    <color name="colorPrimary">@color/munch_bangladesh_green</color>
+    <color name="colorOnPrimary">@color/munch_dark_green</color>
+
+    <!-- Background & surface use your old overrides -->
+    <color name="colorBackground">@color/munch_anti_flash_white</color>  <!-- #121212 -->
+    <color name="colorOnBackground">@color/munch_forest</color>          <!-- #CDE9DA -->
+
+    <color name="colorSurface">@color/munch_white</color>                <!-- #1E1E1E -->
+    <color name="colorOnSurface">@color/munch_dark_green</color>         <!-- #E0F5EA -->
+
+
+    <!-- Additional UI colors -->
+    <color name="macro_protein">#3B82F6</color>
+    <color name="macro_carbs">#A855F7</color>
+    <color name="macro_fat">#F97316</color>
+
+    <!-- Background overlays tuned for dark mode -->
+    <color name="overlay_light">#332CC395</color>
+    <color name="delete_red">#B56565</color>
+
+</resources>
