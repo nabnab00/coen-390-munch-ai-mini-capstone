@@ -70,7 +70,7 @@
                     android:id="@+id/feedback_text_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/outfit_regular"
+                    android:fontFamily="@font/outfit_medium"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp"
                     tools:text="Your AI generated feedback will appear here." />
