@@ -21,7 +21,6 @@ public final class PhotoCaptureManager {
     private final ImageView preview;
     private final PhotoStore photoStore;
     private final Callbacks callbacks;
-
     private ActivityResultLauncher<Uri> launcher;
     private PhotoStore.Capture current;
 

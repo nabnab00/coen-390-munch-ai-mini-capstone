@@ -93,6 +93,51 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- Diet Plan Selection -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Diet Plan"
+                    android:fontFamily="@font/outfit_semibold"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="16sp" />
+
+                <RadioGroup
+                    android:id="@+id/goal_radiogroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <RadioButton
+                        android:id="@+id/radio_bulk"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Bulk"
+                        android:fontFamily="@font/outfit_regular"
+                        android:textColor="?attr/colorOnSurface"/>
+
+                    <RadioButton
+                        android:id="@+id/radio_maintain"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Maintain"
+                        android:fontFamily="@font/outfit_regular"
+                        android:textColor="?attr/colorOnSurface"/>
+
+                    <RadioButton
+                        android:id="@+id/radio_cut"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Cut"
+                        android:fontFamily="@font/outfit_regular"
+                        android:textColor="?attr/colorOnSurface"/>
+                </RadioGroup>
+
                 <!-- target calories -->
                 <TextView
                     android:layout_width="match_parent"

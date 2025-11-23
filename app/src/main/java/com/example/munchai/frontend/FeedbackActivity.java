@@ -92,8 +92,25 @@ public class FeedbackActivity extends AppCompatActivity {
             promptBuilder.append("- Height: ").append(userDoc.contains("height") ? userDoc.getLong("height") : "Not set").append("\n");
             promptBuilder.append("- BMI: ").append(calculateBmi(userDoc)).append("\n\n");
 
-            fetchWeightLogs(uid, promptBuilder);
-
+            // Fetch user goal and macros from settings
+            db.collection("users").document(uid).collection("settings").document("doc").get()
+                    .addOnSuccessListener(settingsDoc -> {
+                        if (settingsDoc.exists()) {
+                            if (settingsDoc.contains("user_goal")) {
+                                String goal = settingsDoc.getString("user_goal");
+                                promptBuilder.append("Your current goal is to ").append(goal).append(".\n\n");
+                            }
+                            promptBuilder.append("Your Macro Targets:\n");
+                            promptBuilder.append("- Calories: ").append(settingsDoc.contains("calorie_limit") ? settingsDoc.getLong("calorie_limit") : "Not set").append(" kcal\n");
+                            promptBuilder.append("- Protein: ").append(settingsDoc.contains("protein_limit") ? settingsDoc.getLong("protein_limit") : "Not set").append(" g\n");
+                            promptBuilder.append("- Carbohydrates: ").append(settingsDoc.contains("carb_limit") ? settingsDoc.getLong("carb_limit") : "Not set").append(" g\n");
+                            promptBuilder.append("- Fats: ").append(settingsDoc.contains("fat_limit") ? settingsDoc.getLong("fat_limit") : "Not set").append(" g\n\n");
+                        }
+                        fetchWeightLogs(uid, promptBuilder);
+                    }).addOnFailureListener(e -> {
+                        // If settings fail to load, proceed without the goal information
+                        fetchWeightLogs(uid, promptBuilder);
+                    });
         }).addOnFailureListener(this::handleFailure);
     }
 
@@ -156,10 +173,13 @@ public class FeedbackActivity extends AppCompatActivity {
                     }
 
                     promptBuilder.append("\nBased on all this data, provide constructive and encouraging health advice.\n")
-                            .append("Give 2 sentences about the user's age and BMI (calculate using the height and most recent weight logged), with advice related to that.\n")
-                            .append("Detail analysis about the user's recent food logs, with advice to improve their health.\n")
-                            .append("Detail analysis (3-4 sentences) about the user's weight progress.\n")
-                            .append("Keep the tone positive and motivating.");
+                            .append("1. Calculate user's BMI using their height, age and most recent weight logged. Give advice based on the BMI and what classification they're in. (should they cut, maintain, bulk?)\n")
+                            .append("2. Provide a detailed analysis of the user's recent food logs. Check their macros (calorie protein carbs fat) and give advice/suggestions on how to improve their diet to better meet their health goals and macro targets.(3-4 sentences)\n")
+                            .append("3. Provide a detailed analysis of the user's weight progress. Compare it to a typical journey for someone with their goal. If the progression is highly unusual (e.g., very rapid and unexplained weight changes), advise them to seek professional medical advice. (3-4 sentences)\n")
+                            .append("4. Analyze if the user's weight progression and food log history align with their stated goal (bulk, maintain, or cut) and their macro targets. Provide advice based on this alignment or misalignment. (2-3 sentences)\n")
+                            .append("5. Make a general conclusion of all these points.")
+                            .append("Keep the tone respectful, positive, and motivating throughout.")
+                            .append("No subtitles or titles, just give me paragraphs for each points");
 
 
                     String finalPrompt = promptBuilder.toString();
