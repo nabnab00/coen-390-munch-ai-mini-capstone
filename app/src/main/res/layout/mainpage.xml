@@ -522,7 +522,7 @@
             app:icon="@drawable/ic_book"
             app:iconTint="@null"
             app:iconSize="24dp"
-            app:iconPadding="12dp"
+            app:iconPadding="1dp"
             app:iconGravity="textStart" />
 
         <!-- Primary action: Add Food -->
@@ -544,7 +544,7 @@
             app:cornerRadius="16dp"
             app:icon="@drawable/ic_add_circle"
             app:iconSize="24dp"
-            app:iconPadding="12dp"
+            app:iconPadding="10dp"
             app:iconGravity="textStart" />
 
         <!-- Tertiary action: Profile -->

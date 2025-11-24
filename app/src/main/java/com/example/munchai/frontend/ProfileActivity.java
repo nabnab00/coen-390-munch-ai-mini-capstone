@@ -9,6 +9,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -81,6 +83,9 @@ public class ProfileActivity extends AppCompatActivity {
     private RecyclerView weightLogsRecyclerView; // Changed from ListView
     private LineChart weightChart; // Add LineChart variable
 
+    private RadioGroup unitRadioGroup;
+    private RadioButton radioLbs;
+    private RadioButton radioKg;
     private WeightLogAdapter weightLogAdapter;
     private ArrayList<WeightLog> weightLogList;
 
@@ -112,6 +117,11 @@ public class ProfileActivity extends AppCompatActivity {
         weightLogsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         weightLogAdapter = new WeightLogAdapter(this, weightLogList);
         weightLogsRecyclerView.setAdapter(weightLogAdapter);
+
+        unitRadioGroup = findViewById(R.id.unit_group);
+        radioLbs = findViewById(R.id.unit_kg);
+        radioKg = findViewById(R.id.unit_lb);
+
 
         setupWeightChart();
         setupSwipeToDelete();
@@ -371,16 +381,27 @@ public class ProfileActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(weightStr)) {
             personalWeightEditText.setError("Weight cannot be empty.");
             return;
-        }double weightInLbs;
+        }
+
+
+        double weightInput;
         try {
-            weightInLbs = Double.parseDouble(weightStr);
+            weightInput = Double.parseDouble(weightStr);
         } catch (NumberFormatException e) {
             personalWeightEditText.setError("Invalid number.");
             return;
         }
 
-        // Convert weight from lbs to kg
-        double weightInKg = weightInLbs * 0.453592;
+        double weightInKg;
+        int selectedId = unitRadioGroup.getCheckedRadioButtonId(); // [1]
+
+        if (selectedId == R.id.unit_lb) {
+            // Convert weight from lbs to kg
+            weightInKg = weightInput * 0.453592;
+        } else {
+            // Weight is already in kg
+            weightInKg = weightInput;
+        }
 
         if (currentUser == null) {
             Toast.makeText(this, "Error: You must be logged in to log weight.", Toast.LENGTH_SHORT).show();
