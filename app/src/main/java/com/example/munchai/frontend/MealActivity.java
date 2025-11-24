@@ -77,6 +77,7 @@ public class MealActivity extends AppCompatActivity
 
     // Button state + anti-spam guards
     private volatile boolean isSaving = false;
+    private volatile boolean isCancelling = false;
     private String saveBtnOriginalText = null;
     private final AtomicBoolean saveClickGuard = new AtomicBoolean(false);
     private long lastSaveClickAt = 0L;
@@ -153,18 +154,27 @@ public class MealActivity extends AppCompatActivity
 
                 setSaveButtonLoading();
                 saveBtn.setClickable(false);
+                if (cancelBtn != null) cancelBtn.setEnabled(false);
+                if (retakeBtn != null) retakeBtn.setEnabled(false);
+                if (weightAgainBtn != null) weightAgainBtn.setEnabled(false);
                 enableForm(false);
                 saveLog();
             });
+
             saveBtn.setOnTouchListener((v, e) -> !v.isEnabled());
         }
 
         if (cancelBtn != null) cancelBtn.setOnClickListener(v -> finish());
 
         weightAgainBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, WeightScaleActivity.class);
-            weightScaleLauncher.launch(intent);
+            if (currentPhotoUri != null) {
+                Intent intent = new Intent(this, WeightScaleActivity.class);
+                weightScaleLauncher.launch(intent);
+            } else {
+                startCameraWithPermissionCheck();
+            }
         });
+
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -291,7 +301,7 @@ public class MealActivity extends AppCompatActivity
         return !(n.isEmpty() || n.equals("unknown") || n.equals("null") || n.equals("undefined"));
     }
 
-    private void showAiNullPictureError() {
+    private void showAiNullPictureError() {clearNutritionFields(); // Clear out old data
         setSaveButtonDisabledWithReason("Retake photo or enter manually");
         enableForm(true); // allow manual entry
         Toast.makeText(this,
@@ -300,6 +310,7 @@ public class MealActivity extends AppCompatActivity
         if (retakeBtn != null) retakeBtn.setVisibility(View.VISIBLE);
         updateSaveButtonEligibility();
     }
+
 
     // ---------- Save button helpers ----------
     private void setSaveButtonEnabledNormal() {
@@ -319,6 +330,16 @@ public class MealActivity extends AppCompatActivity
         saveBtn.setClickable(false);
         saveBtn.setAlpha(0.5f);
         saveBtn.setText(label);
+        // don’t reset saveClickGuard here if we’re mid-save; this is used mainly outside save flow
+    }
+
+    private void setCancelButtonDisabledWithReason(String label) {
+        if (saveBtn == null) return;
+        isCancelling = false;
+        cancelBtn.setEnabled(false);
+        cancelBtn.setClickable(false);
+        cancelBtn.setAlpha(0.5f);
+        cancelBtn.setText(label);
         // don’t reset saveClickGuard here if we’re mid-save; this is used mainly outside save flow
     }
 
@@ -582,5 +603,18 @@ public class MealActivity extends AppCompatActivity
     public boolean onSupportNavigateUp() {
         finish();
         return true;
+    }
+
+    private void clearNutritionFields() {
+        nameEt.setText("");
+        caloriesEt.setText("");fatEt.setText("");
+        proteinEt.setText("");
+        carbsEt.setText("");
+        sodiumEt.setText("");
+        vitaminAEt.setText("");
+        vitaminBEt.setText("");
+        vitaminCEt.setText("");
+        ironEt.setText("");
+        // Do NOT clear weightEt here, as it may have been just measured
     }
 }
