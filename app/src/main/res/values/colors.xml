@@ -14,6 +14,9 @@
     <color name="chocolate">#453933</color>
     <color name="cookiedough">#AF8563</color>
 
+    <!-- Ring colors -->
+    <color name="munch_ring">#ACC8C4</color>
+
     <!-- Primary palette -->
     <color name="munch_rich_black">#000F0B</color>
     <color name="munch_dark_green">#022221</color>
