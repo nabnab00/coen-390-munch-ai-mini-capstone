@@ -56,7 +56,8 @@ public class GeminiRequest {
         String base64 = encodeToBase64Jpeg(resized, 85);
 
         //prompt
-        String prompt = "You are analyzing a image. If the photo is not food, return an empty JSON object other than weight." +
+        String prompt = "You are analyzing in details food item (this includes meals,drinks, snacks, food packages..)" +
+                "Return null name & null fields if the image is not a food item." +
                 "The total weight of the food is " + weight + " " + unit +
                 ". Carefully analyze the image and the weight. " +
                 "Return a JSON object with these lowercase keys: " +
