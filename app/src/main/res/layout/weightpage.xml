@@ -166,34 +166,20 @@
             android:orientation="horizontal"
             android:layout_marginTop="22dp">
 
-            <com.google.android.material.button.MaterialButton
+            <Button
                 android:id="@+id/tareBtn"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="Tare"
                 android:textAllCaps="false"
-                android:textColor="@color/munch_white"
+                android:textColor="@color/munch_bangladesh_green"
                 android:textSize="15sp"
                 android:fontFamily="@font/outfit_semibold"
-                app:cornerRadius="16dp"
-                app:backgroundTint="@color/munch_bangladesh_green" />
+                app:cornerRadius="16dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/resetBtn"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:text="Reset"
-                android:textAllCaps="false"
-                android:textSize="15sp"
-                android:fontFamily="@font/outfit_semibold"
-                app:cornerRadius="16dp"
-                app:backgroundTint="@color/munch_white"
-                app:strokeColor="@color/munch_bangladesh_green"
-                app:strokeWidth="2dp"
-                android:textColor="@color/munch_bangladesh_green" />
+            <!-- Reset button -->
         </LinearLayout>
 
         <!-- Save button full width -->
