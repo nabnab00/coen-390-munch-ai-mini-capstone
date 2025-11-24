@@ -71,7 +71,7 @@ public class WeightScaleActivity extends AppCompatActivity {
         macInput    = findViewById(R.id.macInput);
         connectBtn  = findViewById(R.id.connectBtn);
         tareBtn     = findViewById(R.id.tareBtn);
-        resetBtn    = findViewById(R.id.resetBtn);
+        //resetBtn    = findViewById(R.id.resetBtn); reset button removed
         saveBtn     = findViewById(R.id.weightsave);
         unitSpinner = findViewById(R.id.unitSpinner);
 
@@ -113,7 +113,6 @@ public class WeightScaleActivity extends AppCompatActivity {
 
         // Tare / reset send commands to ESP32 (same as before)
         tareBtn.setOnClickListener(v -> sendCmd("t\n"));
-        resetBtn.setOnClickListener(v -> sendCmd("r\n"));
     }
 
     private void setupSpinner() {
