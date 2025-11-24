@@ -368,15 +368,16 @@ public class ProfileActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(weightStr)) {
             personalWeightEditText.setError("Weight cannot be empty.");
             return;
-        }
-
-        double weightValue;
+        }double weightInLbs;
         try {
-            weightValue = Double.parseDouble(weightStr);
+            weightInLbs = Double.parseDouble(weightStr);
         } catch (NumberFormatException e) {
             personalWeightEditText.setError("Invalid number.");
             return;
         }
+
+        // Convert weight from lbs to kg
+        double weightInKg = weightInLbs * 0.453592;
 
         if (currentUser == null) {
             Toast.makeText(this, "Error: You must be logged in to log weight.", Toast.LENGTH_SHORT).show();
@@ -384,7 +385,8 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         Date currentDate = new Date();
-        WeightLog newLog = new WeightLog(currentDate, weightValue);
+        // Use the converted weight in kg when creating the new log
+        WeightLog newLog = new WeightLog(currentDate, weightInKg);
 
         CollectionReference weightLogsCollection = db.collection("users")
                 .document(currentUser.getUid())
@@ -410,7 +412,8 @@ public class ProfileActivity extends AppCompatActivity {
 
                         // if log the same day aready exists
                         DocumentReference docRef = queryDocumentSnapshots.getDocuments().get(0).getReference();
-                        docRef.update("weight", weightValue)
+                        // Update with the converted weight in kg
+                        docRef.update("weight", weightInKg)
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(ProfileActivity.this, "Weight updated successfully!", Toast.LENGTH_SHORT).show();
                                     personalWeightEditText.setText(""); // Clear the input field
