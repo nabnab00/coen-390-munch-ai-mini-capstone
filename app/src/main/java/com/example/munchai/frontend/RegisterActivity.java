@@ -205,7 +205,7 @@ public class RegisterActivity extends AppCompatActivity {
         // Create the text view for consent text
         TextView consentTextView = new TextView(this);
         consentTextView.setText(R.string.consent_form_text);
-        consentTextView.setTextColor(ContextCompat.getColor(RegisterActivity.this, R.color.black));
+        consentTextView.setTextColor(ContextCompat.getColor(this, R.color.black));
         consentTextView.setLineSpacing(1.2f, 1.2f);
 
         scrollView.addView(consentTextView); // add text view to scroll view
