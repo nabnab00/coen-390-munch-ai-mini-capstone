@@ -33,7 +33,7 @@ import com.example.munchai.model.NutritionFacts;
 public class GeminiRequest {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final String API_KEY = "AIzaSyDw5_eiyWlF3d0es5J7SBv__Pan5T_XUj0";
+    private static final String API_KEY;
     private static final String URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=";
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
