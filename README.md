@@ -1,6 +1,6 @@
 # COEN 390 MUNCH AI Mini Capstone
 
-A connected food scale that combines bluetooth weight streaming with AI-based food recognition.  
+A connected food scale that combines bluetooth weight streaming with AI-based food recognition, paired with personal data logs and fitness goals tracker.  
 
 ---
 
