@@ -207,15 +207,15 @@
                     android:id="@+id/login_button"
                     android:layout_width="match_parent"
                     android:layout_height="58dp"
+                    android:layout_marginBottom="20dp"
+                    android:fontFamily="@font/outfit_bold"
+                    android:letterSpacing="0.03"
                     android:text="@string/login_button"
                     android:textColor="@color/munch_white"
                     android:textSize="17sp"
-                    android:fontFamily="@font/outfit_bold"
-                    android:letterSpacing="0.03"
                     app:backgroundTint="@color/munch_bangladesh_green"
                     app:cornerRadius="16dp"
-                    app:elevation="4dp"
-                    android:layout_marginBottom="20dp" />
+                    app:elevation="4dp" />
 
                 <!-- Divider with text -->
                 <LinearLayout
